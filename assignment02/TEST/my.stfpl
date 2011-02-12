@@ -1,0 +1,19 @@
+/*
+** computing the factorial numbers
+*/
+
+let
+  val
+  rec a = b
+  and b = a
+  val c = 9
+  val _ = print_int a
+  val _ = print_int b
+  val _ = print_int c
+in
+  ()
+end // end of [let]
+
+/* ****** ****** */
+
+/* end of [fact.stfpl] */

@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(*
+** CAS CS525, Spring 2011
+** Instructor: Hongwei Xi
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// Abstract Syntax Tree for STFPL (simply typed functional
+</span><span class="comment">// programming language)
+</span><span class="comment">//
+</span><span class="comment">// The code was originally written by Hongwei Xi in May 2005
+</span><span class="comment">//
+</span><span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">"symbol.sats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">"absyn.sats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#define</span> <span class="neuexp">Some option0_some</span>
+<span class="keyword">#define</span> <span class="neuexp">None option0_none</span>
+
+<span class="keyword">#define</span> <span class="neuexp">nil list0_nil</span>
+<span class="keyword">#define</span> <span class="neuexp">cons list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">:: list0_cons</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span> fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> t<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">macdef</span> <span class="neuexp">prstr <span class="keyword">(</span>s<span class="keyword">)</span> <span class="keyword">=</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> <span class="keyword">,(</span>s<span class="keyword">)</span><span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> t<span class="keyword">.</span>t0yp_node <span class="keyword">of</span>
+  <span class="keyword">|</span> T0YPbase <span class="keyword">(</span>sym<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "T0YPbase("<span class="keyword">;</span> fprint_symbol <span class="keyword">(</span>out<span class="keyword">,</span> sym<span class="keyword">)</span><span class="keyword">;</span> prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [T0YPbase]   
+</span>  <span class="keyword">|</span> T0YPfun <span class="keyword">(</span>t_arg<span class="keyword">,</span> t_res<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "T0YPfun("<span class="keyword">;</span>
+      fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> t_arg<span class="keyword">)</span><span class="keyword">;</span> prstr "; "<span class="keyword">;</span> fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> t_res<span class="keyword">)</span><span class="keyword">;</span>
+      prstr ")"
+    <span class="keyword">end</span> <span class="comment">(* end of [T0YPfun] *)</span>
+  <span class="keyword">|</span> T0YPtup <span class="keyword">(</span>ts<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "T0YPlist("<span class="keyword">;</span> fprint_t0yplst <span class="keyword">(</span>out<span class="keyword">,</span> ts<span class="keyword">)</span><span class="keyword">;</span> prstr ")"
+    <span class="keyword">end</span> <span class="comment">(* end of [T0YPlist] *)</span>
+<span class="keyword">end</span> <span class="comment">// end of [fprint_t0yp]
+</span>
+<span class="keyword">implement</span> fprint_t0yplst
+  <span class="keyword">(</span>out<span class="keyword">,</span> ts<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>ts<span class="keyword">,</span> 0<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>ts<span class="keyword">:</span> <span class="staexp">t0yplst</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span>
+    <span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">case+</span> ts <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>t<span class="keyword">,</span> ts<span class="keyword">)</span> <span class="keyword">=&gt;</span> loop <span class="keyword">(</span>ts<span class="keyword">,</span> i+1<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> ", "<span class="keyword">)</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> t<span class="keyword">)</span>
+      <span class="keyword">}</span> <span class="comment">// end of [cons]
+</span>    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [loop]  
+</span><span class="keyword">}</span> <span class="comment">(* end of [fprint_t0yplst] *)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span>
+  t0yp_make_sym <span class="keyword">(</span>loc<span class="keyword">,</span> sym<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  t0yp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> t0yp_node<span class="keyword">=</span> T0YPbase <span class="keyword">(</span>sym<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [t0yp_make_sym]
+</span>
+<span class="keyword">implement</span>
+  t0yp_make_fun <span class="keyword">(</span>loc<span class="keyword">,</span> t_arg<span class="keyword">,</span> t_res<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  t0yp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> t0yp_node<span class="keyword">=</span> T0YPfun <span class="keyword">(</span>t_arg<span class="keyword">,</span> t_res<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [t0yp_make_fun]
+</span>
+<span class="keyword">implement</span>
+  t0yp_make_tup <span class="keyword">(</span>loc<span class="keyword">,</span> ts<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  t0yp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> t0yp_node<span class="keyword">=</span> T0YPtup <span class="keyword">(</span>ts<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [t0yp_make_list]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span> fprint_opr <span class="keyword">(</span>out<span class="keyword">,</span> opr<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val+</span> OPR sym <span class="keyword">=</span> opr <span class="keyword">in</span> fprint_symbol <span class="keyword">(</span>out<span class="keyword">,</span> sym<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [fprint_opr]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fn</span> fprint_a0rg
+  <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> arg<span class="keyword">:</span> <span class="staexp">a0rg</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_symbol <span class="keyword">(</span>out<span class="keyword">,</span> arg<span class="keyword">.</span>a0rg_nam<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">case+</span> arg<span class="keyword">.</span>a0rg_typ <span class="keyword">of</span>
+    <span class="keyword">|</span> Some typ <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+        fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> ": "<span class="keyword">)</span><span class="keyword">;</span> fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> typ<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [Some]  
+</span>    <span class="keyword">|</span> None <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [val]  
+</span><span class="keyword">}</span> <span class="comment">// end of [fprint_a0rg]
+</span>
+<span class="keyword">fn</span> fprint_a0rglst
+  <span class="keyword">(</span>out<span class="keyword">,</span> args<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>args<span class="keyword">,</span> 0<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>args<span class="keyword">:</span> <span class="staexp">a0rglst</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span>
+    <span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">case+</span> args <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>arg<span class="keyword">,</span> args<span class="keyword">)</span> <span class="keyword">=&gt;</span> loop <span class="keyword">(</span>args<span class="keyword">,</span> i+1<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> ", "<span class="keyword">)</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_a0rg <span class="keyword">(</span>out<span class="keyword">,</span> arg<span class="keyword">)</span>
+      <span class="keyword">}</span> <span class="comment">// end of [cons]
+</span>    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [loop]  
+</span><span class="keyword">}</span> <span class="comment">(* end of [fprint_a0rglst] *)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span> fprint_e0xp <span class="keyword">(</span>out<span class="keyword">,</span> e0<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">macdef</span> <span class="neuexp">prexp <span class="keyword">(</span>e<span class="keyword">)</span> <span class="keyword">=</span> fprint_e0xp <span class="keyword">(</span>out<span class="keyword">,</span> <span class="keyword">,(</span>e<span class="keyword">)</span><span class="keyword">)</span></span>
+  <span class="keyword">macdef</span> <span class="neuexp">prstr <span class="keyword">(</span>s<span class="keyword">)</span> <span class="keyword">=</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> <span class="keyword">,(</span>s<span class="keyword">)</span><span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> e0<span class="keyword">.</span>e0xp_node <span class="keyword">of</span>
+  <span class="keyword">|</span> E0XPann <span class="keyword">(</span>e<span class="keyword">,</span> t<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPann("<span class="keyword">;</span> prexp e<span class="keyword">;</span> prstr "; "<span class="keyword">;</span> fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> t<span class="keyword">)</span><span class="keyword">;</span> prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPann]
+</span>  <span class="keyword">|</span> E0XPapp <span class="keyword">(</span>e_fun<span class="keyword">,</span> e_arg<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPapp("<span class="keyword">;</span>
+      prexp e_fun<span class="keyword">;</span> prstr "; "<span class="keyword">;</span> prexp e_arg<span class="keyword">;</span>
+      prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPapp]
+</span>  <span class="keyword">|</span> E0XPbool b <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPbool("<span class="keyword">;</span> fprint_bool <span class="keyword">(</span>out<span class="keyword">,</span> b<span class="keyword">)</span><span class="keyword">;</span> prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPbool] 
+</span>  <span class="keyword">|</span> E0XPfix <span class="keyword">(</span>f<span class="keyword">,</span> args<span class="keyword">,</span> res<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPfix("<span class="keyword">;</span>
+      fprint_symbol <span class="keyword">(</span>out<span class="keyword">,</span> f<span class="keyword">)</span><span class="keyword">;</span>
+      prstr "; "<span class="keyword">;</span>
+      fprint_a0rglst <span class="keyword">(</span>out<span class="keyword">,</span> args<span class="keyword">)</span><span class="keyword">;</span>
+      <span class="keyword">begin</span> <span class="keyword">case+</span> res <span class="keyword">of</span>
+      <span class="keyword">|</span> Some typ <span class="keyword">=&gt;</span> <span class="keyword">(</span>prstr "; "<span class="keyword">;</span> fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> typ<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">|</span> None <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+      <span class="keyword">end</span><span class="keyword">;</span> 
+      prstr "; "<span class="keyword">;</span>
+      fprint_e0xp <span class="keyword">(</span>out<span class="keyword">,</span> body<span class="keyword">)</span><span class="keyword">;</span>
+      prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPlam]  
+</span>  <span class="keyword">|</span> E0XPif <span class="keyword">(</span>e1<span class="keyword">,</span> e2<span class="keyword">,</span> oe3<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPif("<span class="keyword">;</span>
+      prexp e1<span class="keyword">;</span> prstr "; "<span class="keyword">;</span> prexp e2<span class="keyword">;</span>
+      <span class="keyword">begin</span>
+        <span class="keyword">case+</span> oe3 <span class="keyword">of</span> Some e3 <span class="keyword">=&gt;</span> <span class="keyword">(</span>prstr "; "<span class="keyword">;</span> prexp e3<span class="keyword">)</span> <span class="keyword">|</span> None <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+      <span class="keyword">end</span><span class="keyword">;</span>
+      prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPif]
+</span>  <span class="keyword">|</span> E0XPint i <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPint("<span class="keyword">;</span> fprint_int <span class="keyword">(</span>out<span class="keyword">,</span> i<span class="keyword">)</span><span class="keyword">;</span> prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPint]
+</span>  <span class="keyword">|</span> E0XPlam <span class="keyword">(</span>args<span class="keyword">,</span> res<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPlam("<span class="keyword">;</span>
+      fprint_a0rglst <span class="keyword">(</span>out<span class="keyword">,</span> args<span class="keyword">)</span><span class="keyword">;</span>
+      <span class="keyword">begin</span> <span class="keyword">case+</span> res <span class="keyword">of</span>
+      <span class="keyword">|</span> Some typ <span class="keyword">=&gt;</span> <span class="keyword">(</span>prstr "; "<span class="keyword">;</span> fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> typ<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">|</span> None <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+      <span class="keyword">end</span><span class="keyword">;</span> 
+      prstr "; "<span class="keyword">;</span>
+      fprint_e0xp <span class="keyword">(</span>out<span class="keyword">,</span> body<span class="keyword">)</span><span class="keyword">;</span>
+      prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPlam]  
+</span>  <span class="keyword">|</span> E0XPlet <span class="keyword">(</span>decs<span class="keyword">,</span> e_body<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPlet("<span class="keyword">;</span>
+      fprint_d0eclst <span class="keyword">(</span>out<span class="keyword">,</span> decs<span class="keyword">)</span><span class="keyword">;</span> prstr "; "<span class="keyword">;</span> prexp e_body<span class="keyword">;</span>
+      prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPlet]
+</span>  <span class="keyword">|</span> E0XPopr <span class="keyword">(</span>sym<span class="keyword">,</span> es<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPopr("<span class="keyword">;</span>
+      fprint_opr <span class="keyword">(</span>out<span class="keyword">,</span> sym<span class="keyword">)</span><span class="keyword">;</span> prstr "; "<span class="keyword">;</span> fprint_e0xplst <span class="keyword">(</span>out<span class="keyword">,</span> es<span class="keyword">)</span><span class="keyword">;</span>
+      prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPop]
+</span>  <span class="keyword">|</span> E0XPproj <span class="keyword">(</span>e<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPproj("<span class="keyword">;</span> prexp e<span class="keyword">;</span> prstr "; "<span class="keyword">;</span> fprint_int <span class="keyword">(</span>out<span class="keyword">,</span> i<span class="keyword">)</span><span class="keyword">;</span> prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPproj]
+</span>  <span class="keyword">|</span> E0XPstr s <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPstr("<span class="keyword">;</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> s<span class="keyword">)</span><span class="keyword">;</span> prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPstr]
+</span>  <span class="keyword">|</span> E0XPtup es <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+        prstr "E0XPtup("<span class="keyword">;</span> fprint_e0xplst <span class="keyword">(</span>out<span class="keyword">,</span> es<span class="keyword">)</span><span class="keyword">;</span> prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPlist]    
+</span>  <span class="keyword">|</span> E0XPvar <span class="keyword">(</span>sym<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "E0XPvar("<span class="keyword">;</span> fprint_symbol <span class="keyword">(</span>out<span class="keyword">,</span> sym<span class="keyword">)</span><span class="keyword">;</span> prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [E0XPvar]
+</span><span class="comment">(*
+  | _ =&gt; ()
+*)</span>
+<span class="keyword">end</span> <span class="comment">// end of [fprint_e0xp]
+</span>
+<span class="keyword">implement</span> fprint_e0xplst
+  <span class="keyword">(</span>out<span class="keyword">,</span> es<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>es<span class="keyword">,</span> 0<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>es<span class="keyword">:</span> <span class="staexp">e0xplst</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span>
+    <span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">case+</span> es <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>e<span class="keyword">,</span> es<span class="keyword">)</span> <span class="keyword">=&gt;</span> loop <span class="keyword">(</span>es<span class="keyword">,</span> i+1<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> ", "<span class="keyword">)</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_e0xp <span class="keyword">(</span>out<span class="keyword">,</span> e<span class="keyword">)</span>
+      <span class="keyword">}</span> <span class="comment">// end of [cons]
+</span>    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [loop]  
+</span><span class="keyword">}</span> <span class="comment">(* end of [fprint_e0xplst] *)</span>
+
+<span class="keyword">implement</span> print_e0xp <span class="keyword">(</span>e<span class="keyword">)</span> <span class="keyword">=</span> fprint_e0xp <span class="keyword">(</span>stdout_ref<span class="keyword">,</span> e<span class="keyword">)</span>
+<span class="keyword">implement</span> prerr_e0xp <span class="keyword">(</span>e<span class="keyword">)</span> <span class="keyword">=</span> fprint_e0xp <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> e<span class="keyword">)</span>
+
+<span class="keyword">implement</span> fprint_d0eclst <span class="keyword">(</span>out<span class="keyword">,</span> decs<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>decs<span class="keyword">,</span> 0<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>decs<span class="keyword">:</span> <span class="staexp">d0eclst</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span>
+    <span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">case+</span> decs <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>dec<span class="keyword">,</span> decs'<span class="keyword">)</span> <span class="keyword">=&gt;</span> loop <span class="keyword">(</span>decs'<span class="keyword">,</span> i+1<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> "| "<span class="keyword">)</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_d0ec <span class="keyword">(</span>out<span class="keyword">,</span> dec<span class="keyword">)</span>
+      <span class="keyword">}</span> <span class="comment">// end of [cons]
+</span>    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [loop]  
+</span><span class="keyword">}</span> <span class="comment">(* end of [fprint_d0eclst] *)</span>
+
+<span class="keyword">implement</span> fprint_d0ec <span class="keyword">(</span>out<span class="keyword">,</span> dec<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val+</span> D0ECval <span class="keyword">(</span>_<span class="keyword">,</span> valdecs<span class="keyword">)</span> <span class="keyword">=</span> dec<span class="keyword">.</span>d0ec_node
+<span class="keyword">in</span>
+  fprint_v0aldeclst <span class="keyword">(</span>out<span class="keyword">,</span> valdecs<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> fprint_v0aldeclst <span class="keyword">(</span>out<span class="keyword">,</span> valdecs<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>valdecs<span class="keyword">,</span> 0<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>valdecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span>
+    <span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">case+</span> valdecs <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>valdec<span class="keyword">,</span> valdecs'<span class="keyword">)</span> <span class="keyword">=&gt;</span> loop <span class="keyword">(</span>valdecs'<span class="keyword">,</span> i+1<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> ", "<span class="keyword">)</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_v0aldec <span class="keyword">(</span>out<span class="keyword">,</span> valdec<span class="keyword">)</span>
+      <span class="keyword">}</span> <span class="comment">// end of [cons]
+</span>    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [loop]  
+</span><span class="keyword">}</span> <span class="comment">(* end of [fprint_v0aldeclst] *)</span>
+
+<span class="keyword">implement</span> fprint_v0aldec <span class="keyword">(</span>out<span class="keyword">,</span> valdec<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">begin</span>
+  fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> "val "<span class="keyword">)</span><span class="keyword">;</span> fprint_symbol <span class="keyword">(</span>out<span class="keyword">,</span> valdec<span class="keyword">.</span>v0aldec_nam<span class="keyword">)</span><span class="keyword">;</span>
+  fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> " = "<span class="keyword">)</span><span class="keyword">;</span> fprint_e0xp <span class="keyword">(</span>out<span class="keyword">,</span> valdec<span class="keyword">.</span>v0aldec_def<span class="keyword">)</span> <span class="keyword">end</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span> e0xp_make_ann <span class="keyword">(</span>loc<span class="keyword">,</span> e<span class="keyword">,</span> t<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPann <span class="keyword">(</span>e<span class="keyword">,</span> t<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_ann]
+</span>
+<span class="keyword">implement</span> e0xp_make_app <span class="keyword">(</span>loc<span class="keyword">,</span> e1<span class="keyword">,</span> e2<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPapp <span class="keyword">(</span>e1<span class="keyword">,</span> e2<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_app]
+</span>
+<span class="keyword">implement</span> e0xp_make_bool <span class="keyword">(</span>loc<span class="keyword">,</span> b<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPbool <span class="keyword">(</span>b<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_bool]
+</span>
+<span class="keyword">implement</span> e0xp_make_fix
+  <span class="keyword">(</span>loc<span class="keyword">,</span> nam<span class="keyword">,</span> arg<span class="keyword">,</span> res<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPfix <span class="keyword">(</span>nam<span class="keyword">,</span> arg<span class="keyword">,</span> res<span class="keyword">,</span> body<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_fix]
+</span>  
+<span class="keyword">implement</span> e0xp_make_if <span class="keyword">(</span>loc<span class="keyword">,</span> e1<span class="keyword">,</span> e2<span class="keyword">,</span> oe3<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPif <span class="keyword">(</span>e1<span class="keyword">,</span> e2<span class="keyword">,</span> oe3<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_if]
+</span>  
+<span class="keyword">implement</span> e0xp_make_int <span class="keyword">(</span>loc<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPint <span class="keyword">(</span>i<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_int]
+</span>
+<span class="keyword">implement</span> e0xp_make_lam
+  <span class="keyword">(</span>loc<span class="keyword">,</span> arg<span class="keyword">,</span> res<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPlam <span class="keyword">(</span>arg<span class="keyword">,</span> res<span class="keyword">,</span> body<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_lam]
+</span>
+<span class="keyword">implement</span> e0xp_make_let
+  <span class="keyword">(</span>loc<span class="keyword">,</span> decs<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPlet <span class="keyword">(</span>decs<span class="keyword">,</span> body<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_let]
+</span>  
+<span class="keyword">implement</span> e0xp_make_opr <span class="keyword">(</span>loc<span class="keyword">,</span> opr<span class="keyword">,</span> es<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPopr <span class="keyword">(</span>opr<span class="keyword">,</span> es<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_opr]
+</span>
+<span class="keyword">implement</span> e0xp_make_proj <span class="keyword">(</span>loc<span class="keyword">,</span> e<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPproj <span class="keyword">(</span>e<span class="keyword">,</span> i<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_proj]
+</span>
+<span class="keyword">implement</span> e0xp_make_str <span class="keyword">(</span>loc<span class="keyword">,</span> str<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPstr <span class="keyword">(</span>str<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_str]
+</span>
+<span class="keyword">implement</span> e0xp_make_tup <span class="keyword">(</span>loc<span class="keyword">,</span> es<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPtup <span class="keyword">(</span>es<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_list]
+</span>
+<span class="keyword">implement</span> e0xp_make_var <span class="keyword">(</span>loc<span class="keyword">,</span> sym<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e0xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e0xp_node<span class="keyword">=</span> E0XPvar <span class="keyword">(</span>sym<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [e0xp_make_var]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span> d0ec_make_val <span class="keyword">(</span>loc<span class="keyword">,</span> isrec<span class="keyword">,</span> vds<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  d0ec_loc<span class="keyword">=</span> loc<span class="keyword">,</span> d0ec_node<span class="keyword">=</span> D0ECval <span class="keyword">(</span>isrec<span class="keyword">,</span> vds<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [d0ec_make_val]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [absyn.dats] *)</span>
+</pre>
+</body>
+</html>

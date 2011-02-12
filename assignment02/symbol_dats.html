@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(*
+** CAS CS525, Spring 2011
+** Instructor: Hongwei Xi
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// Put your name here
+</span><span class="comment">//
+</span><span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#include</span> <span class="neuexp">"CS525.hats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">"symbol.sats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">assume</span> <span class="staexp">symbol_t <span class="keyword">=</span> <span class="keyword">'{</span>
+  symbol_name<span class="keyword">=</span> string<span class="keyword">,</span> symbol_index<span class="keyword">=</span> int
+<span class="keyword">}</span></span> <span class="comment">// end of [symbol_t]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span> fprint_symbol
+  <span class="keyword">(</span>out<span class="keyword">,</span> s<span class="keyword">)</span> <span class="keyword">=</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> s<span class="keyword">.</span>symbol_name<span class="keyword">)</span>
+<span class="comment">// end of [fprint_symbol]
+</span>
+<span class="keyword">implement</span> print_symbol <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=</span> fprint_symbol <span class="keyword">(</span>stdout_ref<span class="keyword">,</span> x<span class="keyword">)</span>
+
+<span class="keyword">implement</span> prerr_symbol <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=</span> fprint_symbol <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> x<span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">extern</span>
+<span class="keyword">fun</span> <a name="574"><span class="dyncstdec">string_get_symbol <span class="keyword">(</span>name<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a>
+
+<span class="comment">//
+</span><span class="comment">// HX: this is a naive implementation, which is to be replace later
+</span><span class="comment">//
+</span><span class="keyword">local</span>
+
+<span class="keyword">typedef</span> <span class="staexp"><a name="707"><span class="stacstdec">sym <span class="keyword">=</span> symbol_t</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="730"><span class="stacstdec">symlst <span class="keyword">=</span> list0 <span class="keyword">(</span>sym<span class="keyword">)</span></span></a></span>
+<span class="keyword">val</span> theCount <span class="keyword">=</span> ref&lt;<span class="staexp">int</span><span class="keyword">&gt;</span> <span class="keyword">(</span>0<span class="keyword">)</span>
+<span class="keyword">val</span> theTable <span class="keyword">=</span> ref&lt;<span class="staexp">symlst</span><span class="keyword">&gt;</span> <span class="keyword">(</span>list0_nil<span class="keyword">)</span>
+
+<span class="keyword">in</span>
+
+<span class="keyword">implement</span>
+string_get_symbol <span class="keyword">(</span>name<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> list0_find_cloref&lt;<span class="staexp">sym</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="keyword">!</span>theTable<span class="keyword">,</span> <span class="keyword">lam</span> <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=&gt;</span> x<span class="keyword">.</span>symbol_name <span class="keyword">=</span> name<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> ans <span class="keyword">of</span>
+  <span class="keyword">|</span> option0_some <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=&gt;</span> x
+  <span class="keyword">|</span> option0_none <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> i <span class="keyword">=</span> <span class="keyword">!</span>theCount
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>theCount := i+1
+      <span class="keyword">val</span> sym <span class="keyword">=</span> <span class="keyword">'{</span>
+        symbol_name<span class="keyword">=</span> name<span class="keyword">,</span> symbol_index<span class="keyword">=</span> i
+      <span class="keyword">}</span> <span class="comment">// end of [val]
+</span>      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>theTable := list0_cons <span class="keyword">(</span>sym<span class="keyword">,</span> <span class="keyword">!</span>theTable<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      sym
+    <span class="keyword">end</span> <span class="comment">// end of [option0_none]
+</span><span class="keyword">end</span> <span class="comment">// end of [string_get_symbol]
+</span>
+<span class="keyword">end</span> <span class="comment">// end of [local]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+**
+** please implement various operations on a symbol table
+**
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span> symbol_get_name <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=</span> x<span class="keyword">.</span>symbol_name
+<span class="keyword">implement</span> symbol_make_name <span class="keyword">(</span>name<span class="keyword">)</span> <span class="keyword">=</span> string_get_symbol <span class="keyword">(</span>name<span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">(* fun eq_symbol_symbol (x1: symbol_t, x2: symbol_t):&lt;&gt; bool *)</span>
+<span class="keyword">implement</span> eq_symbol_symbol <span class="keyword">(</span>x1<span class="keyword">,</span> x2<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>x1<span class="keyword">.</span>symbol_index <span class="keyword">=</span> x2<span class="keyword">.</span>symbol_index<span class="keyword">)</span>
+
+<span class="comment">(* fun neq_symbol_symbol (x1: symbol_t, x2: symbol_t):&lt;&gt; bool *)</span>
+<span class="keyword">implement</span> neq_symbol_symbol <span class="keyword">(</span>x1<span class="keyword">,</span> x2<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>x1<span class="keyword">.</span>symbol_index &lt;&gt; x2<span class="keyword">.</span>symbol_index<span class="keyword">)</span>
+
+<span class="comment">(* fun compare_symbol_symbol (x1: symbol_t, x2: symbol_t):&lt;&gt; Sgn *)</span>
+<span class="keyword">implement</span> compare_symbol_symbol <span class="keyword">(</span>x1<span class="keyword">,</span> x2<span class="keyword">)</span> <span class="keyword">=</span> 
+  <span class="keyword">if</span> <span class="keyword">(</span>x1<span class="keyword">.</span>symbol_index <span class="keyword">&lt;</span> x2<span class="keyword">.</span>symbol_index<span class="keyword">)</span> <span class="keyword">then</span> ~1
+  <span class="keyword">else</span> <span class="keyword">if</span> <span class="keyword">(</span>x1<span class="keyword">.</span>symbol_index <span class="keyword">=</span> x2<span class="keyword">.</span>symbol_index<span class="keyword">)</span> <span class="keyword">then</span> 0
+  <span class="keyword">else</span> 1
+
+<span class="keyword">implement</span> symbol_BOOL <span class="keyword">=</span> symbol_make_name "bool"
+<span class="keyword">implement</span> symbol_INT <span class="keyword">=</span> symbol_make_name "int"
+<span class="keyword">implement</span> symbol_STRING <span class="keyword">=</span> symbol_make_name "string"
+<span class="keyword">implement</span> symbol_UNIT <span class="keyword">=</span> symbol_make_name "unit"
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span> symbol_UMINUS <span class="keyword">=</span> symbol_make_name "~"
+
+<span class="keyword">implement</span> symbol_PLUS <span class="keyword">=</span> symbol_make_name "+"
+<span class="keyword">implement</span> symbol_MINUS <span class="keyword">=</span> symbol_make_name "-"
+<span class="keyword">implement</span> symbol_TIMES <span class="keyword">=</span> symbol_make_name "*"
+<span class="keyword">implement</span> symbol_SLASH <span class="keyword">=</span> symbol_make_name "/"
+
+<span class="keyword">implement</span> symbol_GT <span class="keyword">=</span> symbol_make_name "&gt;"
+<span class="keyword">implement</span> symbol_GTE <span class="keyword">=</span> symbol_make_name "&gt;="
+<span class="keyword">implement</span> symbol_LT <span class="keyword">=</span> symbol_make_name "&lt;"
+<span class="keyword">implement</span> symbol_LTE <span class="keyword">=</span> symbol_make_name "&lt;="
+<span class="keyword">implement</span> symbol_EQ <span class="keyword">=</span> symbol_make_name "="
+<span class="keyword">implement</span> symbol_NEQ <span class="keyword">=</span> symbol_make_name "&lt;&gt;"
+
+<span class="keyword">implement</span> symbol_PRINT <span class="keyword">=</span> symbol_make_name "print"
+<span class="keyword">implement</span> symbol_PRINT_INT <span class="keyword">=</span> symbol_make_name "print_int"
+
+<span class="keyword">assume</span> <span class="staexp">symenv_t <span class="keyword">(</span>a<span class="keyword">:</span>t@ype<span class="keyword">)</span> <span class="keyword">=</span> list0 <span class="keyword">@(</span>symbol_t<span class="keyword">,</span> a<span class="keyword">)</span></span>
+
+<span class="comment">(* fun{a:t@ype} symenv_make (): symenv_t (a) *)</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span> symenv_make <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span>
+
+<span class="comment">(* fun{a:t@ype}
+symenv_lookup (env: symenv_t a, sym: symbol_t): option0 a *)</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span> symenv_lookup <span class="keyword">(</span>env<span class="keyword">,</span> sym<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> svo <span class="keyword">=</span> list0_find_cloref&lt; <span class="staexp"><span class="keyword">@(</span>symbol_t<span class="keyword">,</span> a<span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
+    env<span class="keyword">,</span> <span class="keyword">lam</span> x <span class="keyword">=&gt;</span> x<span class="keyword">.</span>0 <span class="keyword">=</span> sym<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> svo <span class="keyword">of</span>
+  <span class="keyword">|</span> option0_some sv <span class="keyword">=&gt;</span> option0_some sv<span class="keyword">.</span>1
+  <span class="keyword">|</span> option0_none <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> option0_none
+<span class="keyword">end</span>
+
+<span class="comment">(* fun{a:t@ype}
+symenv_insert (env: symenv_t a, sym: symbol_t, x: a): symenv_t a *)</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span> symenv_insert <span class="keyword">(</span>env<span class="keyword">,</span> sym<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> 
+  <span class="keyword">case+</span> env <span class="keyword">of</span>
+  <span class="keyword">|</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> list0_cons <span class="keyword">(</span><span class="keyword">@(</span>sym<span class="keyword">,</span> x<span class="keyword">)</span><span class="keyword">,</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">|</span> list0_cons <span class="keyword">(</span>sv<span class="keyword">,</span> env1<span class="keyword">)</span> <span class="keyword">=&gt;</span> 
+    <span class="keyword">if</span> sv<span class="keyword">.</span>0 <span class="keyword">=</span> sym <span class="keyword">then</span> list0_cons <span class="keyword">(</span><span class="keyword">@(</span>sym<span class="keyword">,</span> x<span class="keyword">)</span><span class="keyword">,</span> env1<span class="keyword">)</span>
+    <span class="keyword">else</span> list0_cons <span class="keyword">(</span>sv<span class="keyword">,</span> symenv_insert <span class="keyword">(</span>env1<span class="keyword">,</span> sym<span class="keyword">,</span> x<span class="keyword">)</span><span class="keyword">)</span>
+
+<span class="comment">(* fun{a:t@ype}
+symenv_merge (env1: symenv_t a, env2: symenv_t a): symenv_t a *)</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span> symenv_merge <span class="keyword">(</span>env1<span class="keyword">,</span> env2<span class="keyword">)</span> <span class="keyword">=</span> 
+  list0_fold_left&lt;<span class="staexp">symenv_t a</span><span class="keyword">&gt;&lt;</span> <span class="staexp"><span class="keyword">@(</span>symbol_t<span class="keyword">,</span> a<span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
+    <span class="keyword">lam</span> <span class="keyword">(</span>init<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=&gt;</span> symenv_insert <span class="keyword">(</span>init<span class="keyword">,</span> x<span class="keyword">.</span>0<span class="keyword">,</span> x<span class="keyword">.</span>1<span class="keyword">)</span><span class="keyword">,</span> env1<span class="keyword">,</span> env2<span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [symbol.dats] *)</span>
+</pre>
+</body>
+</html>

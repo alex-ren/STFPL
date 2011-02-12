@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(*
+** CAS CS525, Spring 2011
+** Instructor: Hongwei Xi
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">ABS <span class="keyword">=</span> "absyn.sats"</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="115"><span class="stacstdec">e0xp <span class="keyword">=</span> $ABS<span class="keyword">.</span>e0xp</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="140"><span class="stacstdec">e0xplst <span class="keyword">=</span> $ABS<span class="keyword">.</span>e0xplst</span></a></span>
+
+<span class="keyword">staload</span> <span class="staexp">SYM <span class="keyword">=</span> "symbol.sats"</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="200"><span class="stacstdec">sym <span class="keyword">=</span> $SYM<span class="keyword">.</span>symbol_t</span></a></span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">datatype</span> <span class="staexp"><a name="251"><span class="stacstdec">v0al</span></a></span> <span class="keyword">=</span>
+  <span class="keyword">|</span> V0ALbool <span class="keyword">of</span> <span class="staexp">bool</span>
+  <span class="keyword">|</span> V0ALint <span class="keyword">of</span> <span class="staexp">int</span>
+  <span class="keyword">|</span> V0ALstr <span class="keyword">of</span> <span class="staexp">string</span>
+  <span class="keyword">|</span> V0ALtup <span class="keyword">of</span> <span class="staexp">v0allst</span>
+  <span class="keyword">|</span> V0ALclo <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>env<span class="keyword">,</span> e0xp<span class="keyword">)</span></span>
+  <span class="keyword">|</span> V0ALfix <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>env<span class="keyword">,</span> e0xp<span class="keyword">)</span></span>
+  <span class="keyword">|</span> V0ALref <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>ref v0al<span class="keyword">)</span></span>
+
+<span class="keyword">where</span> <span class="staexp"><a name="430"><span class="stacstdec">env <span class="keyword">=</span> $SYM<span class="keyword">.</span>symenv_t <span class="keyword">(</span>v0al<span class="keyword">)</span></span></a></span>
+<span class="keyword">and</span> <span class="staexp"><a name="461"><span class="stacstdec">v0allst <span class="keyword">=</span> list0 v0al</span></a></span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="508"><span class="dyncstdec">fprint_v0al <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="554"><span class="dyncstdec">fprint_v0allst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> vs<span class="keyword">:</span> <span class="staexp">v0allst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+
+<span class="keyword">fun</span> <a name="608"><span class="dyncstdec">print_v0al <span class="keyword">(</span>v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a> <span class="keyword">and</span> <a name="639"><span class="dyncstdec">prerr_v0al <span class="keyword">(</span>v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">//
+</span><span class="comment">// Please implement an interpreter for the raw abstract syntax trees:
+</span><span class="comment">//
+</span><span class="keyword">fun</span> <a name="768"><span class="dyncstdec">interp0_exp <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">$ABS<span class="keyword">.</span>e0xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">v0al</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [interp0.sats] *)</span>
+</pre>
+</body>
+</html>
