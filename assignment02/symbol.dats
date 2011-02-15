@@ -144,10 +144,10 @@ implement{a} symenv_insert (env, sym, x) =
     else list0_cons (sv, symenv_insert (env1, sym, x))
 
 (* fun{a:t@ype}
-symenv_merge (env1: symenv_t a, env2: symenv_t a): symenv_t a *)
-implement{a} symenv_merge (env1, env2) = 
+symenv_inserts (newenv: symenv_t a, oldenv: symenv_t a): symenv_t a *)
+implement{a} symenv_inserts (newenv, oldenv) = 
   list0_fold_left<symenv_t a>< @(symbol_t, a)> (
-    lam (init, x) => symenv_insert (init, x.0, x.1), env1, env2)
+    lam (init, x) => symenv_insert (init, x.0, x.1), oldenv, newenv)
 
 (* ****** ****** *)
 

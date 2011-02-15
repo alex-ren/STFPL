@@ -73,7 +73,7 @@ fun{a:t@ype}
 symenv_insert (env: symenv_t a, sym: symbol_t, x: a): symenv_t a
 
 fun{a:t@ype}
-symenv_merge (env1: symenv_t a, env2: symenv_t a): symenv_t a
+symenv_inserts (newenv: symenv_t a, oldenv: symenv_t a): symenv_t a
 (* ****** ****** *)
 
 

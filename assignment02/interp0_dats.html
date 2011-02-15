@@ -147,7 +147,7 @@
       <span class="keyword">in</span>
         <span class="keyword">case+</span> opt_env1' <span class="keyword">of</span>
         <span class="keyword">|</span> Some0 env1' <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-          <span class="keyword">val</span> env2 <span class="keyword">=</span> $SYM<span class="keyword">.</span>symenv_merge <span class="keyword">(</span>env1'<span class="keyword">,</span> env1<span class="keyword">)</span>
+          <span class="keyword">val</span> env2 <span class="keyword">=</span> $SYM<span class="keyword">.</span>symenv_inserts <span class="keyword">(</span>env1'<span class="keyword">,</span> env1<span class="keyword">)</span>
         <span class="keyword">in</span>
           interp0_exp_env <span class="keyword">(</span>env2<span class="keyword">,</span> ebody<span class="keyword">)</span>
         <span class="keyword">end</span>
@@ -161,11 +161,12 @@
       <span class="keyword">(</span><span class="keyword">case+</span> e1'<span class="keyword">.</span>e0xp_node <span class="keyword">of</span>
       <span class="keyword">|</span> $ABS<span class="keyword">.</span>E0XPfix <span class="keyword">(</span>f<span class="keyword">,</span> arglst<span class="keyword">,</span> tyret<span class="keyword">,</span> ebody<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
         <span class="keyword">val</span> opt_env1' <span class="keyword">=</span> fill_args <span class="keyword">(</span>arglst<span class="keyword">,</span> v2<span class="keyword">)</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ETRACE_MSG <span class="keyword">(</span>"======== interp0_exp_env $V0ALfix \n"<span class="keyword">,</span> ETRACE_LEVEL_DEBUG<span class="keyword">)</span>
       <span class="keyword">in</span>
         <span class="keyword">case+</span> opt_env1' <span class="keyword">of</span>
         <span class="keyword">|</span> Some0 env1' <span class="keyword">=&gt;</span> <span class="keyword">let</span>
           <span class="keyword">val</span> env2 <span class="keyword">=</span> $SYM<span class="keyword">.</span>symenv_insert <span class="keyword">(</span>
-            $SYM<span class="keyword">.</span>symenv_merge <span class="keyword">(</span>env1'<span class="keyword">,</span> env1<span class="keyword">)</span><span class="keyword">,</span> f<span class="keyword">,</span> v1<span class="keyword">)</span>
+            $SYM<span class="keyword">.</span>symenv_inserts <span class="keyword">(</span>env1'<span class="keyword">,</span> env1<span class="keyword">)</span><span class="keyword">,</span> f<span class="keyword">,</span> v1<span class="keyword">)</span>
         <span class="keyword">in</span>
           interp0_exp_env <span class="keyword">(</span>env2<span class="keyword">,</span> ebody<span class="keyword">)</span>
         <span class="keyword">end</span>
@@ -223,7 +224,11 @@
                       abort <span class="keyword">(</span>ERRORCODE_TYPE_ERROR<span class="keyword">)</span><span class="keyword">)</span>
   <span class="keyword">end</span>
   <span class="keyword">|</span> $ABS<span class="keyword">.</span>E0XPstr <span class="keyword">(</span>str<span class="keyword">)</span> <span class="keyword">=&gt;</span> V0ALstr <span class="keyword">(</span>str<span class="keyword">)</span>
-  <span class="keyword">|</span> $ABS<span class="keyword">.</span>E0XPtup <span class="keyword">(</span>explst<span class="keyword">)</span> <span class="keyword">=&gt;</span> V0ALtup <span class="keyword">(</span>interp0_explst_env <span class="keyword">(</span>env<span class="keyword">,</span> explst<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">|</span> $ABS<span class="keyword">.</span>E0XPtup <span class="keyword">(</span>explst<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ETRACE_MSG <span class="keyword">(</span>"======== interp0_exp_env tup\n"<span class="keyword">,</span> ETRACE_LEVEL_DEBUG<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    V0ALtup <span class="keyword">(</span>interp0_explst_env <span class="keyword">(</span>env<span class="keyword">,</span> explst<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">end</span>
   <span class="keyword">|</span> $ABS<span class="keyword">.</span>E0XPvar sym <span class="keyword">=&gt;</span> <span class="keyword">let</span>
     <span class="keyword">val</span> v_opt <span class="keyword">=</span> $SYM<span class="keyword">.</span>symenv_lookup <span class="keyword">(</span>env<span class="keyword">,</span> sym<span class="keyword">)</span>
   <span class="keyword">in</span>

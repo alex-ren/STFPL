@@ -1,0 +1,41 @@
+/*
+**  Coin Changes
+*/
+
+/* ****** ****** */
+
+//
+// In the book "Programming in ATS", there is an example in the chapter
+// named 'Functions' that deals with the coin change problem. Please
+// translate the implementation written in ATS into STFPL (or write your
+// own in STFPL directly)
+//
+
+/* ****** ****** */
+
+/* please do your implementation in STFPL */
+let
+  val theCoins = (1, 5, 10, 25)
+  val coin_get: int -> int = lam (n: int) =>
+    if n = 0 then theCoins.0
+    else if n = 1 then theCoins.1
+    else if n = 2 then theCoins.2
+    else if n = 3 then theCoins.3
+    else ~1
+
+  val coin_change: int -> int = lam (sum: int) => let
+    val aux = fix f (sum: int, n: int): int =>
+      if sum > 0 then
+        (if n >= 0 then f (sum, n - 1) + f (sum - coin_get (n), n) else 0)
+      else (if sum < 0 then 0 else 1)
+    // end of [aux]
+  in
+    aux (sum, 3)
+  end
+in
+  coin_change (100)
+end
+
+/* ****** ****** */
+
+/* end of [coin.stfpl] */

@@ -122,7 +122,7 @@ implement interp0_exp_env (env, e): v0al =
       in
         case+ opt_env1' of
         | Some0 env1' => let
-          val env2 = $SYM.symenv_merge (env1', env1)
+          val env2 = $SYM.symenv_inserts (env1', env1)
         in
           interp0_exp_env (env2, ebody)
         end
@@ -136,11 +136,12 @@ implement interp0_exp_env (env, e): v0al =
       (case+ e1'.e0xp_node of
       | $ABS.E0XPfix (f, arglst, tyret, ebody) => let
         val opt_env1' = fill_args (arglst, v2)
+        val () = ETRACE_MSG ("======== interp0_exp_env $V0ALfix \n", ETRACE_LEVEL_DEBUG)
       in
         case+ opt_env1' of
         | Some0 env1' => let
           val env2 = $SYM.symenv_insert (
-            $SYM.symenv_merge (env1', env1), f, v1)
+            $SYM.symenv_inserts (env1', env1), f, v1)
         in
           interp0_exp_env (env2, ebody)
         end
@@ -198,7 +199,11 @@ implement interp0_exp_env (env, e): v0al =
                       abort (ERRORCODE_TYPE_ERROR))
   end
   | $ABS.E0XPstr (str) => V0ALstr (str)
-  | $ABS.E0XPtup (explst) => V0ALtup (interp0_explst_env (env, explst))
+  | $ABS.E0XPtup (explst) => let
+    val () = ETRACE_MSG ("======== interp0_exp_env tup\n", ETRACE_LEVEL_DEBUG)
+  in
+    V0ALtup (interp0_explst_env (env, explst))
+  end
   | $ABS.E0XPvar sym => let
     val v_opt = $SYM.symenv_lookup (env, sym)
   in
