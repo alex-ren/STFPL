@@ -33,7 +33,7 @@ let
     aux (sum, 3)
   end
 in
-  coin_change (100)
+  coin_change (400)
 end
 
 /* ****** ****** */

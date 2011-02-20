@@ -18,6 +18,8 @@ staload "symbol.sats"
 
 staload "absyn.sats"
 
+typedef loc = $Posloc.location_t
+
 (* ****** ****** *)
 
 #define Some option0_some

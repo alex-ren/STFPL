@@ -15,6 +15,7 @@ dynload "error.dats"
 dynload "fixity.dats"
 dynload "parser.dats"
 dynload "interp0.dats"
+dynload "trans1.dats"
 
 (* ****** ****** *)
 
@@ -22,6 +23,7 @@ staload "absyn.sats"
 staload "parser.sats"
 staload "interp0.sats"
 staload "error.sats"
+staload "trans1.sats"
 
 
 (* ****** ****** *)
@@ -39,6 +41,11 @@ main () = () where {
   val () = print_newline ()
   val () = fprint_v0al (stdout_ref, v)
   val () = print_newline ()
+
+
+  val () = print "\n\n==================================\n\n"
+  val exp1 = trans1_exp (prog)
+  val () = fprint_e1xp (stdout_ref, exp1)
 } // end of [main]
 
 (* ****** ****** *)

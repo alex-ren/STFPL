@@ -11,10 +11,11 @@ fun abort {a:viewt@ype} (err: int):<!exn> a
 
 #define ERRORCODE_TYPE_ERROR 1
 #define ERRORCODE_OUT_OF_BOUND 2
+#define ERRORCODE_FORBIDDEN 100
 
-#define ETRACE_LEVEL_DEBUG 10
-#define ETRACE_LEVEL_INFO 9
-#define ETRACE_LEVEL_ERROR 5
+#define ETRACE_LEVEL_DEBUG 10  // output debug information
+#define ETRACE_LEVEL_INFO 9  // 
+#define ETRACE_LEVEL_ERROR 5  // impossible to happen
 
 #define ETRACE_LEVEL_CUR 9
 
@@ -42,4 +43,5 @@ end
 
 (* end of [error.sats] *)
 
+(* vi: set syntax=sml: *)
 

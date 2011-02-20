@@ -34,7 +34,7 @@ LIBPARCOMB=$(ATSHOME)/contrib/parcomb/atsctrb_parcomb.o
 #
 ATSCCFLAGS=
 # ATSCCFLAGS=-D_ATS_GCATS
-ATSCCFLAGS=-O2 -D_ATS_GCATS
+ATSCCFLAGS=-O2
 #
 # '-flto' enables link-time optimization such as inlining lib functions
 #
@@ -72,6 +72,8 @@ SOURCES := \
   parser.dats \
   interp0.sats \
   interp0.dats \
+  trans1.sats \
+  trans1.dats \
   test.dats \
 
 OBJECTS := $(call atsobjname,$(SOURCES))
@@ -82,7 +84,7 @@ target := tester
 all: ${target}
 
 tester: $(OBJECTS)
-	$(ATSCC) -o $@ $^ $(LIBPARCOMB)
+	$(ATSCC) -D_ATS_GCATS -o $@ $^ $(LIBPARCOMB)
 
 
 # #################
@@ -98,7 +100,11 @@ $(call atsobjname,%.dats): %.dats
 # SOURCESsta := $(filter %.sats, $(SOURCES))
 # SOURCESdyn := $(filter %.dats, $(SOURCES))
 
-include $(call atsdepname,$(SOURCES))
+ifneq "$(findstring clean,$(MAKECMDGOALS))" "clean"
+  ifneq "$(MAKECMDGOALS)" "html"
+    -include $(call atsdepname,$(SOURCES))
+  endif
+endif
 
 $(call atsdepname,%.sats): %.sats
 	$(ATSOPT) -o $@.$$$$ -dep1 -s $<;    \

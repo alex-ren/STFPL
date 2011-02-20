@@ -2,7 +2,8 @@ To build the program, please run
 >> make all
 
 
-Caution:
-  This program can handle mutually recursive functions.
+Updates:
+  Fixed one bug about symenv_merge.
+  Added trace info.
 
 

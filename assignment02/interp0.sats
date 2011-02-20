@@ -5,12 +5,8 @@
 
 (* ****** ****** *)
 
-staload ABS = "absyn.sats"
-typedef e0xp = $ABS.e0xp
-typedef e0xplst = $ABS.e0xplst
-
-staload SYM = "symbol.sats"
-typedef sym = $SYM.symbol_t
+staload Absyn = "absyn.sats"
+staload Symbol = "symbol.sats"
 
 (* ****** ****** *)
 
@@ -19,11 +15,11 @@ datatype v0al =
   | V0ALint of int
   | V0ALstr of string
   | V0ALtup of v0allst
-  | V0ALclo of (env, e0xp)
-  | V0ALfix of (env, e0xp)
+  | V0ALclo of (env, $Absyn.e0xp)
+  | V0ALfix of (env, $Absyn.e0xp)
   | V0ALref of (ref v0al)
 
-where env = $SYM.symenv_t (v0al)
+where env = $Symbol.symenv_t (v0al)
 and v0allst = list0 v0al
 
 (* ****** ****** *)
@@ -38,7 +34,7 @@ fun print_v0al (v: v0al): void and prerr_v0al (v: v0al): void
 //
 // Please implement an interpreter for the raw abstract syntax trees:
 //
-fun interp0_exp (e: $ABS.e0xp): v0al
+fun interp0_exp (e: $Absyn.e0xp): v0al
 
 (* ****** ****** *)
 

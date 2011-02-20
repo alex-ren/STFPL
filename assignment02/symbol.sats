@@ -78,3 +78,4 @@ symenv_inserts (newenv: symenv_t a, oldenv: symenv_t a): symenv_t a
 
 
 (* end of [symbol.sats] *)
+(* vi: set syntax=sml: *)

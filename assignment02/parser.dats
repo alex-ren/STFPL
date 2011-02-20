@@ -17,6 +17,8 @@ staload _(*anonymous*) = "prelude/DATS/list.dats"
 (* ****** ****** *)
 
 staload "contrib/parcomb/SATS/posloc.sats"
+typedef loc = location_t
+
 staload "contrib/parcomb/SATS/tokenize.sats"
 staload "contrib/parcomb/SATS/parcomb.sats" ;
 staload _(*anonymous*) = "contrib/parcomb/DATS/parcomb.dats" ;
@@ -30,6 +32,8 @@ staload "fixity.sats"
 
 staload "absyn.sats"
 staload "symbol.sats"
+
+typedef sym = symbol_t
 
 (* ****** ****** *)
 
