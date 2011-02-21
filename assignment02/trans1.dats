@@ -7,6 +7,7 @@
 
 staload "trans1.sats"
 typedef loc = $Posloc.location_t
+macdef prerr_loc = $Posloc.prerr_location
 
 (* ****** ****** *)
 
@@ -32,6 +33,8 @@ staload _(*anon*) = "libats/DATS/funmap_avltree.dats"
 #define cons list0_cons
 #define nil list0_nil
 
+#define Some0 option0_some
+#define None0 option0_none
 
 (* ****** ****** *)
 
@@ -186,6 +189,7 @@ implement print_t1yp (t) = fprint_t1yp (stdout_ref, t)
 implement prerr_t1yp (t) = fprint_t1yp (stderr_ref, t)
 
 (* ****** ****** *)
+implement fprint_e1xp (out, e) = fprint (out, "dummy print e1xp\n")  // todo
 
 implement
 v1ar_make (loc, sym, t) = '{
@@ -295,93 +299,196 @@ val ctx_nil = symenv_make () // empty context
 
 
 (* ****** ****** *)
-abstype type_error
+abstype tyerr
+typedef tyerr_pool = list0 tyerr
 (* record all the error for future output *)
-extern fun type_error_add (loc: loc, msg: String): bool
-extern fun type_error_has (): bool
-extern fun type_error_get (n: int): option0 type_error
+extern fun tyerr_pool_add (pool: tyerr_pool, loc: loc, msg: String): tyerr_pool
+extern fun tyerr_pool_append (p1: tyerr_pool, p2: tyerr_pool): tyerr_pool
+extern fun tyerr_pool_make (): tyerr_pool
 
 local
-assume type_error = '{loc = loc, msg = String}
-val error_pool: ref (list0 type_error) = ref_make_elt<list0  type_error> (nil)
+assume tyerr = '{loc = loc, msg = String}
 in
-implement type_error_add (loc, msg) = let
-  val () = !error_pool := '{loc = loc, msg = msg} :: !error_pool
+implement tyerr_pool_add (pool, loc, msg) = 
+  '{loc = loc, msg = msg} :: pool
 
-implement type_error_has () =
-  case+ !error_pool of cons (_, _) => true | nil () => false
+implement tyerr_pool_append (p1, p2) = list0_append (p1, p2)
 
-in
-  true
-end
+implement tyerr_pool_make () = nil
 end  // end of [local]
 
+val tyerr_pool_nil = tyerr_pool_make ()  // empty error pool
 
-exception TypeError of (loc, String)
+// exception TypeError of (loc, String)
 
 
-extern fun oftype (Gamma: ctx, e: e0xp): e1xp
+extern fun oftype (Gamma: ctx, e0: e0xp): (e1xp, tyerr_pool)
 
-extern fun typcheck (Gamma: ctx, e: e0xp, t: t1yp): e1xp
+extern fun typcheck (Gamma: ctx, e0: e0xp, t1: t1yp): (e1xp, tyerr_pool)
 
-////
-implement typcheck (Gamma, e, t) = let
-  val e0_node = e0.e0xp_node
-  val e0_loc = e0.e0xp_loc
+fun oftype_ann (Gamma: ctx, loc: loc, e0: e0xp, t0: t0yp): 
+  (e1xp, tyerr_pool) = let
+  val t1 = trans1_typ (t0)
+  val (e1, tyerrs) = typcheck (Gamma, e0, t1)
+  val e1a = e1xp_make_ann (loc, e1, t1)
 in
-  case+ e0.e0xp_node of
-  | E0XPann (e0xp, t0yp) => let
-
-(* todo may throw fatal *)
-extern fun trans1_exp_1 (e: e0xp): e1xp
-
-(*
-fun trans1_exp_ann (Gamma: ctx, e0xp: e0xp, loc: loc, t0yp: t0yp): e1xp = let
-  val t1yp = trans1_typ (t0yp)
-in
-  if typcheck (Gamma, e0xp, t1yp) = true then let
-    val e1xp = trans1_exp (e0xp)
-  in
-    e1xp_make_ann (loc, e1xp, t1yp)
-  end else let
-    val err = type_error_add (loc, "trans1_exp_ann")
-    val dummy = '{e1xp_loc = loc, 
-                  e1xp_node = E1XPint (825), 
-                  e1xp_typ = t1yp}
-  in
-    e1xp_make_ann (loc, dummy, t1yp)
-  end
-end  // end of [trans1_exp_ann]
-*)
-    
-// fun trans1_exp_app (Gamma: ctx, e0_fun: e0xp, e0_args: e0xp, loc: loc): e1xp =
-
-(* ************
-implement trans1_exp (e0) = let
-  val e1xp = trans1_exp_1 (e0)
-in
-  if type_error_has () = true then // todo print error msg
-    ETRACE_MSG_OPR ("trans1_exp: type error", ETRACE_LEVEL_INFO,
-           abort (ERRORCODE_TYPE_ERROR))
-  else e1xp
+  (e1a, tyerrs)
 end
-************* *)
 
-(* ************
-implement trans1_exp_1 (e0) = let
+fun oftype_if (Gamma: ctx, loc: loc, 
+  e0_if: e0xp, e0_then: e0xp, e0opt_else: e0xpopt): (e1xp, tyerr_pool) = let
+  val (e1_if, tyerrs1) = typcheck (Gamma, e0_if, t1yp_bool)
+in
+  case+ e0opt_else of
+  | Some0 e0_else => let
+    val (e1_then, tyerrs2) = oftype (Gamma, e0_then)
+    val tyerrs = tyerr_pool_append (tyerrs1, tyerrs2)
+    val (e1_else, tyerrs3) = typcheck (Gamma, e0_else, e1_then.e1xp_typ)
+    val tyerrs = tyerr_pool_append (tyerrs, tyerrs3)
+    (* assume the type of if statement = the then branch *)
+    val e1 = e1xp_make_if (loc, e1_if, e1_then, Some0 e1_else, e1_then.e1xp_typ)
+  in
+    (e1, tyerrs)
+  end
+  | None0 () => let
+    val (e1_then, tyerrs2) = typcheck (Gamma, e0_then, t1yp_unit)
+    val tyerrs = tyerr_pool_append (tyerrs1, tyerrs2)
+    (* assume the type of if statement t1yp_unit *)
+    val e1 = e1xp_make_if (loc, e1_if, e1_then, None0, t1yp_unit)
+  in
+    (e1, tyerrs)
+  end
+end
+    
+(* fill the environment and do the transformation *)
+extern fun oftype_declst (Gamma: ctx, decs: d0eclst): 
+  (ctx, d1eclst, tyerr_pool)
+
+extern fun oftype_dec (Gamma: ctx, dec: d0ec): (ctx, d1ec, tyerr_pool)
+
+extern fun oftype_valdeclst (Gamma: ctx, v0aldecs: v0aldeclst):
+  (ctx, v1aldeclst, tyerr_pool)
+
+extern fun oftype_valdec (Gamma: ctx, v0aldec: v0aldec):
+  (ctx, v1aldec, tyerr_pool)
+
+implement oftype_declst (Gamma, decs) = let
+  fun helper (init: (ctx, d1eclst, tyerr_pool), dec: d0ec):<cloref1>
+    (ctx, d1eclst, tyerr_pool) = let
+    val (gamma, d1ec, tyerrs) = oftype_dec (init.0, dec)
+    val d1ecs = d1ec :: init.1
+    val tyerrs = tyerr_pool_append (init.2, tyerrs)
+  in
+    (gamma, d1ecs, tyerrs)
+  end
+in
+  list0_fold_left (helper, (Gamma, nil, tyerr_pool_nil), decs)
+end
+
+(* extern fun oftype_dec (Gamma: ctx, dec: d0ec): (ctx, d1ec, tyerr_pool) *)
+implement oftype_dec (Gamma, dec) = let
+  val d0ec_loc = dec.d0ec_loc
+  val d0ec_node = dec.d0ec_node
+  val+ D0ECval (isrec, v0aldecs) = d0ec_node
+in
+  if isrec = true then 
+    ETRACE_MSG_OPR ("oftype_dec = error\n", ETRACE_LEVEL_ERROR, 
+    abort (ERRORCODE_FORBIDDEN))  // todo
+  else let
+    val (Gamma1, v1aldecs, tyerrs) = oftype_valdeclst (Gamma, v0aldecs)
+    val d1ec = '{d1ec_loc = d0ec_loc, d1ec_node = D1ECval (isrec, v1aldecs)}
+  in
+    (Gamma1, d1ec, tyerrs)
+  end
+end
+
+implement oftype_valdeclst (Gamma, v0aldecs) = let
+  fun helper (init: (ctx, v1aldeclst, tyerr_pool), v0aldec: v0aldec):<cloref1>
+    (ctx, v1aldeclst, tyerr_pool) = let
+    val (gamma, v1aldec, tyerrs) = oftype_valdec (init.0, v0aldec)
+    val v1aldecs = v1aldec :: init.1
+    val tyerrs = tyerr_pool_append (init.2, tyerrs)
+  in
+    (gamma, v1aldecs, tyerrs)
+  end
+in
+  list0_fold_left (helper, (Gamma, nil, tyerr_pool_nil), v0aldecs)
+end
+
+  
+implement oftype_valdec (Gamma, v0aldec) = let
+  val loc = v0aldec.v0aldec_loc
+  val nam = v0aldec.v0aldec_nam
+  val t0ypopt = v0aldec.v0aldec_ann
+  val def = v0aldec.v0aldec_def
+in
+  case+ t0ypopt of
+  | Some0 t0yp => let
+    val t1yp = trans1_typ (t0yp)
+    val (e1xp, tyerrs) = typcheck (Gamma, def, t1yp)
+    (* maybe not match, use the annotated one *)
+    val v1ar = v1ar_make (loc, nam, t1yp)
+    val v1aldec = '{v1aldec_loc = loc, v1aldec_var = v1ar, v1aldec_def = e1xp}
+    val Gamma1 = symenv_insert (Gamma, nam, v1ar)
+  in
+    (Gamma1, v1aldec, tyerrs)
+  end
+  | None0 () => let
+    val (e1xp, tyerrs) = oftype (Gamma, def)
+    val v1ar = v1ar_make (loc, nam, e1xp.e1xp_typ)
+    val v1aldec = '{v1aldec_loc = loc, v1aldec_var = v1ar, v1aldec_def = e1xp}
+    val Gamma1 = symenv_insert (Gamma, nam, v1ar)
+  in
+    (Gamma1, v1aldec, tyerrs)
+  end
+end  // end of [oftype_valdec]
+  
+
+fun oftype_let (Gamma: ctx, loc: loc, decs: d0eclst, e0_body: e0xp):
+  (e1xp, tyerr_pool) = let
+  val (Gamma1, d1ecs, tyerrs1) = oftype_declst (Gamma, decs)
+  val (e1, tyerrs2) = oftype (Gamma1, e0_body)
+  val tyerrs = tyerr_pool_append (tyerrs1, tyerrs2)
+in
+  (e1xp_make_let (loc, d1ecs, e1, e1.e1xp_typ), tyerrs)
+end
+
+implement oftype (Gamma, e0) = let
   val e0_node = e0.e0xp_node
   val e0_loc = e0.e0xp_loc
 in
-  case+ e0.e0xp_node of
-  | E0XPann (e0xp, t0yp) => trans1_exp_ann (ctx_nil, e0xp, e0_loc, t0yp)
-  | E1XPapp (e0_fun, e0_args) => trans1_exp_app (ctx_nil, e0_fun, e0_args, e0_loc)
-  | _ => ETRACE_MSG_OPR ("trans1_exp ~ error\n", ETRACE_LEVEL_ERROR, 
+  case+ e0_node of
+  | E0XPann (e0a, t0a) => oftype_ann (Gamma, e0_loc, e0a, t0a)
+  // | E1XPapp (e0fun, e0args) => 
+  | E0XPbool (b) => (e1xp_make_bool (e0_loc, b), tyerr_pool_nil)
+  | E0XPint (i) => (e1xp_make_int (e0_loc, i), tyerr_pool_nil)
+  | E0XPif (e0_if, e0_then, e0opt_else) => 
+    oftype_if (Gamma, e0_loc, e0_if, e0_then, e0opt_else)
+  | E0XPlet (d0eclst_local, e0_body) => 
+    oftype_let (Gamma, e0_loc, d0eclst_local, e0_body)
+  | _(*todo*) => ETRACE_MSG_OPR ("oftype ~ error\n", ETRACE_LEVEL_ERROR, 
              abort (ERRORCODE_FORBIDDEN))
 end
-************* *)
 
-    
+implement typcheck (Gamma, e0, t1) = let
+  val (e1, tyerrs) = oftype (Gamma, e0)
+  val ty_cmp = lte_t1yp_t1yp (e1.e1xp_typ, t1)
+in
+  if ty_cmp = true then (e1, tyerrs)
+  else let
+    val () = prerr_loc (e1.e1xp_loc)
+    val () = prerr ": error(type) ..."
+    val () = prerr_newline ()
+    val errmsg = "todo .........."
+  in
+    (e1, tyerr_pool_add (tyerr_pool_nil, e1.e1xp_loc, errmsg))
+  end
+end
 
-(* ****** ****** *)
+implement trans1_exp (e0xp) = let
+  val (e1xp, tyerrs) = oftype (ctx_nil, e0xp)
+in
+  e1xp
+end
 
-(* end of [trans1.dats] *)
+

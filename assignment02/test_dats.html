@@ -40,6 +40,7 @@
 <span class="keyword">dynload</span> "fixity.dats"
 <span class="keyword">dynload</span> "parser.dats"
 <span class="keyword">dynload</span> "interp0.dats"
+<span class="keyword">dynload</span> "trans1.dats"
 
 <span class="comment">(* ****** ****** *)</span>
 
@@ -47,6 +48,7 @@
 <span class="keyword">staload</span> <span class="staexp">"parser.sats"</span>
 <span class="keyword">staload</span> <span class="staexp">"interp0.sats"</span>
 <span class="keyword">staload</span> <span class="staexp">"error.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"trans1.sats"</span>
 
 
 <span class="comment">(* ****** ****** *)</span>
@@ -64,6 +66,11 @@ main <span class="keyword">(</span><span class="keyword">)</span> <span class="k
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print_newline <span class="keyword">(</span><span class="keyword">)</span>
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_v0al <span class="keyword">(</span>stdout_ref<span class="keyword">,</span> v<span class="keyword">)</span>
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print_newline <span class="keyword">(</span><span class="keyword">)</span>
+
+
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print "\n\n==================================\n\n"
+  <span class="keyword">val</span> exp1 <span class="keyword">=</span> trans1_exp <span class="keyword">(</span>prog<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_e1xp <span class="keyword">(</span>stdout_ref<span class="keyword">,</span> exp1<span class="keyword">)</span>
 <span class="keyword">}</span> <span class="comment">// end of [main]
 </span>
 <span class="comment">(* ****** ****** *)</span>

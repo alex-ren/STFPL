@@ -42,6 +42,8 @@
 <span class="comment">(* ****** ****** *)</span>
 
 <span class="keyword">staload</span> <span class="staexp">"contrib/parcomb/SATS/posloc.sats"</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="486"><span class="stacstdec">loc <span class="keyword">=</span> location_t</span></a></span>
+
 <span class="keyword">staload</span> <span class="staexp">"contrib/parcomb/SATS/tokenize.sats"</span>
 <span class="keyword">staload</span> <span class="staexp">"contrib/parcomb/SATS/parcomb.sats"</span> <span class="keyword">;</span>
 <span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anonymous*)</span> <span class="keyword">=</span> "contrib/parcomb/DATS/parcomb.dats"</span> <span class="keyword">;</span>
@@ -55,6 +57,8 @@
 
 <span class="keyword">staload</span> <span class="staexp">"absyn.sats"</span>
 <span class="keyword">staload</span> <span class="staexp">"symbol.sats"</span>
+
+<span class="keyword">typedef</span> <span class="staexp"><a name="797"><span class="stacstdec">sym <span class="keyword">=</span> symbol_t</span></a></span>
 
 <span class="comment">(* ****** ****** *)</span>
 
@@ -75,8 +79,8 @@
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">typedef</span> <span class="staexp"><a name="1089"><span class="stacstdec">P <span class="keyword">(</span>a<span class="keyword">:</span> t@ype<span class="keyword">)</span> <span class="keyword">=</span> parser_t <span class="keyword">(</span>a<span class="keyword">,</span> token<span class="keyword">)</span></span></a></span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="1132"><span class="stacstdec">LP <span class="keyword">(</span>a<span class="keyword">:</span> t@ype<span class="keyword">)</span> <span class="keyword">=</span> lazy <span class="keyword">(</span>parser_t <span class="keyword">(</span>a<span class="keyword">,</span> token<span class="keyword">)</span><span class="keyword">)</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="1139"><span class="stacstdec">P <span class="keyword">(</span>a<span class="keyword">:</span> t@ype<span class="keyword">)</span> <span class="keyword">=</span> parser_t <span class="keyword">(</span>a<span class="keyword">,</span> token<span class="keyword">)</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="1182"><span class="stacstdec">LP <span class="keyword">(</span>a<span class="keyword">:</span> t@ype<span class="keyword">)</span> <span class="keyword">=</span> lazy <span class="keyword">(</span>parser_t <span class="keyword">(</span>a<span class="keyword">,</span> token<span class="keyword">)</span><span class="keyword">)</span></span></a></span>
 
 <span class="comment">(* ****** ****** *)</span>
 
@@ -337,8 +341,8 @@
 <span class="keyword">#define</span> <span class="neuexp">l2l list0_of_list1</span>
 <span class="keyword">#define</span> <span class="neuexp">o2o option0_of_option1</span>
 
-<span class="keyword">typedef</span> <span class="staexp"><a name="6795"><span class="stacstdec">t0yplst1 <span class="keyword">=</span> List <span class="keyword">(</span>t0yp<span class="keyword">)</span></span></a></span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="6826"><span class="stacstdec">t0ypc <span class="keyword">=</span> t0yp <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> t0yp</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="6845"><span class="stacstdec">t0yplst1 <span class="keyword">=</span> List <span class="keyword">(</span>t0yp<span class="keyword">)</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="6876"><span class="stacstdec">t0ypc <span class="keyword">=</span> t0yp <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> t0yp</span></a></span>
 
 <span class="keyword">val</span>
 <span class="keyword">rec</span> lp_t0yp<span class="keyword">:</span> <span class="staexp">LP <span class="keyword">(</span>t0yp<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">$delay</span> <span class="keyword">(</span>
@@ -386,7 +390,7 @@
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">typedef</span> <span class="staexp"><a name="8196"><span class="stacstdec">t0ypopt1 <span class="keyword">=</span> Option <span class="keyword">(</span>t0yp<span class="keyword">)</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="8246"><span class="stacstdec">t0ypopt1 <span class="keyword">=</span> Option <span class="keyword">(</span>t0yp<span class="keyword">)</span></span></a></span>
 
 <span class="keyword">val</span> lp_typann<span class="keyword">:</span> <span class="staexp">LP <span class="keyword">(</span>t0ypopt1<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">$delay</span> <span class="keyword">(</span>
   seq2wth_parser_fun <span class="keyword">(</span>COLON<span class="keyword">,</span> <span class="keyword">!</span>lp_t0yp<span class="keyword">,</span> f_some<span class="keyword">)</span> ||
@@ -410,13 +414,13 @@
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">typedef</span> <span class="staexp"><a name="8742"><span class="stacstdec">e0xplst1 <span class="keyword">=</span> List <span class="keyword">(</span>e0xp<span class="keyword">)</span></span></a></span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="8773"><span class="stacstdec">e0xpopt1 <span class="keyword">=</span> Option <span class="keyword">(</span>e0xp<span class="keyword">)</span></span></a></span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="8806"><span class="stacstdec">e0xpc <span class="keyword">=</span> e0xp <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> e0xp</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="8792"><span class="stacstdec">e0xplst1 <span class="keyword">=</span> List <span class="keyword">(</span>e0xp<span class="keyword">)</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="8823"><span class="stacstdec">e0xpopt1 <span class="keyword">=</span> Option <span class="keyword">(</span>e0xp<span class="keyword">)</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="8856"><span class="stacstdec">e0xpc <span class="keyword">=</span> e0xp <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> e0xp</span></a></span>
 
-<span class="keyword">typedef</span> <span class="staexp"><a name="8843"><span class="stacstdec">a0rglst1 <span class="keyword">=</span> List <span class="keyword">(</span>a0rg<span class="keyword">)</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="8893"><span class="stacstdec">a0rglst1 <span class="keyword">=</span> List <span class="keyword">(</span>a0rg<span class="keyword">)</span></span></a></span>
 
-<span class="keyword">typedef</span> <span class="staexp"><a name="8875"><span class="stacstdec">d0eclst1 <span class="keyword">=</span> List <span class="keyword">(</span>d0ec<span class="keyword">)</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="8925"><span class="stacstdec">d0eclst1 <span class="keyword">=</span> List <span class="keyword">(</span>d0ec<span class="keyword">)</span></span></a></span>
 
 <span class="comment">(* ****** ****** *)</span>
 
@@ -585,7 +589,7 @@
 <span class="keyword">and</span> lp_e0xp1<span class="keyword">:</span> <span class="staexp">LP <span class="keyword">(</span>e0xp<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">$delay</span> <span class="keyword">(</span>
   <span class="keyword">(</span>repeat1_parser <span class="keyword">!</span>lp_opre0xp0<span class="keyword">)</span> wth f
 <span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
-  <span class="keyword">typedef</span> <span class="staexp"><a name="13701"><span class="stacstdec">T <span class="keyword">=</span> fixitm e0xp</span></a></span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="13751"><span class="stacstdec">T <span class="keyword">=</span> fixitm e0xp</span></a></span>
   <span class="keyword">fn</span> err <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">e0xp</span> <span class="keyword">=</span> <span class="keyword">begin</span>
     prerr_location loc<span class="keyword">;</span>
     prerr ": exit(STFPL)"<span class="keyword">;</span>
@@ -697,7 +701,7 @@
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="17103"><span class="dyncstdec">parse_failure
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="17153"><span class="dyncstdec">parse_failure
   <span class="keyword">(</span>toks<span class="keyword">:</span> <span class="staexp">stream token</span><span class="keyword">,</span> ncur<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">,</span> nmax<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 
 <span class="keyword">implement</span> parse_failure <span class="keyword">(</span>toks<span class="keyword">,</span> ncur<span class="keyword">,</span> nmax<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>

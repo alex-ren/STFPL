@@ -61,7 +61,8 @@ where e1xp = '{
 and e1xplst = list0 (e1xp)
 and e1xpopt = option0 (e1xp)
 
-and v1ar = '{
+// two purpose: 1. as functoin args; 2. as let declarations
+and v1ar = '{  
   v1ar_loc= $Posloc.location_t, v1ar_nam= $Symbol.symbol_t, v1ar_typ= t1yp, v1ar_def= e1xpopt
 } // end of [v1ar]
 and v1arlst = list0 (v1ar)

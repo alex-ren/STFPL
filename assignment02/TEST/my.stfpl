@@ -3,15 +3,15 @@
 */
 
 let
-  val
-  rec a = b
-  and b = a
+//  val
+//  rec a = b
+//  and b = a
   val c = 9
-  val _ = print_int a
-  val _ = print_int b
-  val _ = print_int c
+//  val _ = print_int a
+//  val _ = print_int b
+//  val _ = print_int c
 in
-  ()
+  3  // ()
 end // end of [let]
 
 /* ****** ****** */

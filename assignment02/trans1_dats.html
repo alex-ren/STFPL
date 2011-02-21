@@ -1,0 +1,522 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(*
+** CAS CS525, Spring 2011
+** Instructor: Hongwei Xi
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">"trans1.sats"</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="110"><span class="stacstdec">loc <span class="keyword">=</span> $Posloc<span class="keyword">.</span>location_t</span></a></span>
+<span class="keyword">macdef</span> <span class="neuexp">prerr_loc <span class="keyword">=</span> $Posloc<span class="keyword">.</span>prerr_location</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">"error.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"symbol.sats"</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="250"><span class="stacstdec">sym <span class="keyword">=</span> symbol_t</span></a></span>
+
+
+<span class="keyword">staload</span> <span class="staexp">"absyn.sats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "symbol.dats"</span>
+
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/list.dats"</span> 
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/list0.dats"</span> 
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/list_vt.dats"</span> 
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "libats/DATS/funmap_avltree.dats"</span> 
+
+<span class="keyword">#define</span> <span class="neuexp">:: list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">cons list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">nil list0_nil</span>
+
+<span class="keyword">#define</span> <span class="neuexp">Some0 option0_some</span>
+<span class="keyword">#define</span> <span class="neuexp">None0 option0_none</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">val</span> t1yp_bool <span class="keyword">=</span> T1YPbase symbol_BOOL
+<span class="keyword">val</span> t1yp_int <span class="keyword">=</span> T1YPbase symbol_INT
+<span class="keyword">val</span> t1yp_string <span class="keyword">=</span> T1YPbase symbol_STRING
+<span class="keyword">val</span> t1yp_unit <span class="keyword">=</span> T1YPtup <span class="keyword">(</span>list0_nil<span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span>
+fprint_t1yp <span class="keyword">(</span>out<span class="keyword">,</span> t<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">macdef</span> <span class="neuexp">prstr <span class="keyword">(</span>s<span class="keyword">)</span> <span class="keyword">=</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> <span class="keyword">,(</span>s<span class="keyword">)</span><span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> t <span class="keyword">of</span>
+  <span class="keyword">|</span> T1YPbase sym <span class="keyword">=&gt;</span> fprint_symbol <span class="keyword">(</span>out<span class="keyword">,</span> sym<span class="keyword">)</span>
+  <span class="keyword">|</span> T1YPfun <span class="keyword">(</span>t1<span class="keyword">,</span> t2<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> isatm <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">case+</span> t1 <span class="keyword">of</span>
+        <span class="keyword">|</span> T1YPbase _ <span class="keyword">=&gt;</span> true <span class="keyword">|</span> T1YPtup _ <span class="keyword">=&gt;</span> true <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> false
+      <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">bool</span>
+    <span class="keyword">in</span>  
+      <span class="keyword">if</span> <span class="keyword">~</span>isatm <span class="keyword">then</span> prstr "("<span class="keyword">;</span>
+      fprint_t1yp <span class="keyword">(</span>out<span class="keyword">,</span> t1<span class="keyword">)</span><span class="keyword">;</span>
+      <span class="keyword">if</span> <span class="keyword">~</span>isatm <span class="keyword">then</span> prstr ")"<span class="keyword">;</span>
+      prstr " -&gt; "<span class="keyword">;</span>
+      fprint_t1yp <span class="keyword">(</span>out<span class="keyword">,</span> t2<span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="comment">// end of [T1YPfun]
+</span>  <span class="keyword">|</span> T1YPtup ts <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      prstr "("<span class="keyword">;</span> fprint_t1yplst <span class="keyword">(</span>out<span class="keyword">,</span> ts<span class="keyword">)</span><span class="keyword">;</span> prstr ")"
+    <span class="keyword">end</span> <span class="comment">// end of [T1YPtup] 
+</span><span class="keyword">end</span> <span class="comment">// end of [fprint_t1yp]
+</span>
+<span class="keyword">implement</span>
+fprint_t1yplst
+  <span class="keyword">(</span>out<span class="keyword">,</span> ts<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>ts<span class="keyword">,</span> 0<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>ts<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> ts <span class="keyword">of</span>
+    <span class="keyword">|</span> list0_cons <span class="keyword">(</span>t<span class="keyword">,</span> ts<span class="keyword">)</span> <span class="keyword">=&gt;</span> loop <span class="keyword">(</span>ts<span class="keyword">,</span> i+1<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> ", "<span class="keyword">)</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_t1yp <span class="keyword">(</span>out<span class="keyword">,</span> t<span class="keyword">)</span>
+      <span class="keyword">}</span> <span class="comment">// end of [list0_cons]
+</span>    <span class="keyword">|</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="comment">// end of [list0_nil]
+</span>  <span class="comment">// end of [loop]
+</span><span class="keyword">}</span> <span class="comment">// end of [fprint_t1yplst]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span>
+trans1_typ <span class="keyword">(</span>t<span class="keyword">)</span> <span class="keyword">=</span> aux <span class="keyword">(</span>t<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> aux <span class="keyword">(</span>t<span class="keyword">:</span> <span class="staexp">t0yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">t1yp</span> <span class="keyword">=</span> <span class="keyword">case+</span> t<span class="keyword">.</span>t0yp_node <span class="keyword">of</span>
+    <span class="keyword">|</span> T0YPbase sym <span class="keyword">=&gt;</span> <span class="keyword">begin</span> <span class="keyword">case+</span> 0 <span class="keyword">of</span>
+        <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_UNIT <span class="keyword">=&gt;</span> t1yp_unit <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> T1YPbase sym
+      <span class="keyword">end</span> <span class="comment">// end of [T0YPbase]  
+</span>    <span class="keyword">|</span> T0YPfun <span class="keyword">(</span>t1<span class="keyword">,</span> t2<span class="keyword">)</span> <span class="keyword">=&gt;</span> T1YPfun <span class="keyword">(</span>aux t1<span class="keyword">,</span> aux t2<span class="keyword">)</span>
+    <span class="keyword">|</span> T0YPtup <span class="keyword">(</span>ts<span class="keyword">)</span> <span class="keyword">=&gt;</span> T1YPtup <span class="keyword">(</span>list0_map_fun <span class="keyword">(</span>ts<span class="keyword">,</span> aux<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="comment">// end of [aux]
+</span><span class="keyword">}</span> <span class="comment">// end of [trans1_typ]   
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abstype</span> <span class="staexp"><a name="2309"><span class="stacstdec">theConstTypMap_t</span></a></span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="2337"><span class="dyncstdec">theConstTypFind <span class="keyword">(</span>opr<span class="keyword">:</span> <span class="staexp">opr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">t1yp</span></span></a>
+
+<span class="keyword">local</span>
+
+<span class="keyword">assume</span> <span class="staexp">theConstTypMap_t <span class="keyword">=</span> symenv_t <span class="keyword">(</span>t1yp<span class="keyword">)</span></span>
+
+<span class="keyword">#define</span> <span class="neuexp">:: list0_cons</span><span class="keyword">;</span> <span class="keyword">#define</span> <span class="neuexp">nil list0_nil</span>
+<span class="keyword">macdef</span> <span class="neuexp">list0_sing <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=</span> list0_cons <span class="keyword">(</span><span class="keyword">,(</span>x<span class="keyword">)</span><span class="keyword">,</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span></span>
+
+<span class="keyword">val</span> theConstTypMap <span class="keyword">=</span>
+  res <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">val</span> t1yp_int1 <span class="keyword">=</span> T1YPtup <span class="keyword">(</span>t1yp_int :: nil<span class="keyword">)</span>
+  <span class="keyword">val</span> t1yp_int2 <span class="keyword">=</span> T1YPtup <span class="keyword">(</span>t1yp_int :: t1yp_int :: nil<span class="keyword">)</span>
+  <span class="keyword">val</span> t1yp_str1 <span class="keyword">=</span> T1YPtup <span class="keyword">(</span>t1yp_string :: nil<span class="keyword">)</span>
+  <span class="keyword">val</span> t1yp_aop <span class="keyword">=</span> T1YPfun <span class="keyword">(</span>t1yp_int2<span class="keyword">,</span> t1yp_int<span class="keyword">)</span>
+  <span class="keyword">val</span> t1yp_bop <span class="keyword">=</span> T1YPfun <span class="keyword">(</span>t1yp_int2<span class="keyword">,</span> t1yp_bool<span class="keyword">)</span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="2810"><span class="stacstdec">T <span class="keyword">=</span> <span class="keyword">@(</span>sym<span class="keyword">,</span> t1yp<span class="keyword">)</span></span></a></span>
+  <span class="keyword">val</span> cts <span class="keyword">=</span> <span class="keyword">(</span>
+    <span class="keyword">(</span>symbol_PLUS<span class="keyword">,</span> t1yp_aop<span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_MINUS<span class="keyword">,</span> t1yp_aop<span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_TIMES<span class="keyword">,</span> t1yp_aop<span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_SLASH<span class="keyword">,</span> t1yp_aop<span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_UMINUS<span class="keyword">,</span> T1YPfun <span class="keyword">(</span>t1yp_int1<span class="keyword">,</span> t1yp_int<span class="keyword">)</span><span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_GT<span class="keyword">,</span> t1yp_bop<span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_GTE<span class="keyword">,</span> t1yp_bop<span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_LT<span class="keyword">,</span> t1yp_bop<span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_LTE<span class="keyword">,</span> t1yp_bop<span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_EQ<span class="keyword">,</span> t1yp_bop<span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_NEQ<span class="keyword">,</span> t1yp_bop<span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_PRINT_INT<span class="keyword">,</span> T1YPfun <span class="keyword">(</span>t1yp_int1<span class="keyword">,</span> t1yp_unit<span class="keyword">)</span><span class="keyword">)</span> ::
+    <span class="keyword">(</span>symbol_PRINT<span class="keyword">,</span> T1YPfun <span class="keyword">(</span>t1yp_str1<span class="keyword">,</span> t1yp_unit<span class="keyword">)</span><span class="keyword">)</span> ::
+    nil <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">list0 <span class="keyword">(</span>T<span class="keyword">)</span></span> <span class="comment">// end of [val]
+</span>  <span class="keyword">val</span> res<span class="keyword">:</span> <span class="staexp">theConstTypMap_t</span> <span class="keyword">=</span> symenv_make <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>
+    cts<span class="keyword">:</span> <span class="staexp">list0 <span class="keyword">(</span>T<span class="keyword">)</span></span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp">theConstTypMap_t</span>
+  <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">theConstTypMap_t</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> cts <span class="keyword">of</span>
+    <span class="keyword">|</span> ct :: cts <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> ret<span class="comment">(*_already*)</span> <span class="keyword">=</span> symenv_insert <span class="keyword">(</span>res<span class="keyword">,</span> ct<span class="keyword">.</span>0<span class="keyword">,</span> ct<span class="keyword">.</span>1<span class="keyword">)</span> <span class="keyword">in</span> loop <span class="keyword">(</span>cts<span class="keyword">,</span> res<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [::]
+</span>    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> res
+  <span class="comment">// end of [loop]  
+</span>  <span class="keyword">val</span> res <span class="keyword">=</span> loop <span class="keyword">(</span>cts<span class="keyword">,</span> res<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [val]
+</span>
+<span class="keyword">in</span> <span class="comment">// in of [local]
+</span>
+<span class="keyword">implement</span>
+theConstTypFind <span class="keyword">(</span>opr<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val+</span> OPR sym <span class="keyword">=</span> opr
+  <span class="keyword">val</span> ans <span class="keyword">=</span> symenv_lookup&lt;<span class="staexp">t1yp</span><span class="keyword">&gt;</span> <span class="keyword">(</span>theConstTypMap<span class="keyword">,</span> sym<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> ans <span class="keyword">of</span>
+  <span class="keyword">|</span> option0_some tp <span class="keyword">=&gt;</span> tp
+  <span class="keyword">|</span> option0_none <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">begin</span>
+        prerr "exit(STFPL)"<span class="keyword">;</span>
+        prerr ": unrecognized constant ["<span class="keyword">;</span> prerr sym<span class="keyword">;</span> prerr "]"<span class="keyword">;</span>
+        prerr_newline <span class="keyword">(</span><span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">(* end of [val] *)</span>
+    <span class="keyword">in</span>
+      abort <span class="staexp"><span class="keyword">{</span>t1yp<span class="keyword">}</span></span> <span class="keyword">(</span>1<span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="comment">// end of [option_none]    
+</span><span class="keyword">end</span> <span class="comment">// end of [theConstMapFind]
+</span>
+<span class="keyword">end</span> <span class="comment">// end of [local]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> lte_t1yp_t1yp
+  <span class="keyword">(</span>t1<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">,</span> t2<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span> <span class="keyword">=</span> <span class="keyword">case+</span> <span class="keyword">(</span>t1<span class="keyword">,</span> t2<span class="keyword">)</span> <span class="keyword">of</span>
+    <span class="keyword">|</span> <span class="keyword">(</span>T1YPbase sym1<span class="keyword">,</span> T1YPbase sym2<span class="keyword">)</span> <span class="keyword">=&gt;</span> sym1 <span class="keyword">=</span> sym2
+    <span class="keyword">|</span> <span class="keyword">(</span>T1YPfun <span class="keyword">(</span>t11<span class="keyword">,</span> t12<span class="keyword">)</span><span class="keyword">,</span> T1YPfun <span class="keyword">(</span>t21<span class="keyword">,</span> t22<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span>
+        lte_t1yp_t1yp <span class="keyword">(</span>t21<span class="keyword">,</span> t11<span class="keyword">)</span> andalso lte_t1yp_t1yp <span class="keyword">(</span>t12<span class="keyword">,</span> t22<span class="keyword">)</span>
+      <span class="comment">// end of [T1YPfun, T1YPfun]
+</span>    <span class="keyword">|</span> <span class="keyword">(</span>T1YPtup ts1<span class="keyword">,</span> T1YPtup ts2<span class="keyword">)</span> <span class="keyword">=&gt;</span> lte_t1yplst_t1yplst <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">)</span>
+    <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> false
+<span class="comment">// end of [lte_t1yp_t1yp]
+</span>
+<span class="keyword">and</span> lte_t1yplst_t1yplst <span class="keyword">(</span>ts1<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">,</span> ts2<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">)</span> <span class="keyword">of</span>
+  <span class="keyword">|</span> <span class="keyword">(</span>list0_cons <span class="keyword">(</span>t1<span class="keyword">,</span> ts1<span class="keyword">)</span><span class="keyword">,</span> list0_cons <span class="keyword">(</span>t2<span class="keyword">,</span> ts2<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span>
+      lte_t1yp_t1yp <span class="keyword">(</span>t1<span class="keyword">,</span> t2<span class="keyword">)</span> andalso lte_t1yplst_t1yplst <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">)</span>
+    <span class="comment">// end of [list0_cons, list0_cons]
+</span>  <span class="keyword">|</span> <span class="keyword">(</span>list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">,</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> true
+  <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> false
+<span class="comment">// end of [lte_t1yplst_t1yplst]
+</span>
+<span class="keyword">implement</span> print_t1yp <span class="keyword">(</span>t<span class="keyword">)</span> <span class="keyword">=</span> fprint_t1yp <span class="keyword">(</span>stdout_ref<span class="keyword">,</span> t<span class="keyword">)</span>
+<span class="keyword">implement</span> prerr_t1yp <span class="keyword">(</span>t<span class="keyword">)</span> <span class="keyword">=</span> fprint_t1yp <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> t<span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="keyword">implement</span> fprint_e1xp <span class="keyword">(</span>out<span class="keyword">,</span> e<span class="keyword">)</span> <span class="keyword">=</span> fprint <span class="keyword">(</span>out<span class="keyword">,</span> "dummy print e1xp\n"<span class="keyword">)</span>  <span class="comment">// todo
+</span>
+<span class="keyword">implement</span>
+v1ar_make <span class="keyword">(</span>loc<span class="keyword">,</span> sym<span class="keyword">,</span> t<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  v1ar_loc<span class="keyword">=</span> loc<span class="keyword">,</span> v1ar_nam<span class="keyword">=</span> sym<span class="keyword">,</span> v1ar_typ<span class="keyword">=</span> t<span class="keyword">,</span> v1ar_def<span class="keyword">=</span> option0_none <span class="keyword">(</span><span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [v1ar_make]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_ann <span class="keyword">(</span>loc<span class="keyword">,</span> e<span class="keyword">,</span> t<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPann <span class="keyword">(</span>e<span class="keyword">,</span> t<span class="keyword">)</span><span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_ann]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_app <span class="keyword">(</span>loc<span class="keyword">,</span> e1<span class="keyword">,</span> e2<span class="keyword">,</span> t<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPapp <span class="keyword">(</span>e1<span class="keyword">,</span> e2<span class="keyword">)</span><span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_app]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_bool <span class="keyword">(</span>loc<span class="keyword">,</span> b<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPbool b<span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t1yp_bool
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_bool]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_fix <span class="keyword">(</span>loc<span class="keyword">,</span> f<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">,</span> t_fun<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPfix <span class="keyword">(</span>f<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">)</span><span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t_fun
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_fix]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_if <span class="keyword">(</span>loc<span class="keyword">,</span> e1<span class="keyword">,</span> e2<span class="keyword">,</span> oe3<span class="keyword">,</span> t<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPif <span class="keyword">(</span>e1<span class="keyword">,</span> e2<span class="keyword">,</span> oe3<span class="keyword">)</span><span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_if]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_int <span class="keyword">(</span>loc<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPint i<span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t1yp_int
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_int]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_lam <span class="keyword">(</span>loc<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">,</span> t_fun<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPlam <span class="keyword">(</span>xs<span class="keyword">,</span> body<span class="keyword">)</span><span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t_fun
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_lam]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_let <span class="keyword">(</span>loc<span class="keyword">,</span> decs<span class="keyword">,</span> body<span class="keyword">,</span> t_let<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node<span class="keyword">=</span> E1XPlet <span class="keyword">(</span>decs<span class="keyword">,</span> body<span class="keyword">)</span><span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t_let
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_let]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_opr <span class="keyword">(</span>loc<span class="keyword">,</span> opr<span class="keyword">,</span> es<span class="keyword">,</span> t_res<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node<span class="keyword">=</span> E1XPopr <span class="keyword">(</span>opr<span class="keyword">,</span> es<span class="keyword">)</span><span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t_res
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_opr]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_proj <span class="keyword">(</span>loc<span class="keyword">,</span> e<span class="keyword">,</span> i<span class="keyword">,</span> t_proj<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node<span class="keyword">=</span> E1XPproj <span class="keyword">(</span>e<span class="keyword">,</span> i<span class="keyword">)</span><span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t_proj
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_proj]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_str <span class="keyword">(</span>loc<span class="keyword">,</span> s<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPstr s<span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t1yp_string
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_str]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_tup <span class="keyword">(</span>loc<span class="keyword">,</span> es<span class="keyword">,</span> t_tup<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPtup es<span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t_tup
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_tup]
+</span>
+<span class="keyword">implement</span>
+e1xp_make_var <span class="keyword">(</span>loc<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPvar x<span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> x<span class="keyword">.</span>v1ar_typ
+<span class="keyword">}</span> <span class="comment">// end of [e1xp_make_var]
+</span>
+<span class="keyword">implement</span>
+v1aldec_make <span class="keyword">(</span>loc<span class="keyword">,</span> x<span class="keyword">,</span> def<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  v1aldec_loc<span class="keyword">=</span> loc<span class="keyword">,</span> v1aldec_var<span class="keyword">=</span> x<span class="keyword">,</span> v1aldec_def<span class="keyword">=</span> def
+<span class="keyword">}</span> <span class="comment">// end of [v1aldec_make]
+</span>
+<span class="keyword">implement</span>
+d1ec_make_val <span class="keyword">(</span>loc<span class="keyword">,</span> isrec<span class="keyword">,</span> vds<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  d1ec_loc<span class="keyword">=</span> loc<span class="keyword">,</span> d1ec_node<span class="keyword">=</span> D1ECval <span class="keyword">(</span>isrec<span class="keyword">,</span> vds<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [d1ec_make_val]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">extern</span> <span class="keyword">typedef</span> <span class="staexp">"v1ar_t" <span class="keyword">=</span> v1ar</span>
+
+<span class="extern">%{$
+
+ats_bool_type
+eq_v1ar_v1ar (v1ar_t x1, v1ar_t x2) {
+  return (x1 == x2 ? ats_true_bool : ats_false_bool) ;
+} /* end of [eq_v1ar_v1ar] */
+
+ats_void_type
+v1ar_set_def (
+  ats_ptr_type x
+, ats_ptr_type oe
+) {
+  ((v1ar_t)x)-&gt;atslab_v1ar_def = oe ;  return ;
+} /* end of [v1ar_set_def] */
+
+%}</span> <span class="comment">// end of [%{$]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">typedef</span> <span class="staexp"><a name="7715"><span class="stacstdec">ctx <span class="keyword">=</span> symenv_t <span class="keyword">(</span>v1ar<span class="keyword">)</span></span></a></span>
+<span class="keyword">val</span> ctx_nil <span class="keyword">=</span> symenv_make <span class="keyword">(</span><span class="keyword">)</span> <span class="comment">// empty context
+</span>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="keyword">abstype</span> <span class="staexp"><a name="7813"><span class="stacstdec">tyerr</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="7827"><span class="stacstdec">tyerr_pool <span class="keyword">=</span> list0 tyerr</span></a></span>
+<span class="comment">(* record all the error for future output *)</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7908"><span class="dyncstdec">tyerr_pool_add <span class="keyword">(</span>pool<span class="keyword">:</span> <span class="staexp">tyerr_pool</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> msg<span class="keyword">:</span> <span class="staexp">String</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tyerr_pool</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7988"><span class="dyncstdec">tyerr_pool_append <span class="keyword">(</span>p1<span class="keyword">:</span> <span class="staexp">tyerr_pool</span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">tyerr_pool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tyerr_pool</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="8062"><span class="dyncstdec">tyerr_pool_make <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tyerr_pool</span></span></a>
+
+<span class="keyword">local</span>
+<span class="keyword">assume</span> <span class="staexp">tyerr <span class="keyword">=</span> <span class="keyword">'{</span>loc <span class="keyword">=</span> loc<span class="keyword">,</span> msg <span class="keyword">=</span> String<span class="keyword">}</span></span>
+<span class="keyword">in</span>
+<span class="keyword">implement</span> tyerr_pool_add <span class="keyword">(</span>pool<span class="keyword">,</span> loc<span class="keyword">,</span> msg<span class="keyword">)</span> <span class="keyword">=</span> 
+  <span class="keyword">'{</span>loc <span class="keyword">=</span> loc<span class="keyword">,</span> msg <span class="keyword">=</span> msg<span class="keyword">}</span> :: pool
+
+<span class="keyword">implement</span> tyerr_pool_append <span class="keyword">(</span>p1<span class="keyword">,</span> p2<span class="keyword">)</span> <span class="keyword">=</span> list0_append <span class="keyword">(</span>p1<span class="keyword">,</span> p2<span class="keyword">)</span>
+
+<span class="keyword">implement</span> tyerr_pool_make <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> nil
+<span class="keyword">end</span>  <span class="comment">// end of [local]
+</span>
+<span class="keyword">val</span> tyerr_pool_nil <span class="keyword">=</span> tyerr_pool_make <span class="keyword">(</span><span class="keyword">)</span>  <span class="comment">// empty error pool
+</span>
+<span class="comment">// exception TypeError of (loc, String)
+</span>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="8461"><span class="dyncstdec">oftype <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="8523"><span class="dyncstdec">typcheck <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> t1<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span> oftype_ann <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> t0<span class="keyword">:</span> <span class="staexp">t0yp</span><span class="keyword">)</span><span class="keyword">:</span> 
+  <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> t1 <span class="keyword">=</span> trans1_typ <span class="keyword">(</span>t0<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>e1<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> typcheck <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0<span class="keyword">,</span> t1<span class="keyword">)</span>
+  <span class="keyword">val</span> e1a <span class="keyword">=</span> e1xp_make_ann <span class="keyword">(</span>loc<span class="keyword">,</span> e1<span class="keyword">,</span> t1<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">(</span>e1a<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">fun</span> oftype_if <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> 
+  e0_if<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> e0_then<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> e0opt_else<span class="keyword">:</span> <span class="staexp">e0xpopt</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>e1_if<span class="keyword">,</span> tyerrs1<span class="keyword">)</span> <span class="keyword">=</span> typcheck <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0_if<span class="keyword">,</span> t1yp_bool<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> e0opt_else <span class="keyword">of</span>
+  <span class="keyword">|</span> Some0 e0_else <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1_then<span class="keyword">,</span> tyerrs2<span class="keyword">)</span> <span class="keyword">=</span> oftype <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0_then<span class="keyword">)</span>
+    <span class="keyword">val</span> tyerrs <span class="keyword">=</span> tyerr_pool_append <span class="keyword">(</span>tyerrs1<span class="keyword">,</span> tyerrs2<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1_else<span class="keyword">,</span> tyerrs3<span class="keyword">)</span> <span class="keyword">=</span> typcheck <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0_else<span class="keyword">,</span> e1_then<span class="keyword">.</span>e1xp_typ<span class="keyword">)</span>
+    <span class="keyword">val</span> tyerrs <span class="keyword">=</span> tyerr_pool_append <span class="keyword">(</span>tyerrs<span class="keyword">,</span> tyerrs3<span class="keyword">)</span>
+    <span class="comment">(* assume the type of if statement = the then branch *)</span>
+    <span class="keyword">val</span> e1 <span class="keyword">=</span> e1xp_make_if <span class="keyword">(</span>loc<span class="keyword">,</span> e1_if<span class="keyword">,</span> e1_then<span class="keyword">,</span> Some0 e1_else<span class="keyword">,</span> e1_then<span class="keyword">.</span>e1xp_typ<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1_then<span class="keyword">,</span> tyerrs2<span class="keyword">)</span> <span class="keyword">=</span> typcheck <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0_then<span class="keyword">,</span> t1yp_unit<span class="keyword">)</span>
+    <span class="keyword">val</span> tyerrs <span class="keyword">=</span> tyerr_pool_append <span class="keyword">(</span>tyerrs1<span class="keyword">,</span> tyerrs2<span class="keyword">)</span>
+    <span class="comment">(* assume the type of if statement t1yp_unit *)</span>
+    <span class="keyword">val</span> e1 <span class="keyword">=</span> e1xp_make_if <span class="keyword">(</span>loc<span class="keyword">,</span> e1_if<span class="keyword">,</span> e1_then<span class="keyword">,</span> None0<span class="keyword">,</span> t1yp_unit<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+    
+<span class="comment">(* fill the environment and do the transformation *)</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9796"><span class="dyncstdec">oftype_declst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> decs<span class="keyword">:</span> <span class="staexp">d0eclst</span><span class="keyword">)</span><span class="keyword">:</span> 
+  <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1eclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9881"><span class="dyncstdec">oftype_dec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> dec<span class="keyword">:</span> <span class="staexp">d0ec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1ec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9953"><span class="dyncstdec">oftype_valdeclst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span>
+  <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1aldeclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="10050"><span class="dyncstdec">oftype_valdec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span>
+  <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1aldec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">implement</span> oftype_declst <span class="keyword">(</span>Gamma<span class="keyword">,</span> decs<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> helper <span class="keyword">(</span>init<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1eclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span><span class="keyword">,</span> dec<span class="keyword">:</span> <span class="staexp">d0ec</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span>
+    <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1eclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>gamma<span class="keyword">,</span> d1ec<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype_dec <span class="keyword">(</span>init<span class="keyword">.</span>0<span class="keyword">,</span> dec<span class="keyword">)</span>
+    <span class="keyword">val</span> d1ecs <span class="keyword">=</span> d1ec :: init<span class="keyword">.</span>1
+    <span class="keyword">val</span> tyerrs <span class="keyword">=</span> tyerr_pool_append <span class="keyword">(</span>init<span class="keyword">.</span>2<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>gamma<span class="keyword">,</span> d1ecs<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">end</span>
+<span class="keyword">in</span>
+  list0_fold_left <span class="keyword">(</span>helper<span class="keyword">,</span> <span class="keyword">(</span>Gamma<span class="keyword">,</span> nil<span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span><span class="keyword">,</span> decs<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="comment">(* extern fun oftype_dec (Gamma: ctx, dec: d0ec): (ctx, d1ec, tyerr_pool) *)</span>
+<span class="keyword">implement</span> oftype_dec <span class="keyword">(</span>Gamma<span class="keyword">,</span> dec<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> d0ec_loc <span class="keyword">=</span> dec<span class="keyword">.</span>d0ec_loc
+  <span class="keyword">val</span> d0ec_node <span class="keyword">=</span> dec<span class="keyword">.</span>d0ec_node
+  <span class="keyword">val+</span> D0ECval <span class="keyword">(</span>isrec<span class="keyword">,</span> v0aldecs<span class="keyword">)</span> <span class="keyword">=</span> d0ec_node
+<span class="keyword">in</span>
+  <span class="keyword">if</span> isrec <span class="keyword">=</span> true <span class="keyword">then</span> 
+    ETRACE_MSG_OPR <span class="keyword">(</span>"oftype_dec = error\n"<span class="keyword">,</span> ETRACE_LEVEL_ERROR<span class="keyword">,</span> 
+    abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>  <span class="comment">// todo
+</span>  <span class="keyword">else</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>Gamma1<span class="keyword">,</span> v1aldecs<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype_valdeclst <span class="keyword">(</span>Gamma<span class="keyword">,</span> v0aldecs<span class="keyword">)</span>
+    <span class="keyword">val</span> d1ec <span class="keyword">=</span> <span class="keyword">'{</span>d1ec_loc <span class="keyword">=</span> d0ec_loc<span class="keyword">,</span> d1ec_node <span class="keyword">=</span> D1ECval <span class="keyword">(</span>isrec<span class="keyword">,</span> v1aldecs<span class="keyword">)</span><span class="keyword">}</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>Gamma1<span class="keyword">,</span> d1ec<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> oftype_valdeclst <span class="keyword">(</span>Gamma<span class="keyword">,</span> v0aldecs<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> helper <span class="keyword">(</span>init<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1aldeclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span><span class="keyword">,</span> v0aldec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span>
+    <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1aldeclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>gamma<span class="keyword">,</span> v1aldec<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype_valdec <span class="keyword">(</span>init<span class="keyword">.</span>0<span class="keyword">,</span> v0aldec<span class="keyword">)</span>
+    <span class="keyword">val</span> v1aldecs <span class="keyword">=</span> v1aldec :: init<span class="keyword">.</span>1
+    <span class="keyword">val</span> tyerrs <span class="keyword">=</span> tyerr_pool_append <span class="keyword">(</span>init<span class="keyword">.</span>2<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>gamma<span class="keyword">,</span> v1aldecs<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">end</span>
+<span class="keyword">in</span>
+  list0_fold_left <span class="keyword">(</span>helper<span class="keyword">,</span> <span class="keyword">(</span>Gamma<span class="keyword">,</span> nil<span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span><span class="keyword">,</span> v0aldecs<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+  
+<span class="keyword">implement</span> oftype_valdec <span class="keyword">(</span>Gamma<span class="keyword">,</span> v0aldec<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> loc <span class="keyword">=</span> v0aldec<span class="keyword">.</span>v0aldec_loc
+  <span class="keyword">val</span> nam <span class="keyword">=</span> v0aldec<span class="keyword">.</span>v0aldec_nam
+  <span class="keyword">val</span> t0ypopt <span class="keyword">=</span> v0aldec<span class="keyword">.</span>v0aldec_ann
+  <span class="keyword">val</span> def <span class="keyword">=</span> v0aldec<span class="keyword">.</span>v0aldec_def
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> t0ypopt <span class="keyword">of</span>
+  <span class="keyword">|</span> Some0 t0yp <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> t1yp <span class="keyword">=</span> trans1_typ <span class="keyword">(</span>t0yp<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> typcheck <span class="keyword">(</span>Gamma<span class="keyword">,</span> def<span class="keyword">,</span> t1yp<span class="keyword">)</span>
+    <span class="comment">(* maybe not match, use the annotated one *)</span>
+    <span class="keyword">val</span> v1ar <span class="keyword">=</span> v1ar_make <span class="keyword">(</span>loc<span class="keyword">,</span> nam<span class="keyword">,</span> t1yp<span class="keyword">)</span>
+    <span class="keyword">val</span> v1aldec <span class="keyword">=</span> <span class="keyword">'{</span>v1aldec_loc <span class="keyword">=</span> loc<span class="keyword">,</span> v1aldec_var <span class="keyword">=</span> v1ar<span class="keyword">,</span> v1aldec_def <span class="keyword">=</span> e1xp<span class="keyword">}</span>
+    <span class="keyword">val</span> Gamma1 <span class="keyword">=</span> symenv_insert <span class="keyword">(</span>Gamma<span class="keyword">,</span> nam<span class="keyword">,</span> v1ar<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>Gamma1<span class="keyword">,</span> v1aldec<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype <span class="keyword">(</span>Gamma<span class="keyword">,</span> def<span class="keyword">)</span>
+    <span class="keyword">val</span> v1ar <span class="keyword">=</span> v1ar_make <span class="keyword">(</span>loc<span class="keyword">,</span> nam<span class="keyword">,</span> e1xp<span class="keyword">.</span>e1xp_typ<span class="keyword">)</span>
+    <span class="keyword">val</span> v1aldec <span class="keyword">=</span> <span class="keyword">'{</span>v1aldec_loc <span class="keyword">=</span> loc<span class="keyword">,</span> v1aldec_var <span class="keyword">=</span> v1ar<span class="keyword">,</span> v1aldec_def <span class="keyword">=</span> e1xp<span class="keyword">}</span>
+    <span class="keyword">val</span> Gamma1 <span class="keyword">=</span> symenv_insert <span class="keyword">(</span>Gamma<span class="keyword">,</span> nam<span class="keyword">,</span> v1ar<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>Gamma1<span class="keyword">,</span> v1aldec<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>  <span class="comment">// end of [oftype_valdec]
+</span>  
+
+<span class="keyword">fun</span> oftype_let <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> decs<span class="keyword">:</span> <span class="staexp">d0eclst</span><span class="keyword">,</span> e0_body<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">)</span><span class="keyword">:</span>
+  <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>Gamma1<span class="keyword">,</span> d1ecs<span class="keyword">,</span> tyerrs1<span class="keyword">)</span> <span class="keyword">=</span> oftype_declst <span class="keyword">(</span>Gamma<span class="keyword">,</span> decs<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>e1<span class="keyword">,</span> tyerrs2<span class="keyword">)</span> <span class="keyword">=</span> oftype <span class="keyword">(</span>Gamma1<span class="keyword">,</span> e0_body<span class="keyword">)</span>
+  <span class="keyword">val</span> tyerrs <span class="keyword">=</span> tyerr_pool_append <span class="keyword">(</span>tyerrs1<span class="keyword">,</span> tyerrs2<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">(</span>e1xp_make_let <span class="keyword">(</span>loc<span class="keyword">,</span> d1ecs<span class="keyword">,</span> e1<span class="keyword">,</span> e1<span class="keyword">.</span>e1xp_typ<span class="keyword">)</span><span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> oftype <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> e0_node <span class="keyword">=</span> e0<span class="keyword">.</span>e0xp_node
+  <span class="keyword">val</span> e0_loc <span class="keyword">=</span> e0<span class="keyword">.</span>e0xp_loc
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> e0_node <span class="keyword">of</span>
+  <span class="keyword">|</span> E0XPann <span class="keyword">(</span>e0a<span class="keyword">,</span> t0a<span class="keyword">)</span> <span class="keyword">=&gt;</span> oftype_ann <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0_loc<span class="keyword">,</span> e0a<span class="keyword">,</span> t0a<span class="keyword">)</span>
+  <span class="comment">// | E1XPapp (e0fun, e0args) =&gt; 
+</span>  <span class="keyword">|</span> E0XPbool <span class="keyword">(</span>b<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>e1xp_make_bool <span class="keyword">(</span>e0_loc<span class="keyword">,</span> b<span class="keyword">)</span><span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span>
+  <span class="keyword">|</span> E0XPint <span class="keyword">(</span>i<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>e1xp_make_int <span class="keyword">(</span>e0_loc<span class="keyword">,</span> i<span class="keyword">)</span><span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span>
+  <span class="keyword">|</span> E0XPif <span class="keyword">(</span>e0_if<span class="keyword">,</span> e0_then<span class="keyword">,</span> e0opt_else<span class="keyword">)</span> <span class="keyword">=&gt;</span> 
+    oftype_if <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0_loc<span class="keyword">,</span> e0_if<span class="keyword">,</span> e0_then<span class="keyword">,</span> e0opt_else<span class="keyword">)</span>
+  <span class="keyword">|</span> E0XPlet <span class="keyword">(</span>d0eclst_local<span class="keyword">,</span> e0_body<span class="keyword">)</span> <span class="keyword">=&gt;</span> 
+    oftype_let <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0_loc<span class="keyword">,</span> d0eclst_local<span class="keyword">,</span> e0_body<span class="keyword">)</span>
+  <span class="keyword">|</span> _<span class="comment">(*todo*)</span> <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"oftype ~ error\n"<span class="keyword">,</span> ETRACE_LEVEL_ERROR<span class="keyword">,</span> 
+             abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> typcheck <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0<span class="keyword">,</span> t1<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>e1<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0<span class="keyword">)</span>
+  <span class="keyword">val</span> ty_cmp <span class="keyword">=</span> lte_t1yp_t1yp <span class="keyword">(</span>e1<span class="keyword">.</span>e1xp_typ<span class="keyword">,</span> t1<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">if</span> ty_cmp <span class="keyword">=</span> true <span class="keyword">then</span> <span class="keyword">(</span>e1<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">else</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr_loc <span class="keyword">(</span>e1<span class="keyword">.</span>e1xp_loc<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr ": error(type) ..."
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr_newline <span class="keyword">(</span><span class="keyword">)</span>
+    <span class="keyword">val</span> errmsg <span class="keyword">=</span> "todo .........."
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1<span class="keyword">,</span> tyerr_pool_add <span class="keyword">(</span>tyerr_pool_nil<span class="keyword">,</span> e1<span class="keyword">.</span>e1xp_loc<span class="keyword">,</span> errmsg<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> trans1_exp <span class="keyword">(</span>e0xp<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> e0xp<span class="keyword">)</span>
+<span class="keyword">in</span>
+  e1xp
+<span class="keyword">end</span>
+
+
+</pre>
+</body>
+</html>

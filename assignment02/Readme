@@ -6,4 +6,5 @@ Updates:
   Fixed one bug about symenv_merge.
   Added trace info.
 
+lam must be type annotated
 

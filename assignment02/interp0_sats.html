@@ -30,40 +30,36 @@
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">staload</span> <span class="staexp">ABS <span class="keyword">=</span> "absyn.sats"</span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="115"><span class="stacstdec">e0xp <span class="keyword">=</span> $ABS<span class="keyword">.</span>e0xp</span></a></span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="140"><span class="stacstdec">e0xplst <span class="keyword">=</span> $ABS<span class="keyword">.</span>e0xplst</span></a></span>
-
-<span class="keyword">staload</span> <span class="staexp">SYM <span class="keyword">=</span> "symbol.sats"</span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="200"><span class="stacstdec">sym <span class="keyword">=</span> $SYM<span class="keyword">.</span>symbol_t</span></a></span>
+<span class="keyword">staload</span> <span class="staexp">Absyn <span class="keyword">=</span> "absyn.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">Symbol <span class="keyword">=</span> "symbol.sats"</span>
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">datatype</span> <span class="staexp"><a name="251"><span class="stacstdec">v0al</span></a></span> <span class="keyword">=</span>
+<span class="keyword">datatype</span> <span class="staexp"><a name="171"><span class="stacstdec">v0al</span></a></span> <span class="keyword">=</span>
   <span class="keyword">|</span> V0ALbool <span class="keyword">of</span> <span class="staexp">bool</span>
   <span class="keyword">|</span> V0ALint <span class="keyword">of</span> <span class="staexp">int</span>
   <span class="keyword">|</span> V0ALstr <span class="keyword">of</span> <span class="staexp">string</span>
   <span class="keyword">|</span> V0ALtup <span class="keyword">of</span> <span class="staexp">v0allst</span>
-  <span class="keyword">|</span> V0ALclo <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>env<span class="keyword">,</span> e0xp<span class="keyword">)</span></span>
-  <span class="keyword">|</span> V0ALfix <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>env<span class="keyword">,</span> e0xp<span class="keyword">)</span></span>
+  <span class="keyword">|</span> V0ALclo <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>env<span class="keyword">,</span> $Absyn<span class="keyword">.</span>e0xp<span class="keyword">)</span></span>
+  <span class="keyword">|</span> V0ALfix <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>env<span class="keyword">,</span> $Absyn<span class="keyword">.</span>e0xp<span class="keyword">)</span></span>
   <span class="keyword">|</span> V0ALref <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>ref v0al<span class="keyword">)</span></span>
 
-<span class="keyword">where</span> <span class="staexp"><a name="430"><span class="stacstdec">env <span class="keyword">=</span> $SYM<span class="keyword">.</span>symenv_t <span class="keyword">(</span>v0al<span class="keyword">)</span></span></a></span>
-<span class="keyword">and</span> <span class="staexp"><a name="461"><span class="stacstdec">v0allst <span class="keyword">=</span> list0 v0al</span></a></span>
+<span class="keyword">where</span> <span class="staexp"><a name="364"><span class="stacstdec">env <span class="keyword">=</span> $Symbol<span class="keyword">.</span>symenv_t <span class="keyword">(</span>v0al<span class="keyword">)</span></span></a></span>
+<span class="keyword">and</span> <span class="staexp"><a name="398"><span class="stacstdec">v0allst <span class="keyword">=</span> list0 v0al</span></a></span>
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">fun</span> <a name="508"><span class="dyncstdec">fprint_v0al <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
-<span class="keyword">fun</span> <a name="554"><span class="dyncstdec">fprint_v0allst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> vs<span class="keyword">:</span> <span class="staexp">v0allst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="445"><span class="dyncstdec">fprint_v0al <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="491"><span class="dyncstdec">fprint_v0allst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> vs<span class="keyword">:</span> <span class="staexp">v0allst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 
-<span class="keyword">fun</span> <a name="608"><span class="dyncstdec">print_v0al <span class="keyword">(</span>v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a> <span class="keyword">and</span> <a name="639"><span class="dyncstdec">prerr_v0al <span class="keyword">(</span>v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="545"><span class="dyncstdec">print_v0al <span class="keyword">(</span>v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a> <span class="keyword">and</span> <a name="576"><span class="dyncstdec">prerr_v0al <span class="keyword">(</span>v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 
 <span class="comment">(* ****** ****** *)</span>
 
 <span class="comment">//
 </span><span class="comment">// Please implement an interpreter for the raw abstract syntax trees:
 </span><span class="comment">//
-</span><span class="keyword">fun</span> <a name="768"><span class="dyncstdec">interp0_exp <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">$ABS<span class="keyword">.</span>e0xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">v0al</span></span></a>
+</span><span class="keyword">fun</span> <a name="705"><span class="dyncstdec">interp0_exp <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">$Absyn<span class="keyword">.</span>e0xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">v0al</span></span></a>
 
 <span class="comment">(* ****** ****** *)</span>
 

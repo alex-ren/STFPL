@@ -36,11 +36,12 @@
 
 <span class="keyword">#define</span> <span class="neuexp">ERRORCODE_TYPE_ERROR 1</span>
 <span class="keyword">#define</span> <span class="neuexp">ERRORCODE_OUT_OF_BOUND 2</span>
+<span class="keyword">#define</span> <span class="neuexp">ERRORCODE_FORBIDDEN 100</span>
 
-<span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_DEBUG 10</span>
-<span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_INFO 9</span>
-<span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_ERROR 5</span>
-
+<span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_DEBUG 10</span>  <span class="comment">// output debug information
+</span><span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_INFO 9</span>  <span class="comment">// 
+</span><span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_ERROR 5</span>  <span class="comment">// impossible to happen
+</span>
 <span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_CUR 9</span>
 
 <span class="keyword">macdef</span> <span class="neuexp">ETRACE <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">,(</span>x<span class="keyword">)</span></span>
@@ -67,6 +68,7 @@
 
 <span class="comment">(* end of [error.sats] *)</span>
 
+<span class="comment">(* vi: set syntax=sml: *)</span>
 
 </pre>
 </body>
