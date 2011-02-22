@@ -30,22 +30,25 @@ typedef loc = $Posloc.location_t
 #define :: list0_cons
 
 (* ****** ****** *)
-
 implement fprint_t0yp (out, t) = let
   macdef prstr (s) = fprint_string (out, ,(s))
 in
   case+ t.t0yp_node of
-  | T0YPbase (sym) => begin
-      prstr "T0YPbase("; fprint_symbol (out, sym); prstr ")"
-    end // end of [T0YPbase]   
-  | T0YPfun (t_arg, t_res) => begin
-      prstr "T0YPfun(";
-      fprint_t0yp (out, t_arg); prstr "; "; fprint_t0yp (out, t_res);
-      prstr ")"
-    end (* end of [T0YPfun] *)
-  | T0YPtup (ts) => begin
-      prstr "T0YPlist("; fprint_t0yplst (out, ts); prstr ")"
-    end (* end of [T0YPlist] *)
+  | T0YPbase sym => fprint_symbol (out, sym)
+  | T0YPfun (t1, t2) => let
+      val isatm = (case+ t1.t0yp_node of
+        | T0YPbase _ => true | T0YPtup _ => true | _ => false
+      ) : bool
+    in  
+      if ~isatm then prstr "(";
+      fprint_t0yp (out, t1);
+      if ~isatm then prstr ")";
+      prstr " -> ";
+      fprint_t0yp (out, t2)
+    end // end of [T0YPfun]
+  | T0YPtup ts => begin
+      prstr "("; fprint_t0yplst (out, ts); prstr ")"
+    end // end of [T0YPtup] 
 end // end of [fprint_t0yp]
 
 implement fprint_t0yplst
@@ -140,9 +143,9 @@ in
     end // end of [E0XPlam]  
   | E0XPif (e1, e2, oe3) => begin
       prstr "E0XPif(";
-      prexp e1; prstr "; "; prexp e2;
+      prexp e1; prstr " $then "; prexp e2;
       begin
-        case+ oe3 of Some e3 => (prstr "; "; prexp e3) | None () => ()
+        case+ oe3 of Some e3 => (prstr " $else "; prexp e3) | None () => ()
       end;
       prstr ")"
     end // end of [E0XPif]
@@ -150,18 +153,18 @@ in
       prstr "E0XPint("; fprint_int (out, i); prstr ")"
     end // end of [E0XPint]
   | E0XPlam (args, res, body) => begin
-      prstr "E0XPlam(";
+      prstr "E0XPlam((";
       fprint_a0rglst (out, args);
       begin case+ res of
-      | Some typ => (prstr "; "; fprint_t0yp (out, typ)) | None () => ()
+      | Some typ => (prstr "): "; fprint_t0yp (out, typ)) | None () => prstr ")"
       end; 
-      prstr "; ";
+      prstr " => ";
       fprint_e0xp (out, body);
       prstr ")"
     end // end of [E0XPlam]  
   | E0XPlet (decs, e_body) => begin
       prstr "E0XPlet(";
-      fprint_d0eclst (out, decs); prstr "; "; prexp e_body;
+      fprint_d0eclst (out, decs); prstr " $in "; prexp e_body;
       prstr ")"
     end // end of [E0XPlet]
   | E0XPopr (sym, es) => begin
@@ -205,7 +208,7 @@ implement fprint_d0eclst (out, decs) = loop (decs, 0) where {
   fun loop (decs: d0eclst, i: int)
     :<cloref1> void = case+ decs of
     | cons (dec, decs') => loop (decs', i+1) where {
-        val () = if i > 0 then fprint_string (out, "| ")
+        val () = if i > 0 then fprint_string (out, "; ")
         val () = fprint_d0ec (out, dec)
       } // end of [cons]
     | nil () => ()
@@ -230,8 +233,8 @@ implement fprint_v0aldeclst (out, valdecs) = loop (valdecs, 0) where {
 } (* end of [fprint_v0aldeclst] *)
 
 implement fprint_v0aldec (out, valdec) = begin
-  fprint_string (out, "val "); fprint_symbol (out, valdec.v0aldec_nam);
-  fprint_string (out, " = "); fprint_e0xp (out, valdec.v0aldec_def) end
+  fprint_string (out, "$val "); fprint_symbol (out, valdec.v0aldec_nam);
+  fprint_string (out, " $= "); fprint_e0xp (out, valdec.v0aldec_def) end
 
 (* ****** ****** *)
 

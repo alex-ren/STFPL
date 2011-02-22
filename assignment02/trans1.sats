@@ -81,7 +81,17 @@ and v1aldeclst = list0 (v1aldec)
 
 (* ****** ****** *)
 
-fun fprint_e1xp (out: FILEref, e: e1xp): void
+
+fun fprint_d1eclst (out: FILEref, _: d1eclst): void
+fun fprint_d1ec (out: FILEref, _: d1ec): void
+fun fprint_v1aldeclst (out: FILEref, _: v1aldeclst): void
+fun fprint_v1aldec (out: FILEref, _: v1aldec): void
+
+fun fprint_e1xp (out: FILEref, _: e1xp): void
+fun fprint_e1xplst (out: FILEref, _: e1xplst): void
+
+fun prerr_e1xp (e: e1xp): void
+fun print_e1xp (e: e1xp): void
 
 (* ****** ****** *)
 
@@ -122,3 +132,5 @@ fun trans1_exp (_: $Absyn.e0xp): e1xp
 (* ****** ****** *)
 
 (* end of [trans1.sats] *)
+(* vi: set syntax=sml: *)
+

@@ -215,8 +215,8 @@ implement eval (env, e): v0al =
       val vo =  list0_nth_opt<v0al> (vs, i)
     in
       case+ vo of
-      | Some0 v2 => v2
-      | None0 () => ETRACE_MSG_OPR ("eval proj out of bound\n", ETRACE_LEVEL_INFO, 
+      | Some v2 => v2
+      | None () => ETRACE_MSG_OPR ("eval proj out of bound\n", ETRACE_LEVEL_INFO, 
                       abort (ERRORCODE_TYPE_ERROR))
     end
     | _ => ETRACE_MSG_OPR ("eval proj not tuple\n", ETRACE_LEVEL_INFO, 
