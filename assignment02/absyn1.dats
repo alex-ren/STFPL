@@ -100,9 +100,9 @@ in
   | E1XPfix (f, args, body) => begin
       prstr "E1XPfix(";
       fprint_v1ar (out, f);
-      prstr "; ";
+      prstr " (";
       fprint_v1arlst (out, args);
-      prstr "; ";
+      prstr ") => ";
       fprint_e1xp (out, body);
       prstr ")"
     end // end of [E1XPlam]  
@@ -120,7 +120,9 @@ in
   | E1XPlam (args, body) => begin
       prstr "E1XPlam((";
       fprint_v1arlst (out, args);
-      prstr ") => ";
+      prstr "): ";
+      fprint_t1yp (out, body.e1xp_typ);
+      prstr " => ";
       fprint_e1xp (out, body);
       prstr ")"
     end // end of [E1XPlam]  

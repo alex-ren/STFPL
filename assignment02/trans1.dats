@@ -331,8 +331,13 @@ extern fun oftype_dec (Gamma: ctx, dec: d0ec): (ctx, d1ec, tyerr_pool)
 extern fun oftype_valdeclst (Gamma: ctx, v0aldecs: v0aldeclst):
   (ctx, v1aldeclst, tyerr_pool)
 
+extern fun oftype_valdeclst_rec (Gamma: ctx, v0aldecs: v0aldeclst):
+  (ctx, v1aldeclst, tyerr_pool)
+
 extern fun oftype_valdec (Gamma: ctx, v0aldec: v0aldec):
   (ctx, v1aldec, tyerr_pool)
+
+extern fun oftype_valdec_rec (Gamma: ctx, v0aldec: v0aldec): (v1aldec, tyerr_pool)
 
 implement oftype_declst (Gamma, decs) = let
   fun helper (init: (ctx, d1eclst, tyerr_pool), dec: d0ec):<cloref1>
@@ -354,16 +359,12 @@ implement oftype_dec (Gamma, dec) = let
   val d0ec_loc = dec.d0ec_loc
   val d0ec_node = dec.d0ec_node
   val+ D0ECval (isrec, v0aldecs) = d0ec_node
+  val (Gamma1, v1aldecs, tyerrs) = if isrec = true then 
+      oftype_valdeclst_rec (Gamma, v0aldecs)
+    else oftype_valdeclst (Gamma, v0aldecs)
+  val d1ec = '{d1ec_loc = d0ec_loc, d1ec_node = D1ECval (isrec, v1aldecs)}
 in
-  if isrec = true then 
-    ETRACE_MSG_OPR ("oftype_dec = error\n", ETRACE_LEVEL_ERROR, 
-    abort (ERRORCODE_FORBIDDEN))  // todo
-  else let
-    val (Gamma1, v1aldecs, tyerrs) = oftype_valdeclst (Gamma, v0aldecs)
-    val d1ec = '{d1ec_loc = d0ec_loc, d1ec_node = D1ECval (isrec, v1aldecs)}
-  in
-    (Gamma1, d1ec, tyerrs)
-  end
+  (Gamma1, d1ec, tyerrs)
 end
 
 implement oftype_valdeclst (Gamma, v0aldecs) = let
@@ -382,6 +383,47 @@ in
   (gamma, v1aldecs, tyerrs)
 end
 
+implement oftype_valdeclst_rec (Gamma, v0aldecs) = let
+  fun fillin_env (Gamma: ctx, valdecs: v0aldeclst): (ctx, tyerr_pool) =
+    case+ valdecs of
+    | cons (valdec, valdecs1) => let
+      val loc = valdec.v0aldec_loc
+      val nam = valdec.v0aldec_nam
+      val (t1yp, tyerrs1) = case+ valdec.v0aldec_ann of
+        | Some0 t0yp => (trans1_typ (t0yp), tyerr_pool_nil)
+        | None0 () => let 
+          val () = prerr_loc (loc)
+          val () = prerr ": recursively declared value must have type annotated"
+          val () = prerr_newline ()
+          val errmsg = "recursively declared value must have type annotated"
+        in
+          (* assume the type is int *)
+          (t1yp_int, tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
+        end
+      val Gamma1 = symenv_insert (Gamma, nam, v1ar_make (loc, nam, t1yp))
+      val (Gamma2, tyerrs2) = fillin_env (Gamma1, valdecs1)
+      val tyerrs = tyerr_pool_append (tyerrs1, tyerrs2)
+    in
+      (Gamma2, tyerrs)
+    end
+    | nil () => (Gamma, tyerr_pool_nil)
+
+  val (Gamma1, tyerrs1) = fillin_env (Gamma, v0aldecs)
+
+  fun helper (init: (v1aldeclst, tyerr_pool), v0aldec: v0aldec):<cloref1>
+    (v1aldeclst, tyerr_pool) = let
+    val (v1aldec, tyerrs) = oftype_valdec_rec (Gamma1, v0aldec)
+    val v1aldecs = v1aldec :: init.0
+    val tyerrs = tyerr_pool_append (init.1, tyerrs)
+  in
+    (v1aldecs, tyerrs)
+  end
+
+  val (v1aldecs, tyerrs) = list0_fold_left (helper, (nil, nil), v0aldecs)
+  val v1aldecs = list0_reverse (v1aldecs)
+in
+  (Gamma1, v1aldecs, tyerrs)
+end
   
 implement oftype_valdec (Gamma, v0aldec) = let
   val loc = v0aldec.v0aldec_loc
@@ -410,6 +452,22 @@ in
   end
 end  // end of [oftype_valdec]
   
+(* extern fun oftype_valdec_rec (Gamma: ctx, v0aldec: v0aldec): (v1aldec, tyerr_pool) *)
+implement oftype_valdec_rec (Gamma, v0aldec) = let
+  val nam = v0aldec.v0aldec_nam
+  val loc = v0aldec.v0aldec_loc
+  val v1aropt = symenv_lookup<v1ar> (Gamma, nam)
+in
+  case+ v1aropt of
+  | Some0 v1ar => let
+    val (def, tyerrs) = typcheck (Gamma, v0aldec.v0aldec_def, v1ar.v1ar_typ)
+    val v1aldec = '{v1aldec_loc = loc, v1aldec_var = v1ar, v1aldec_def = def}
+  in
+    (v1aldec, tyerrs)
+  end
+  | None0 () => ETRACE_MSG_OPR ("oftyp_valdec_rec var not found\n", ETRACE_LEVEL_ERROR,
+                    abort (ERRORCODE_FORBIDDEN))
+end
 
 fun oftype_let (Gamma: ctx, loc: loc, decs: d0eclst, e0_body: e0xp):
   (e1xp, tyerr_pool) = let
@@ -455,14 +513,27 @@ in
   in
     (Gamma1, v1ar, tyerr_pool_nil)
   end
-  | None0 () => ETRACE_MSG_OPR ("oftyp_arg ~ arg must have type\n", ETRACE_LEVEL_ERROR,
-                    abort (ERRORCODE_FORBIDDEN))
+  | None0 () => let
+    val () = prerr_loc (loc)
+    val () = prerr ": arg must have type"
+    val () = prerr_newline ()
+    val errmsg = "arg must have type"
+
+    (* assume the type is int *)
+    val v1ar = v1ar_make (loc, nam, t1yp_int)
+    val Gamma1 = symenv_insert (Gamma, nam, v1ar)
+  in
+    (Gamma1, v1ar, tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
+  end
 end
 
 fun oftype_lam (Gamma: ctx, loc: loc, a0rgs: a0rglst, t0ypopt: t0ypopt, e0xp: e0xp):
   (e1xp, tyerr_pool) = let
   val (Gamma1, v1ars, t1yps, tyerrs1) = oftyp_arglst (Gamma, a0rgs)
-  val t1yp_args = T1YPtup (t1yps)
+  (* If there is only one argument, then the input type is not a tuple. *)
+  val t1yp_args = if list0_length (t1yps) = 1 then let
+      val- cons (t1yp_arg, _) = t1yps in t1yp_arg end
+    else T1YPtup (t1yps)
 in
   case+ t0ypopt of
   | Some0 t0yp => let
@@ -506,12 +577,12 @@ end
 fun oftype_proj (Gamma: ctx, loc: loc, e0xp: e0xp, i: int): (e1xp, tyerr_pool) = let
   val (e1xp, tyerrs) = oftype (Gamma, e0xp)
 in
-  case+ e1xp.e1xp_node of
-  | E1XPtup (e1xps) => let
-    val e1xpopt = list0_nth_opt<e1xp> (e1xps, i)
+  case+ e1xp.e1xp_typ of
+  | T1YPtup (t1yps) => let
+    val t1ypopt = list0_nth_opt<t1yp> (t1yps, i)
   in
-    case+ e1xpopt of
-    | Some e1xpitem => (e1xp_make_proj (loc, e1xp, i, e1xpitem.e1xp_typ), tyerrs)
+    case+ t1ypopt of
+    | Some t1ypitem => (e1xp_make_proj (loc, e1xp, i, t1ypitem), tyerrs)
     | None () => let
       (* out of bound: use int as the type *)
       val e1xp_proj = e1xp_make_proj (loc, e1xp, i, t1yp_int)
@@ -569,15 +640,74 @@ in
   end
 end
 
+fun oftype_fix (Gamma: ctx, loc: loc, 
+  nam: symbol_t, paras: a0rglst, retopt: t0ypopt, body: e0xp): (e1xp, tyerr_pool) = let
+  val (Gamma1, args, t1yps, tyerrs1) = oftyp_arglst (Gamma, paras)
+  (* If there is only one argument, then the input type is not a tuple. *)
+  val t1yp_args = if list0_length (t1yps) = 1 then let
+      val- cons (t1yp_arg, _) = t1yps in t1yp_arg end
+    else T1YPtup (t1yps)
+  
+  val (fixtyp, retty) = (case+ retopt of
+    | Some0 retty => let
+      val retty = trans1_typ (retty)
+    in
+      (T1YPfun (t1yp_args, retty), retty)
+    end
+    | None0 () => let
+      val () = prerr_loc (loc)
+      val () = prerr ": oftype_fix, return type not specified, int assumed"
+      val () = prerr_newline ()
+      val errmsg = "oftype_fix, return type not specified, int assumed"    
+      val retty = t1yp_int
+    in
+      (* no such var, assume it is int *)
+      (T1YPfun (t1yp_args, retty), retty)
+    end
+  )
+
+  val f_v1ar = v1ar_make (loc, nam, fixtyp)
+  val Gamma2 = symenv_insert (Gamma1, nam, f_v1ar)
+  val (e1xp_body, tyerrs2) = typcheck (Gamma2, body, retty)
+
+  val e1xpfix = e1xp_make_fix (loc, f_v1ar, args, e1xp_body, fixtyp)
+  val tyerrs = tyerr_pool_append (tyerrs1, tyerrs2)
+in
+  (e1xpfix, tyerrs)
+end
+
+fun oftype_app (Gamma: ctx, loc: loc, f: e0xp, args: e0xp): (e1xp, tyerr_pool) = let
+  val (f, tyerrs) = oftype (Gamma, f)
+in
+  case+ f.e1xp_typ of
+  | T1YPfun (paras_typ, ret_typ) => let
+    val (args, tyerrs) = typcheck (Gamma, args, paras_typ)
+    val e1xp = e1xp_make_app (loc, f, args, ret_typ)
+  in
+    (e1xp, tyerrs)
+  end
+  | _ => let
+    val () = prerr_loc (loc)
+    val () = prerr ": error(type) ... expected a function type"
+    val () = prerr " ... actual: "
+    val () = fprint_t1yp (stderr_ref, f.e1xp_typ)
+    val () = prerr_newline ()
+    val errmsg = "function type needed"
+  in
+    (* return f as the result as app *)
+    (f, tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
+  end
+end
+  
 implement oftype (Gamma, e0) = let
   val e0_node = e0.e0xp_node
   val e0_loc = e0.e0xp_loc
 in
   case+ e0_node of
   | E0XPann (e0a, t0a) => oftype_ann (Gamma, e0_loc, e0a, t0a)
-  // | E1XPapp (e0fun, e0args) => 
+  | E0XPapp (e0fun, e0args) => oftype_app (Gamma, e0_loc, e0fun, e0args)
   | E0XPbool (b) => (e1xp_make_bool (e0_loc, b), tyerr_pool_nil)
-  // | E0XPfix (f, paras, body)
+  | E0XPfix (f, paras, t0ypopt, body) => oftype_fix (Gamma, e0_loc, f, paras, t0ypopt, body)
   | E0XPif (e0_if, e0_then, e0opt_else) => 
     oftype_if (Gamma, e0_loc, e0_if, e0_then, e0opt_else)
   | E0XPint (i) => (e1xp_make_int (e0_loc, i), tyerr_pool_nil)
@@ -589,8 +719,8 @@ in
   | E0XPstr (str) => (e1xp_make_str (e0_loc, str), tyerr_pool_nil)
   | E0XPtup (e0xps) => oftype_tup (Gamma, e0_loc, e0xps)
   | E0XPvar (nam) => oftype_var (Gamma, e0_loc, nam)
-  | _(*todo*) => ETRACE_MSG_OPR ("oftype ~ error\n", ETRACE_LEVEL_ERROR, 
-             abort (ERRORCODE_FORBIDDEN))
+  // | _ => ETRACE_MSG_OPR ("oftype: error unexpected\n", ETRACE_LEVEL_ERROR, 
+  //           abort (ERRORCODE_FORBIDDEN))
 end
 
 implement typcheck (Gamma, e0, t1) = let

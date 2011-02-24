@@ -157,12 +157,12 @@
 </span>  <span class="keyword">|</span> E0XPfix <span class="keyword">(</span>f<span class="keyword">,</span> args<span class="keyword">,</span> res<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
       prstr "E0XPfix("<span class="keyword">;</span>
       fprint_symbol <span class="keyword">(</span>out<span class="keyword">,</span> f<span class="keyword">)</span><span class="keyword">;</span>
-      prstr "; "<span class="keyword">;</span>
+      prstr ": ("<span class="keyword">;</span>
       fprint_a0rglst <span class="keyword">(</span>out<span class="keyword">,</span> args<span class="keyword">)</span><span class="keyword">;</span>
       <span class="keyword">begin</span> <span class="keyword">case+</span> res <span class="keyword">of</span>
-      <span class="keyword">|</span> Some typ <span class="keyword">=&gt;</span> <span class="keyword">(</span>prstr "; "<span class="keyword">;</span> fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> typ<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">|</span> None <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+      <span class="keyword">|</span> Some typ <span class="keyword">=&gt;</span> <span class="keyword">(</span>prstr "): "<span class="keyword">;</span> fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> typ<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">|</span> None <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> prstr ")"
       <span class="keyword">end</span><span class="keyword">;</span> 
-      prstr "; "<span class="keyword">;</span>
+      prstr " =&gt; "<span class="keyword">;</span>
       fprint_e0xp <span class="keyword">(</span>out<span class="keyword">,</span> body<span class="keyword">)</span><span class="keyword">;</span>
       prstr ")"
     <span class="keyword">end</span> <span class="comment">// end of [E0XPlam]  
@@ -259,6 +259,12 @@
 
 <span class="keyword">implement</span> fprint_v0aldec <span class="keyword">(</span>out<span class="keyword">,</span> valdec<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">begin</span>
   fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> "$val "<span class="keyword">)</span><span class="keyword">;</span> fprint_symbol <span class="keyword">(</span>out<span class="keyword">,</span> valdec<span class="keyword">.</span>v0aldec_nam<span class="keyword">)</span><span class="keyword">;</span>
+  fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> ": "<span class="keyword">)</span><span class="keyword">;</span> 
+  <span class="keyword">(</span>
+  <span class="keyword">case+</span> valdec<span class="keyword">.</span>v0aldec_ann <span class="keyword">of</span>
+  <span class="keyword">|</span> Some t0yp <span class="keyword">=&gt;</span> fprint_t0yp <span class="keyword">(</span>out<span class="keyword">,</span> t0yp<span class="keyword">)</span>
+  <span class="keyword">|</span> None <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">)</span><span class="keyword">;</span>
   fprint_string <span class="keyword">(</span>out<span class="keyword">,</span> " $= "<span class="keyword">)</span><span class="keyword">;</span> fprint_e0xp <span class="keyword">(</span>out<span class="keyword">,</span> valdec<span class="keyword">.</span>v0aldec_def<span class="keyword">)</span> <span class="keyword">end</span>
 
 <span class="comment">(* ****** ****** *)</span>

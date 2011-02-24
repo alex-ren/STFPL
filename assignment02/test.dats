@@ -16,6 +16,7 @@ dynload "error.dats"
 dynload "fixity.dats"
 dynload "parser.dats"
 dynload "interp0.dats"
+dynload "interp1.dats"
 dynload "trans1.dats"
 
 (* ****** ****** *)
@@ -23,6 +24,7 @@ dynload "trans1.dats"
 staload "absyn.sats"
 staload "parser.sats"
 staload "interp0.sats"
+staload "interp1.sats"
 staload "error.sats"
 staload "trans1.sats"
 
@@ -35,22 +37,27 @@ main () = () where {
     print "Please input a program written in STFPL:"; print_newline ()
   end // end of [val]
   val prog = parse_from_stdin ()
-  val () = print "\n\n==================================\n\n"
+  val () = print "\n\nbefore type checking ==================================\n\n"
   val () = print "prog =\n"
   val () = fprint_e0xp (stdout_ref, prog)
   val () = print_newline ()
 
-  val () = print "\n\n==================================\n\n"
-  val exp1 = trans1_exp (prog)
-  val () = fprint_e1xp (stdout_ref, exp1)
+  val () = print "\n\nafter type checking ==================================\n\n"
+  val prog1 = trans1_exp (prog)
+  val () = fprint_e1xp (stdout_ref, prog1)
   val () = print_newline ()
 
-  val () = print "\n\n==================================\n\n"
+  val () = print "\n\ninterp0 ==================================\n\n"
   val v = interp0_exp(prog)
   val () = print_newline ()
   val () = fprint_v0al (stdout_ref, v)
   val () = print_newline ()
 
+  val () = print "\n\ninterp1 ==================================\n\n"
+  val v = interp1_exp(prog1)
+  val () = print_newline ()
+  val () = fprint_v1al (stdout_ref, v)
+  val () = print_newline ()
 } // end of [main]
 
 (* ****** ****** *)

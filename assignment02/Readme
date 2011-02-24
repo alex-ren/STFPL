@@ -3,8 +3,18 @@ To build the program, please run
 
 
 Updates:
-  Fixed one bug about symenv_merge.
-  Added trace info.
+  typechecking
 
-lam must be type annotated
+Caution:
+  1. lam must be type annotated
+  2. lam (): int => 3
+      parser: a0rglst is nil
+      trans1: type is () -> int
+  3. lam (x: int): int => 3
+      parser: a0rglst is x -> nil
+      trans1: type is int -> int
+  4. lam (x: int, y: int): int => 3
+      parser: a0rglst is x -> y -> nil
+      trans1: type is (int, int) -> int
+
 

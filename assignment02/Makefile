@@ -72,6 +72,8 @@ SOURCES := \
   parser.dats \
   interp0.sats \
   interp0.dats \
+  interp1.sats \
+  interp1.dats \
   absyn1.dats \
   trans1.sats \
   trans1.dats \

@@ -132,12 +132,12 @@ in
   | E0XPfix (f, args, res, body) => begin
       prstr "E0XPfix(";
       fprint_symbol (out, f);
-      prstr "; ";
+      prstr ": (";
       fprint_a0rglst (out, args);
       begin case+ res of
-      | Some typ => (prstr "; "; fprint_t0yp (out, typ)) | None () => ()
+      | Some typ => (prstr "): "; fprint_t0yp (out, typ)) | None () => prstr ")"
       end; 
-      prstr "; ";
+      prstr " => ";
       fprint_e0xp (out, body);
       prstr ")"
     end // end of [E0XPlam]  
@@ -234,6 +234,12 @@ implement fprint_v0aldeclst (out, valdecs) = loop (valdecs, 0) where {
 
 implement fprint_v0aldec (out, valdec) = begin
   fprint_string (out, "$val "); fprint_symbol (out, valdec.v0aldec_nam);
+  fprint_string (out, ": "); 
+  (
+  case+ valdec.v0aldec_ann of
+  | Some t0yp => fprint_t0yp (out, t0yp)
+  | None () => ()
+  );
   fprint_string (out, " $= "); fprint_e0xp (out, valdec.v0aldec_def) end
 
 (* ****** ****** *)
