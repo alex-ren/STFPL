@@ -3,18 +3,10 @@ To build the program, please run
 
 
 Updates:
-  typechecking
+  type inference
 
 Caution:
-  1. lam must be type annotated
-  2. lam (): int => 3
-      parser: a0rglst is nil
-      trans1: type is () -> int
-  3. lam (x: int): int => 3
-      parser: a0rglst is x -> nil
-      trans1: type is int -> int
-  4. lam (x: int, y: int): int => 3
-      parser: a0rglst is x -> y -> nil
-      trans1: type is (int, int) -> int
-
+  The inference of tuple of unknown length is supported.
+  The type inference succeeds for all the files in the TEST folder except for one file TEST/list_opr.stfpl. (segment fault)
+  This is acceptable since list_opr.stfpl actually requires a list not a tuple.
 

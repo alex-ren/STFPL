@@ -42,7 +42,7 @@ main () = () where {
   val () = fprint_e0xp (stdout_ref, prog)
   val () = print_newline ()
 
-  val () = print "\n\nafter type checking ==================================\n\n"
+  val () = print "\n\nafter type inference ==================================\n\n"
   val prog1 = trans1_exp (prog)
   val () = fprint_e1xp (stdout_ref, prog1)
   val () = print_newline ()

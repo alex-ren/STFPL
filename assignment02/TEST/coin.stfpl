@@ -16,15 +16,18 @@
 /* please do your implementation in STFPL */
 let
   val theCoins = (1, 5, 10, 25)
-  val coin_get: int -> int = lam (n: int) =>
+  val coin_get = lam (n) =>
+  // val coin_get: int -> int = lam (n: int) =>
     if n = 0 then theCoins.0
     else if n = 1 then theCoins.1
     else if n = 2 then theCoins.2
     else if n = 3 then theCoins.3
     else ~1
 
-  val coin_change: int -> int = lam (sum: int) => let
-    val aux = fix f (sum: int, n: int): int =>
+  val coin_change = lam (sum) => let
+  // val coin_change: int -> int = lam (sum: int) => let
+    val aux = fix f (sum, n) =>
+    // val aux = fix f (sum: int, n: int): int =>
       if sum > 0 then
         (if n >= 0 then f (sum, n - 1) + f (sum - coin_get (n), n) else 0)
       else (if sum < 0 then 0 else 1)

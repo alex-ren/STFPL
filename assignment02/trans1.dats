@@ -44,6 +44,36 @@ val t1yp_string = T1YPbase symbol_STRING
 val t1yp_unit = T1YPtup (list0_nil)
 
 (* ****** ****** *)
+local
+
+assume t1Var = '{
+  nam= int, lnk= ref (t1yp)
+} // end of [t1Var]
+
+val count = ref<int> (0)
+
+in
+
+fun t1Var_get_nam (X: t1Var): int = X.nam
+fun t1Var_get_typ (X: t1Var): t1yp = !(X.lnk)
+fun t1Var_set_typ (X: t1Var, t: t1yp): void = !(X.lnk) := t
+
+fun t1Var_new (): t1Var = let
+  val n = !count; val () = !count := n+1
+in '{
+  nam= n, lnk= ref (T1YPdummy)
+} end // [t1Var_new]
+
+end // end of [local]
+
+fun eq_t1Var_t1Var
+  (X1: t1Var, X2: t1Var): bool =
+  t1Var_get_nam (X1) = t1Var_get_nam (X2)
+overload = with eq_t1Var_t1Var
+
+fun neq_t1Var_t1Var
+  (X1: t1Var, X2: t1Var): bool = ~(X1 = X2)
+overload <> with neq_t1Var_t1Var
 (* ****** ****** *)
 
 implement
@@ -129,7 +159,7 @@ end // end of [theConstTypFind]
 end // end of [local]
 
 (* ****** ****** *)
-
+(*
 fun lte_t1yp_t1yp
   (t1: t1yp, t2: t1yp): bool = case+ (t1, t2) of
     | (T1YPbase sym1, T1YPbase sym2) => sym1 = sym2
@@ -148,9 +178,145 @@ and lte_t1yplst_t1yplst (ts1: t1yplst, ts2: t1yplst): bool =
   | (list0_nil (), list0_nil ()) => true
   | (_, _) => false
 // end of [lte_t1yplst_t1yplst]
+*)
 
-implement print_t1yp (t) = fprint_t1yp (stdout_ref, t)
-implement prerr_t1yp (t) = fprint_t1yp (stderr_ref, t)
+(* ****** ****** *)
+(* The result can be
+1. T1YPVar with dummy inside (one level)
+2. commond type
+// -------------
+(x, ref (y, ref (z, ref dummy))) becomes
+(x, ref (z, ref dummy))
+(y, ref (z, ref dummy))
+(z, ref dummy)
+// -------------
+returen value is (z, dummy)
+*)
+implement t1yp_normalize (t) = 
+  case+ t of
+  | T1YPVar (X) => let
+      val t1 = t1Var_get_typ (X)
+    in
+      case+ t1 of
+      | T1YPdummy () => t
+      | _ => t1 where {
+          val t1 = t1yp_normalize (t1)
+          val () = t1Var_set_typ (X, t1)
+        } // [_]
+    end // end of [T1YPVar]
+  | _ => t // end of [_]
+// end of [t1yp_normalize]
+
+
+fun t1yp_lst_normalize (ts: t1yplst): t1yplst = 
+  list0_map_fun<t1yp><t1yp> (ts, t1yp_normalize)
+
+fun make_t1ypvar_lst (n: int): list0 t1yp =
+  if n = 0 then nil ()
+  else cons (T1YPVar (t1Var_new ()), make_t1ypvar_lst (n - 1))
+(* ****** ****** *)
+(* if we only use this match, then there would be
+no cascade T1YPVar
+*)
+fun match_t1yp_t1yp
+  (t1: t1yp, t2: t1yp): bool = let
+  val t1 = t1yp_normalize (t1)
+  val t2 = t1yp_normalize (t2)
+in
+  case+ (t1, t2) of
+  | (T1YPVar X1, T1YPVar X2) => true where {
+      val () = if X1 <> X2 then t1Var_set_typ (X1, t2)
+    } // end of [T1YPvar, T1YPvar]
+  | (T1YPVar X1, _) => (t1Var_set_typ (X1, t2); true)
+  | (_, T1YPVar X2) => (t1Var_set_typ (X2, t1); true)
+//
+  | (T1YPbase sym1, T1YPbase sym2) => sym1 = sym2
+  | (T1YPfun (t11, t12), T1YPfun (t21, t22)) => let
+      val b1 = match_t1yp_t1yp (t21, t11)
+      val b2 = match_t1yp_t1yp (t12, t22)
+    in
+      b1 && b2
+    end // end of [T1YPfun, T1YPfun]
+  | (T1YPtup ts1, T1YPtup ts2) => match_t1yplst_t1yplst (ts1, ts2, true)
+  | (T1YPtup_vl rfts1, T1YPtup ts2) => let 
+    val ts1 = !rfts1
+    val len1 = list0_length (ts1)
+    val len2 = list0_length (ts2)
+    val ts1 = (if len1 >= len2 then ts1 else 
+      list0_append<t1yp> (ts1, make_t1ypvar_lst (len2 - len1))
+    )
+    val res = match_t1yplst_t1yplst_l (ts1, ts2, true)
+    val ts1 = t1yp_lst_normalize (ts1)
+    val () = !rfts1 := ts1
+  in
+    res
+  end
+  | (T1YPtup ts1, T1YPtup_vl rfts2) => let 
+    val ts2 = !rfts2
+    val len1 = list0_length (ts1)
+    val len2 = list0_length (ts2)
+    val ts2 = (if len1 <= len2 then ts2 else 
+      list0_append<t1yp> (ts2, make_t1ypvar_lst (len1 - len2))
+    )
+    val res = match_t1yplst_t1yplst (ts1, ts2, true)
+    val ts2 = t1yp_lst_normalize (ts2)
+    val () = !rfts2 := ts2
+  in
+    res
+  end
+  | (T1YPtup_vl rfts1, T1YPtup_vl rfts2) => let 
+    val ts1 = !rfts1
+    val ts2 = !rfts2
+    val len1 = list0_length (ts1)
+    val len2 = list0_length (ts2)
+    val (ts1, ts2) = (if len1 <= len2 then 
+      (list0_append<t1yp> (ts1, make_t1ypvar_lst (len2 - len1)), ts2)
+    else
+      (ts1, list0_append<t1yp> (ts2, make_t1ypvar_lst (len1 - len2)))
+    )
+    val res = match_t1yplst_t1yplst (ts1, ts2, true)
+    val ts1 = t1yp_lst_normalize (ts1)
+    val ts2 = t1yp_lst_normalize (ts2)
+    val () = !rfts1 := ts1
+    val () = !rfts2 := ts2
+  in
+    res
+  end
+  | (_, _) => false
+end // end of [match_t1yp_t1yp]
+
+and match_t1yplst_t1yplst (
+  ts1: t1yplst, ts2: t1yplst, res: bool
+) : bool =
+  case+ (ts1, ts2) of
+  | (list0_cons (t1, ts1),
+     list0_cons (t2, ts2)) => let
+      val res = (
+        if match_t1yp_t1yp (t1, t2) then res else false
+      ) : bool
+    in
+      match_t1yplst_t1yplst (ts1, ts2, res)
+    end // end of [list0_cons, list0_cons]
+  | (list0_nil (), list0_nil ()) => res
+  | (_, _) => false
+// end of [lte_t1yplst_t1yplst]
+
+(* it's O.K. if the left is longer than the right *) 
+and match_t1yplst_t1yplst_l (
+  ts1: t1yplst, ts2: t1yplst, res: bool
+) : bool =
+  case+ (ts1, ts2) of
+  | (list0_cons (t1, ts1),
+     list0_cons (t2, ts2)) => let
+      val res = (
+        if match_t1yp_t1yp (t1, t2) then res else false
+      ) : bool
+    in
+      match_t1yplst_t1yplst_l (ts1, ts2, res)
+    end // end of [list0_cons, list0_cons]
+  | (_, list0_nil ()) => res
+  | (_, _) => false
+// end of [lte_t1yplst_t1yplst]
 
 (* ****** ****** *)
 implement
@@ -391,7 +557,8 @@ implement oftype_valdeclst_rec (Gamma, v0aldecs) = let
       val nam = valdec.v0aldec_nam
       val (t1yp, tyerrs1) = case+ valdec.v0aldec_ann of
         | Some0 t0yp => (trans1_typ (t0yp), tyerr_pool_nil)
-        | None0 () => let 
+        | None0 () => (T1YPVar (t1Var_new ()), tyerr_pool_nil)
+          (*let  serve as comment
           val () = prerr_loc (loc)
           val () = prerr ": recursively declared value must have type annotated"
           val () = prerr_newline ()
@@ -399,7 +566,7 @@ implement oftype_valdeclst_rec (Gamma, v0aldecs) = let
         in
           (* assume the type is int *)
           (t1yp_int, tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
-        end
+        end*)
       val Gamma1 = symenv_insert (Gamma, nam, v1ar_make (loc, nam, t1yp))
       val (Gamma2, tyerrs2) = fillin_env (Gamma1, valdecs1)
       val tyerrs = tyerr_pool_append (tyerrs1, tyerrs2)
@@ -514,6 +681,12 @@ in
     (Gamma1, v1ar, tyerr_pool_nil)
   end
   | None0 () => let
+    val v1ar = v1ar_make (loc, nam, T1YPVar (t1Var_new ()))
+    val Gamma1 = symenv_insert (Gamma, nam, v1ar)
+  in
+    (Gamma1, v1ar, tyerr_pool_nil)
+  end
+    (*let  serve as comment
     val () = prerr_loc (loc)
     val () = prerr ": arg must have type"
     val () = prerr_newline ()
@@ -524,7 +697,7 @@ in
     val Gamma1 = symenv_insert (Gamma, nam, v1ar)
   in
     (Gamma1, v1ar, tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
-  end
+  end *)
 end
 
 fun oftype_lam (Gamma: ctx, loc: loc, a0rgs: a0rglst, t0ypopt: t0ypopt, e0xp: e0xp):
@@ -576,8 +749,10 @@ end
 
 fun oftype_proj (Gamma: ctx, loc: loc, e0xp: e0xp, i: int): (e1xp, tyerr_pool) = let
   val (e1xp, tyerrs) = oftype (Gamma, e0xp)
+  (* normalize first *)
+  val t = t1yp_normalize (e1xp.e1xp_typ)
 in
-  case+ e1xp.e1xp_typ of
+  case+ t of
   | T1YPtup (t1yps) => let
     val t1ypopt = list0_nth_opt<t1yp> (t1yps, i)
   in
@@ -592,6 +767,31 @@ in
       val errmsg = "projection out of bound"
     in
       (e1xp_proj, tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
+    end
+  end
+  | T1YPVar (t1var) => let
+    val t1varlst = make_t1ypvar_lst (i + 1)
+    val- Some (t1ypitem) = list0_nth_opt (t1varlst, i)
+    val () = t1Var_set_typ (t1var, T1YPtup_vl (ref<t1yplst> (t1varlst)))
+  in
+    (e1xp_make_proj (loc, e1xp, i, t1ypitem), tyerr_pool_nil)
+  end
+  | T1YPtup_vl (rft1yps) => let
+    val t1yps = !rft1yps
+    val len = list0_length (t1yps)
+  in
+    if len > i then let
+      val- Some (t1ypitem) = list0_nth_opt (t1yps, i)
+    in
+      (e1xp_make_proj (loc, e1xp, i, t1ypitem), tyerr_pool_nil)
+    end else let
+      val t1varlst = make_t1ypvar_lst (i + 1 - len)
+      (* get the last one *)
+      val- Some (t1ypitem) = list0_nth_opt (t1varlst, i - len)
+      val t1yps = list0_append (t1yps, t1varlst)
+      val () = !rft1yps := t1yps
+    in
+      (e1xp_make_proj (loc, e1xp, i, t1ypitem), tyerr_pool_nil)
     end
   end
   | _ => let
@@ -655,6 +855,11 @@ fun oftype_fix (Gamma: ctx, loc: loc,
       (T1YPfun (t1yp_args, retty), retty)
     end
     | None0 () => let
+      val retty = T1YPVar (t1Var_new ())
+    in
+      (T1YPfun (t1yp_args, retty), retty)
+    end
+    (*let
       val () = prerr_loc (loc)
       val () = prerr ": oftype_fix, return type not specified, int assumed"
       val () = prerr_newline ()
@@ -663,7 +868,8 @@ fun oftype_fix (Gamma: ctx, loc: loc,
     in
       (* no such var, assume it is int *)
       (T1YPfun (t1yp_args, retty), retty)
-    end
+    end*)
+    
   )
 
   val f_v1ar = v1ar_make (loc, nam, fixtyp)
@@ -678,11 +884,23 @@ end
 
 fun oftype_app (Gamma: ctx, loc: loc, f: e0xp, args: e0xp): (e1xp, tyerr_pool) = let
   val (f, tyerrs) = oftype (Gamma, f)
+  (* do the normalization first *)
+  val e1xp_fun = t1yp_normalize (f.e1xp_typ)
 in
-  case+ f.e1xp_typ of
+  case+ e1xp_fun of
   | T1YPfun (paras_typ, ret_typ) => let
     val (args, tyerrs) = typcheck (Gamma, args, paras_typ)
     val e1xp = e1xp_make_app (loc, f, args, ret_typ)
+  in
+    (e1xp, tyerrs)
+  end
+  | T1YPVar (t1var) => let
+    val (args, tyerrs) = oftype (Gamma, args)
+    val ret_typ = T1YPVar (t1Var_new ())
+    val ty_fun = T1YPfun (args.e1xp_typ, ret_typ)
+    val () = t1Var_set_typ (t1var, ty_fun)
+    val e1xp = e1xp_make_app (loc, f, args, ret_typ)
+    // val _ = t1yp_normalize (f.e1xp_typ)  unnecessary, let others do this
   in
     (e1xp, tyerrs)
   end
@@ -725,7 +943,7 @@ end
 
 implement typcheck (Gamma, e0, t1) = let
   val (e1, tyerrs) = oftype (Gamma, e0)
-  val ty_cmp = lte_t1yp_t1yp (e1.e1xp_typ, t1)
+  val ty_cmp = match_t1yp_t1yp (e1.e1xp_typ, t1)
 in
   if ty_cmp = true then (e1, tyerrs)
   else let

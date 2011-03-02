@@ -3,7 +3,7 @@
 */
 
 let 
-  val rec fib: int -> int = lam (n: int) =>
+  val rec fib = lam (n) =>
     if n >= 2 then fib (n-1) + fib (n-2) else n
   // end of [val rec]
   val fib20 = fib (20)

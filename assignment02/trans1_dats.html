@@ -69,6 +69,36 @@
 <span class="keyword">val</span> t1yp_unit <span class="keyword">=</span> T1YPtup <span class="keyword">(</span>list0_nil<span class="keyword">)</span>
 
 <span class="comment">(* ****** ****** *)</span>
+<span class="keyword">local</span>
+
+<span class="keyword">assume</span> <span class="staexp">t1Var <span class="keyword">=</span> <span class="keyword">'{</span>
+  nam<span class="keyword">=</span> int<span class="keyword">,</span> lnk<span class="keyword">=</span> ref <span class="keyword">(</span>t1yp<span class="keyword">)</span>
+<span class="keyword">}</span></span> <span class="comment">// end of [t1Var]
+</span>
+<span class="keyword">val</span> count <span class="keyword">=</span> ref&lt;<span class="staexp">int</span><span class="keyword">&gt;</span> <span class="keyword">(</span>0<span class="keyword">)</span>
+
+<span class="keyword">in</span>
+
+<span class="keyword">fun</span> t1Var_get_nam <span class="keyword">(</span>X<span class="keyword">:</span> <span class="staexp">t1Var</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span> <span class="keyword">=</span> X<span class="keyword">.</span>nam
+<span class="keyword">fun</span> t1Var_get_typ <span class="keyword">(</span>X<span class="keyword">:</span> <span class="staexp">t1Var</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">t1yp</span> <span class="keyword">=</span> <span class="keyword">!</span><span class="keyword">(</span>X<span class="keyword">.</span>lnk<span class="keyword">)</span>
+<span class="keyword">fun</span> t1Var_set_typ <span class="keyword">(</span>X<span class="keyword">:</span> <span class="staexp">t1Var</span><span class="keyword">,</span> t<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">!</span><span class="keyword">(</span>X<span class="keyword">.</span>lnk<span class="keyword">)</span> := t
+
+<span class="keyword">fun</span> t1Var_new <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">t1Var</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> n <span class="keyword">=</span> <span class="keyword">!</span>count<span class="keyword">;</span> <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>count := n+1
+<span class="keyword">in</span> <span class="keyword">'{</span>
+  nam<span class="keyword">=</span> n<span class="keyword">,</span> lnk<span class="keyword">=</span> ref <span class="keyword">(</span>T1YPdummy<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="keyword">end</span> <span class="comment">// [t1Var_new]
+</span>
+<span class="keyword">end</span> <span class="comment">// end of [local]
+</span>
+<span class="keyword">fun</span> eq_t1Var_t1Var
+  <span class="keyword">(</span>X1<span class="keyword">:</span> <span class="staexp">t1Var</span><span class="keyword">,</span> X2<span class="keyword">:</span> <span class="staexp">t1Var</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span> <span class="keyword">=</span>
+  t1Var_get_nam <span class="keyword">(</span>X1<span class="keyword">)</span> <span class="keyword">=</span> t1Var_get_nam <span class="keyword">(</span>X2<span class="keyword">)</span>
+<span class="neuexp"><span class="keyword">overload</span> <span class="keyword">=</span> <span class="keyword">with</span> eq_t1Var_t1Var</span>
+
+<span class="keyword">fun</span> neq_t1Var_t1Var
+  <span class="keyword">(</span>X1<span class="keyword">:</span> <span class="staexp">t1Var</span><span class="keyword">,</span> X2<span class="keyword">:</span> <span class="staexp">t1Var</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span> <span class="keyword">=</span> <span class="keyword">~</span><span class="keyword">(</span>X1 <span class="keyword">=</span> X2<span class="keyword">)</span>
+<span class="neuexp"><span class="keyword">overload</span> &lt;&gt; <span class="keyword">with</span> neq_t1Var_t1Var</span>
 <span class="comment">(* ****** ****** *)</span>
 
 <span class="keyword">implement</span>
@@ -84,8 +114,8 @@ trans1_typ <span class="keyword">(</span>t<span class="keyword">)</span> <span c
 </span>
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">abstype</span> <span class="staexp"><a name="1315"><span class="stacstdec">theConstTypMap_t</span></a></span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1343"><span class="dyncstdec">theConstTypFind <span class="keyword">(</span>opr<span class="keyword">:</span> <span class="staexp">opr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">t1yp</span></span></a>
+<span class="keyword">abstype</span> <span class="staexp"><a name="1944"><span class="stacstdec">theConstTypMap_t</span></a></span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1972"><span class="dyncstdec">theConstTypFind <span class="keyword">(</span>opr<span class="keyword">:</span> <span class="staexp">opr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">t1yp</span></span></a>
 
 <span class="keyword">local</span>
 
@@ -101,7 +131,7 @@ trans1_typ <span class="keyword">(</span>t<span class="keyword">)</span> <span c
   <span class="keyword">val</span> t1yp_str1 <span class="keyword">=</span> T1YPtup <span class="keyword">(</span>t1yp_string :: nil<span class="keyword">)</span>
   <span class="keyword">val</span> t1yp_aop <span class="keyword">=</span> T1YPfun <span class="keyword">(</span>t1yp_int2<span class="keyword">,</span> t1yp_int<span class="keyword">)</span>
   <span class="keyword">val</span> t1yp_bop <span class="keyword">=</span> T1YPfun <span class="keyword">(</span>t1yp_int2<span class="keyword">,</span> t1yp_bool<span class="keyword">)</span>
-  <span class="keyword">typedef</span> <span class="staexp"><a name="1816"><span class="stacstdec">T <span class="keyword">=</span> <span class="keyword">@(</span>sym<span class="keyword">,</span> t1yp<span class="keyword">)</span></span></a></span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="2445"><span class="stacstdec">T <span class="keyword">=</span> <span class="keyword">@(</span>sym<span class="keyword">,</span> t1yp<span class="keyword">)</span></span></a></span>
   <span class="keyword">val</span> cts <span class="keyword">=</span> <span class="keyword">(</span>
     <span class="keyword">(</span>symbol_PLUS<span class="keyword">,</span> t1yp_aop<span class="keyword">)</span> ::
     <span class="keyword">(</span>symbol_MINUS<span class="keyword">,</span> t1yp_aop<span class="keyword">)</span> ::
@@ -154,29 +184,165 @@ theConstTypFind <span class="keyword">(</span>opr<span class="keyword">)</span> 
 <span class="keyword">end</span> <span class="comment">// end of [local]
 </span>
 <span class="comment">(* ****** ****** *)</span>
+<span class="comment">(*
+fun lte_t1yp_t1yp
+  (t1: t1yp, t2: t1yp): bool = case+ (t1, t2) of
+    | (T1YPbase sym1, T1YPbase sym2) =&gt; sym1 = sym2
+    | (T1YPfun (t11, t12), T1YPfun (t21, t22)) =&gt;
+        lte_t1yp_t1yp (t21, t11) andalso lte_t1yp_t1yp (t12, t22)
+      // end of [T1YPfun, T1YPfun]
+    | (T1YPtup ts1, T1YPtup ts2) =&gt; lte_t1yplst_t1yplst (ts1, ts2)
+    | (_, _) =&gt; false
+// end of [lte_t1yp_t1yp]
 
-<span class="keyword">fun</span> lte_t1yp_t1yp
-  <span class="keyword">(</span>t1<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">,</span> t2<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span> <span class="keyword">=</span> <span class="keyword">case+</span> <span class="keyword">(</span>t1<span class="keyword">,</span> t2<span class="keyword">)</span> <span class="keyword">of</span>
-    <span class="keyword">|</span> <span class="keyword">(</span>T1YPbase sym1<span class="keyword">,</span> T1YPbase sym2<span class="keyword">)</span> <span class="keyword">=&gt;</span> sym1 <span class="keyword">=</span> sym2
-    <span class="keyword">|</span> <span class="keyword">(</span>T1YPfun <span class="keyword">(</span>t11<span class="keyword">,</span> t12<span class="keyword">)</span><span class="keyword">,</span> T1YPfun <span class="keyword">(</span>t21<span class="keyword">,</span> t22<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span>
-        lte_t1yp_t1yp <span class="keyword">(</span>t21<span class="keyword">,</span> t11<span class="keyword">)</span> andalso lte_t1yp_t1yp <span class="keyword">(</span>t12<span class="keyword">,</span> t22<span class="keyword">)</span>
-      <span class="comment">// end of [T1YPfun, T1YPfun]
-</span>    <span class="keyword">|</span> <span class="keyword">(</span>T1YPtup ts1<span class="keyword">,</span> T1YPtup ts2<span class="keyword">)</span> <span class="keyword">=&gt;</span> lte_t1yplst_t1yplst <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">)</span>
-    <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> false
-<span class="comment">// end of [lte_t1yp_t1yp]
+and lte_t1yplst_t1yplst (ts1: t1yplst, ts2: t1yplst): bool =
+  case+ (ts1, ts2) of
+  | (list0_cons (t1, ts1), list0_cons (t2, ts2)) =&gt;
+      lte_t1yp_t1yp (t1, t2) andalso lte_t1yplst_t1yplst (ts1, ts2)
+    // end of [list0_cons, list0_cons]
+  | (list0_nil (), list0_nil ()) =&gt; true
+  | (_, _) =&gt; false
+// end of [lte_t1yplst_t1yplst]
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">(* The result can be
+1. T1YPVar with dummy inside (one level)
+2. commond type
+// -------------
+(x, ref (y, ref (z, ref dummy))) becomes
+(x, ref (z, ref dummy))
+(y, ref (z, ref dummy))
+(z, ref dummy)
+// -------------
+returen value is (z, dummy)
+*)</span>
+<span class="keyword">implement</span> t1yp_normalize <span class="keyword">(</span>t<span class="keyword">)</span> <span class="keyword">=</span> 
+  <span class="keyword">case+</span> t <span class="keyword">of</span>
+  <span class="keyword">|</span> T1YPVar <span class="keyword">(</span>X<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> t1 <span class="keyword">=</span> t1Var_get_typ <span class="keyword">(</span>X<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      <span class="keyword">case+</span> t1 <span class="keyword">of</span>
+      <span class="keyword">|</span> T1YPdummy <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> t
+      <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> t1 <span class="keyword">where</span> <span class="keyword">{</span>
+          <span class="keyword">val</span> t1 <span class="keyword">=</span> t1yp_normalize <span class="keyword">(</span>t1<span class="keyword">)</span>
+          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> t1Var_set_typ <span class="keyword">(</span>X<span class="keyword">,</span> t1<span class="keyword">)</span>
+        <span class="keyword">}</span> <span class="comment">// [_]
+</span>    <span class="keyword">end</span> <span class="comment">// end of [T1YPVar]
+</span>  <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> t <span class="comment">// end of [_]
+</span><span class="comment">// end of [t1yp_normalize]
 </span>
-<span class="keyword">and</span> lte_t1yplst_t1yplst <span class="keyword">(</span>ts1<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">,</span> ts2<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span> <span class="keyword">=</span>
+
+<span class="keyword">fun</span> t1yp_lst_normalize <span class="keyword">(</span>ts<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">t1yplst</span> <span class="keyword">=</span> 
+  list0_map_fun&lt;<span class="staexp">t1yp</span><span class="keyword">&gt;&lt;</span><span class="staexp">t1yp</span><span class="keyword">&gt;</span> <span class="keyword">(</span>ts<span class="keyword">,</span> t1yp_normalize<span class="keyword">)</span>
+
+<span class="keyword">fun</span> make_t1ypvar_lst <span class="keyword">(</span>n<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 t1yp</span> <span class="keyword">=</span>
+  <span class="keyword">if</span> n <span class="keyword">=</span> 0 <span class="keyword">then</span> nil <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">else</span> cons <span class="keyword">(</span>T1YPVar <span class="keyword">(</span>t1Var_new <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span><span class="keyword">,</span> make_t1ypvar_lst <span class="keyword">(</span>n - 1<span class="keyword">)</span><span class="keyword">)</span>
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">(* if we only use this match, then there would be
+no cascade T1YPVar
+*)</span>
+<span class="keyword">fun</span> match_t1yp_t1yp
+  <span class="keyword">(</span>t1<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">,</span> t2<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> t1 <span class="keyword">=</span> t1yp_normalize <span class="keyword">(</span>t1<span class="keyword">)</span>
+  <span class="keyword">val</span> t2 <span class="keyword">=</span> t1yp_normalize <span class="keyword">(</span>t2<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> <span class="keyword">(</span>t1<span class="keyword">,</span> t2<span class="keyword">)</span> <span class="keyword">of</span>
+  <span class="keyword">|</span> <span class="keyword">(</span>T1YPVar X1<span class="keyword">,</span> T1YPVar X2<span class="keyword">)</span> <span class="keyword">=&gt;</span> true <span class="keyword">where</span> <span class="keyword">{</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> X1 &lt;&gt; X2 <span class="keyword">then</span> t1Var_set_typ <span class="keyword">(</span>X1<span class="keyword">,</span> t2<span class="keyword">)</span>
+    <span class="keyword">}</span> <span class="comment">// end of [T1YPvar, T1YPvar]
+</span>  <span class="keyword">|</span> <span class="keyword">(</span>T1YPVar X1<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>t1Var_set_typ <span class="keyword">(</span>X1<span class="keyword">,</span> t2<span class="keyword">)</span><span class="keyword">;</span> true<span class="keyword">)</span>
+  <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> T1YPVar X2<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>t1Var_set_typ <span class="keyword">(</span>X2<span class="keyword">,</span> t1<span class="keyword">)</span><span class="keyword">;</span> true<span class="keyword">)</span>
+<span class="comment">//
+</span>  <span class="keyword">|</span> <span class="keyword">(</span>T1YPbase sym1<span class="keyword">,</span> T1YPbase sym2<span class="keyword">)</span> <span class="keyword">=&gt;</span> sym1 <span class="keyword">=</span> sym2
+  <span class="keyword">|</span> <span class="keyword">(</span>T1YPfun <span class="keyword">(</span>t11<span class="keyword">,</span> t12<span class="keyword">)</span><span class="keyword">,</span> T1YPfun <span class="keyword">(</span>t21<span class="keyword">,</span> t22<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> b1 <span class="keyword">=</span> match_t1yp_t1yp <span class="keyword">(</span>t21<span class="keyword">,</span> t11<span class="keyword">)</span>
+      <span class="keyword">val</span> b2 <span class="keyword">=</span> match_t1yp_t1yp <span class="keyword">(</span>t12<span class="keyword">,</span> t22<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      b1 &amp;&amp; b2
+    <span class="keyword">end</span> <span class="comment">// end of [T1YPfun, T1YPfun]
+</span>  <span class="keyword">|</span> <span class="keyword">(</span>T1YPtup ts1<span class="keyword">,</span> T1YPtup ts2<span class="keyword">)</span> <span class="keyword">=&gt;</span> match_t1yplst_t1yplst <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">,</span> true<span class="keyword">)</span>
+  <span class="keyword">|</span> <span class="keyword">(</span>T1YPtup_vl rfts1<span class="keyword">,</span> T1YPtup ts2<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span> 
+    <span class="keyword">val</span> ts1 <span class="keyword">=</span> <span class="keyword">!</span>rfts1
+    <span class="keyword">val</span> len1 <span class="keyword">=</span> list0_length <span class="keyword">(</span>ts1<span class="keyword">)</span>
+    <span class="keyword">val</span> len2 <span class="keyword">=</span> list0_length <span class="keyword">(</span>ts2<span class="keyword">)</span>
+    <span class="keyword">val</span> ts1 <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">if</span> len1 &gt;= len2 <span class="keyword">then</span> ts1 <span class="keyword">else</span> 
+      list0_append&lt;<span class="staexp">t1yp</span><span class="keyword">&gt;</span> <span class="keyword">(</span>ts1<span class="keyword">,</span> make_t1ypvar_lst <span class="keyword">(</span>len2 - len1<span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">)</span>
+    <span class="keyword">val</span> res <span class="keyword">=</span> match_t1yplst_t1yplst_l <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">,</span> true<span class="keyword">)</span>
+    <span class="keyword">val</span> ts1 <span class="keyword">=</span> t1yp_lst_normalize <span class="keyword">(</span>ts1<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>rfts1 := ts1
+  <span class="keyword">in</span>
+    res
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> <span class="keyword">(</span>T1YPtup ts1<span class="keyword">,</span> T1YPtup_vl rfts2<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span> 
+    <span class="keyword">val</span> ts2 <span class="keyword">=</span> <span class="keyword">!</span>rfts2
+    <span class="keyword">val</span> len1 <span class="keyword">=</span> list0_length <span class="keyword">(</span>ts1<span class="keyword">)</span>
+    <span class="keyword">val</span> len2 <span class="keyword">=</span> list0_length <span class="keyword">(</span>ts2<span class="keyword">)</span>
+    <span class="keyword">val</span> ts2 <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">if</span> len1 &lt;= len2 <span class="keyword">then</span> ts2 <span class="keyword">else</span> 
+      list0_append&lt;<span class="staexp">t1yp</span><span class="keyword">&gt;</span> <span class="keyword">(</span>ts2<span class="keyword">,</span> make_t1ypvar_lst <span class="keyword">(</span>len1 - len2<span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">)</span>
+    <span class="keyword">val</span> res <span class="keyword">=</span> match_t1yplst_t1yplst <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">,</span> true<span class="keyword">)</span>
+    <span class="keyword">val</span> ts2 <span class="keyword">=</span> t1yp_lst_normalize <span class="keyword">(</span>ts2<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>rfts2 := ts2
+  <span class="keyword">in</span>
+    res
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> <span class="keyword">(</span>T1YPtup_vl rfts1<span class="keyword">,</span> T1YPtup_vl rfts2<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span> 
+    <span class="keyword">val</span> ts1 <span class="keyword">=</span> <span class="keyword">!</span>rfts1
+    <span class="keyword">val</span> ts2 <span class="keyword">=</span> <span class="keyword">!</span>rfts2
+    <span class="keyword">val</span> len1 <span class="keyword">=</span> list0_length <span class="keyword">(</span>ts1<span class="keyword">)</span>
+    <span class="keyword">val</span> len2 <span class="keyword">=</span> list0_length <span class="keyword">(</span>ts2<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">if</span> len1 &lt;= len2 <span class="keyword">then</span> 
+      <span class="keyword">(</span>list0_append&lt;<span class="staexp">t1yp</span><span class="keyword">&gt;</span> <span class="keyword">(</span>ts1<span class="keyword">,</span> make_t1ypvar_lst <span class="keyword">(</span>len2 - len1<span class="keyword">)</span><span class="keyword">)</span><span class="keyword">,</span> ts2<span class="keyword">)</span>
+    <span class="keyword">else</span>
+      <span class="keyword">(</span>ts1<span class="keyword">,</span> list0_append&lt;<span class="staexp">t1yp</span><span class="keyword">&gt;</span> <span class="keyword">(</span>ts2<span class="keyword">,</span> make_t1ypvar_lst <span class="keyword">(</span>len1 - len2<span class="keyword">)</span><span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">)</span>
+    <span class="keyword">val</span> res <span class="keyword">=</span> match_t1yplst_t1yplst <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">,</span> true<span class="keyword">)</span>
+    <span class="keyword">val</span> ts1 <span class="keyword">=</span> t1yp_lst_normalize <span class="keyword">(</span>ts1<span class="keyword">)</span>
+    <span class="keyword">val</span> ts2 <span class="keyword">=</span> t1yp_lst_normalize <span class="keyword">(</span>ts2<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>rfts1 := ts1
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>rfts2 := ts2
+  <span class="keyword">in</span>
+    res
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> false
+<span class="keyword">end</span> <span class="comment">// end of [match_t1yp_t1yp]
+</span>
+<span class="keyword">and</span> match_t1yplst_t1yplst <span class="keyword">(</span>
+  ts1<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">,</span> ts2<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp">bool</span>
+<span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">bool</span> <span class="keyword">=</span>
   <span class="keyword">case+</span> <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">)</span> <span class="keyword">of</span>
-  <span class="keyword">|</span> <span class="keyword">(</span>list0_cons <span class="keyword">(</span>t1<span class="keyword">,</span> ts1<span class="keyword">)</span><span class="keyword">,</span> list0_cons <span class="keyword">(</span>t2<span class="keyword">,</span> ts2<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span>
-      lte_t1yp_t1yp <span class="keyword">(</span>t1<span class="keyword">,</span> t2<span class="keyword">)</span> andalso lte_t1yplst_t1yplst <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">)</span>
-    <span class="comment">// end of [list0_cons, list0_cons]
-</span>  <span class="keyword">|</span> <span class="keyword">(</span>list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">,</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> true
+  <span class="keyword">|</span> <span class="keyword">(</span>list0_cons <span class="keyword">(</span>t1<span class="keyword">,</span> ts1<span class="keyword">)</span><span class="keyword">,</span>
+     list0_cons <span class="keyword">(</span>t2<span class="keyword">,</span> ts2<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> res <span class="keyword">=</span> <span class="keyword">(</span>
+        <span class="keyword">if</span> match_t1yp_t1yp <span class="keyword">(</span>t1<span class="keyword">,</span> t2<span class="keyword">)</span> <span class="keyword">then</span> res <span class="keyword">else</span> false
+      <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">bool</span>
+    <span class="keyword">in</span>
+      match_t1yplst_t1yplst <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">,</span> res<span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="comment">// end of [list0_cons, list0_cons]
+</span>  <span class="keyword">|</span> <span class="keyword">(</span>list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">,</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> res
   <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> false
 <span class="comment">// end of [lte_t1yplst_t1yplst]
 </span>
-<span class="keyword">implement</span> print_t1yp <span class="keyword">(</span>t<span class="keyword">)</span> <span class="keyword">=</span> fprint_t1yp <span class="keyword">(</span>stdout_ref<span class="keyword">,</span> t<span class="keyword">)</span>
-<span class="keyword">implement</span> prerr_t1yp <span class="keyword">(</span>t<span class="keyword">)</span> <span class="keyword">=</span> fprint_t1yp <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> t<span class="keyword">)</span>
-
+<span class="comment">(* it's O.K. if the left is longer than the right *)</span> 
+<span class="keyword">and</span> match_t1yplst_t1yplst_l <span class="keyword">(</span>
+  ts1<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">,</span> ts2<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp">bool</span>
+<span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">bool</span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">)</span> <span class="keyword">of</span>
+  <span class="keyword">|</span> <span class="keyword">(</span>list0_cons <span class="keyword">(</span>t1<span class="keyword">,</span> ts1<span class="keyword">)</span><span class="keyword">,</span>
+     list0_cons <span class="keyword">(</span>t2<span class="keyword">,</span> ts2<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> res <span class="keyword">=</span> <span class="keyword">(</span>
+        <span class="keyword">if</span> match_t1yp_t1yp <span class="keyword">(</span>t1<span class="keyword">,</span> t2<span class="keyword">)</span> <span class="keyword">then</span> res <span class="keyword">else</span> false
+      <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">bool</span>
+    <span class="keyword">in</span>
+      match_t1yplst_t1yplst_l <span class="keyword">(</span>ts1<span class="keyword">,</span> ts2<span class="keyword">,</span> res<span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="comment">// end of [list0_cons, list0_cons]
+</span>  <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> res
+  <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> false
+<span class="comment">// end of [lte_t1yplst_t1yplst]
+</span>
 <span class="comment">(* ****** ****** *)</span>
 <span class="keyword">implement</span>
 v1ar_make <span class="keyword">(</span>loc<span class="keyword">,</span> sym<span class="keyword">,</span> t<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
@@ -281,17 +447,17 @@ v1ar_set_def (
 </span>
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">typedef</span> <span class="staexp"><a name="6643"><span class="stacstdec">ctx <span class="keyword">=</span> symenv_t <span class="keyword">(</span>v1ar<span class="keyword">)</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="11125"><span class="stacstdec">ctx <span class="keyword">=</span> symenv_t <span class="keyword">(</span>v1ar<span class="keyword">)</span></span></a></span>
 <span class="keyword">val</span> ctx_nil <span class="keyword">=</span> symenv_make <span class="keyword">(</span><span class="keyword">)</span> <span class="comment">// empty context
 </span>
 
 <span class="comment">(* ****** ****** *)</span>
-<span class="keyword">abstype</span> <span class="staexp"><a name="6741"><span class="stacstdec">tyerr</span></a></span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="6755"><span class="stacstdec">tyerr_pool <span class="keyword">=</span> list0 tyerr</span></a></span>
+<span class="keyword">abstype</span> <span class="staexp"><a name="11223"><span class="stacstdec">tyerr</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="11237"><span class="stacstdec">tyerr_pool <span class="keyword">=</span> list0 tyerr</span></a></span>
 <span class="comment">(* record all the error for future output *)</span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6836"><span class="dyncstdec">tyerr_pool_add <span class="keyword">(</span>pool<span class="keyword">:</span> <span class="staexp">tyerr_pool</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> msg<span class="keyword">:</span> <span class="staexp">String</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tyerr_pool</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6916"><span class="dyncstdec">tyerr_pool_append <span class="keyword">(</span>p1<span class="keyword">:</span> <span class="staexp">tyerr_pool</span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">tyerr_pool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tyerr_pool</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6990"><span class="dyncstdec">tyerr_pool_make <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tyerr_pool</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="11318"><span class="dyncstdec">tyerr_pool_add <span class="keyword">(</span>pool<span class="keyword">:</span> <span class="staexp">tyerr_pool</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> msg<span class="keyword">:</span> <span class="staexp">String</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tyerr_pool</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="11398"><span class="dyncstdec">tyerr_pool_append <span class="keyword">(</span>p1<span class="keyword">:</span> <span class="staexp">tyerr_pool</span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">tyerr_pool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tyerr_pool</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="11472"><span class="dyncstdec">tyerr_pool_make <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tyerr_pool</span></span></a>
 
 <span class="keyword">local</span>
 <span class="keyword">assume</span> <span class="staexp">tyerr <span class="keyword">=</span> <span class="keyword">'{</span>loc <span class="keyword">=</span> loc<span class="keyword">,</span> msg <span class="keyword">=</span> String<span class="keyword">}</span></span>
@@ -309,9 +475,9 @@ v1ar_set_def (
 <span class="comment">// exception TypeError of (loc, String)
 </span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7389"><span class="dyncstdec">oftype <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="11871"><span class="dyncstdec">oftype <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7451"><span class="dyncstdec">typcheck <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> t1<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="11933"><span class="dyncstdec">typcheck <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> t1<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
 <span class="keyword">fun</span> oftype_ann <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> t0<span class="keyword">:</span> <span class="staexp">t0yp</span><span class="keyword">)</span><span class="keyword">:</span> 
   <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
@@ -348,21 +514,21 @@ v1ar_set_def (
 <span class="keyword">end</span>
     
 <span class="comment">(* fill the environment and do the transformation *)</span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="8724"><span class="dyncstdec">oftype_declst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> decs<span class="keyword">:</span> <span class="staexp">d0eclst</span><span class="keyword">)</span><span class="keyword">:</span> 
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="13206"><span class="dyncstdec">oftype_declst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> decs<span class="keyword">:</span> <span class="staexp">d0eclst</span><span class="keyword">)</span><span class="keyword">:</span> 
   <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1eclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="8809"><span class="dyncstdec">oftype_dec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> dec<span class="keyword">:</span> <span class="staexp">d0ec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1ec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="13291"><span class="dyncstdec">oftype_dec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> dec<span class="keyword">:</span> <span class="staexp">d0ec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1ec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="8881"><span class="dyncstdec">oftype_valdeclst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="13363"><span class="dyncstdec">oftype_valdeclst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span>
   <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1aldeclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="8978"><span class="dyncstdec">oftype_valdeclst_rec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="13460"><span class="dyncstdec">oftype_valdeclst_rec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span>
   <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1aldeclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9079"><span class="dyncstdec">oftype_valdec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="13561"><span class="dyncstdec">oftype_valdec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span>
   <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1aldec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9166"><span class="dyncstdec">oftype_valdec_rec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>v1aldec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="13648"><span class="dyncstdec">oftype_valdec_rec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>v1aldec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
 <span class="keyword">implement</span> oftype_declst <span class="keyword">(</span>Gamma<span class="keyword">,</span> decs<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">fun</span> helper <span class="keyword">(</span>init<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1eclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span><span class="keyword">,</span> dec<span class="keyword">:</span> <span class="staexp">d0ec</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span>
@@ -416,15 +582,16 @@ v1ar_set_def (
       <span class="keyword">val</span> nam <span class="keyword">=</span> valdec<span class="keyword">.</span>v0aldec_nam
       <span class="keyword">val</span> <span class="keyword">(</span>t1yp<span class="keyword">,</span> tyerrs1<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">case+</span> valdec<span class="keyword">.</span>v0aldec_ann <span class="keyword">of</span>
         <span class="keyword">|</span> Some0 t0yp <span class="keyword">=&gt;</span> <span class="keyword">(</span>trans1_typ <span class="keyword">(</span>t0yp<span class="keyword">)</span><span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span>
-        <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span> 
-          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr_loc <span class="keyword">(</span>loc<span class="keyword">)</span>
-          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr ": recursively declared value must have type annotated"
-          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr_newline <span class="keyword">(</span><span class="keyword">)</span>
-          <span class="keyword">val</span> errmsg <span class="keyword">=</span> "recursively declared value must have type annotated"
-        <span class="keyword">in</span>
-          <span class="comment">(* assume the type is int *)</span>
-          <span class="keyword">(</span>t1yp_int<span class="keyword">,</span> tyerr_pool_add <span class="keyword">(</span>tyerr_pool_nil<span class="keyword">,</span> loc<span class="keyword">,</span> errmsg<span class="keyword">)</span><span class="keyword">)</span>
-        <span class="keyword">end</span>
+        <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>T1YPVar <span class="keyword">(</span>t1Var_new <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span><span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span>
+          <span class="comment">(*let  serve as comment
+          val () = prerr_loc (loc)
+          val () = prerr ": recursively declared value must have type annotated"
+          val () = prerr_newline ()
+          val errmsg = "recursively declared value must have type annotated"
+        in
+          (* assume the type is int *)
+          (t1yp_int, tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
+        end*)</span>
       <span class="keyword">val</span> Gamma1 <span class="keyword">=</span> symenv_insert <span class="keyword">(</span>Gamma<span class="keyword">,</span> nam<span class="keyword">,</span> v1ar_make <span class="keyword">(</span>loc<span class="keyword">,</span> nam<span class="keyword">,</span> t1yp<span class="keyword">)</span><span class="keyword">)</span>
       <span class="keyword">val</span> <span class="keyword">(</span>Gamma2<span class="keyword">,</span> tyerrs2<span class="keyword">)</span> <span class="keyword">=</span> fillin_env <span class="keyword">(</span>Gamma1<span class="keyword">,</span> valdecs1<span class="keyword">)</span>
       <span class="keyword">val</span> tyerrs <span class="keyword">=</span> tyerr_pool_append <span class="keyword">(</span>tyerrs1<span class="keyword">,</span> tyerrs2<span class="keyword">)</span>
@@ -503,9 +670,9 @@ v1ar_set_def (
   <span class="keyword">(</span>e1xp_make_let <span class="keyword">(</span>loc<span class="keyword">,</span> d1ecs<span class="keyword">,</span> e1<span class="keyword">,</span> e1<span class="keyword">.</span>e1xp_typ<span class="keyword">)</span><span class="keyword">,</span> tyerrs<span class="keyword">)</span>
 <span class="keyword">end</span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="14186"><span class="dyncstdec">oftyp_arglst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> a0rgs<span class="keyword">:</span> <span class="staexp">a0rglst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1arlst<span class="keyword">,</span> t1yplst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="18740"><span class="dyncstdec">oftyp_arglst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> a0rgs<span class="keyword">:</span> <span class="staexp">a0rglst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1arlst<span class="keyword">,</span> t1yplst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="14277"><span class="dyncstdec">oftyp_arg <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> a0rg<span class="keyword">:</span> <span class="staexp">a0rg</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1ar<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="18831"><span class="dyncstdec">oftyp_arg <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> a0rg<span class="keyword">:</span> <span class="staexp">a0rg</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1ar<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
 <span class="keyword">implement</span> oftyp_arglst <span class="keyword">(</span>Gamma<span class="keyword">,</span> a0rgs<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">fun</span> helper <span class="keyword">(</span>init<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1arlst<span class="keyword">,</span> t1yplst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span><span class="keyword">,</span> a0rg<span class="keyword">:</span> <span class="staexp">a0rg</span><span class="keyword">)</span>
@@ -539,17 +706,23 @@ v1ar_set_def (
     <span class="keyword">(</span>Gamma1<span class="keyword">,</span> v1ar<span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span>
   <span class="keyword">end</span>
   <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr_loc <span class="keyword">(</span>loc<span class="keyword">)</span>
-    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr ": arg must have type"
-    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr_newline <span class="keyword">(</span><span class="keyword">)</span>
-    <span class="keyword">val</span> errmsg <span class="keyword">=</span> "arg must have type"
-
-    <span class="comment">(* assume the type is int *)</span>
-    <span class="keyword">val</span> v1ar <span class="keyword">=</span> v1ar_make <span class="keyword">(</span>loc<span class="keyword">,</span> nam<span class="keyword">,</span> t1yp_int<span class="keyword">)</span>
+    <span class="keyword">val</span> v1ar <span class="keyword">=</span> v1ar_make <span class="keyword">(</span>loc<span class="keyword">,</span> nam<span class="keyword">,</span> T1YPVar <span class="keyword">(</span>t1Var_new <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span><span class="keyword">)</span>
     <span class="keyword">val</span> Gamma1 <span class="keyword">=</span> symenv_insert <span class="keyword">(</span>Gamma<span class="keyword">,</span> nam<span class="keyword">,</span> v1ar<span class="keyword">)</span>
   <span class="keyword">in</span>
-    <span class="keyword">(</span>Gamma1<span class="keyword">,</span> v1ar<span class="keyword">,</span> tyerr_pool_add <span class="keyword">(</span>tyerr_pool_nil<span class="keyword">,</span> loc<span class="keyword">,</span> errmsg<span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">(</span>Gamma1<span class="keyword">,</span> v1ar<span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span>
   <span class="keyword">end</span>
+    <span class="comment">(*let  serve as comment
+    val () = prerr_loc (loc)
+    val () = prerr ": arg must have type"
+    val () = prerr_newline ()
+    val errmsg = "arg must have type"
+
+    (* assume the type is int *)
+    val v1ar = v1ar_make (loc, nam, t1yp_int)
+    val Gamma1 = symenv_insert (Gamma, nam, v1ar)
+  in
+    (Gamma1, v1ar, tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
+  end *)</span>
 <span class="keyword">end</span>
 
 <span class="keyword">fun</span> oftype_lam <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> a0rgs<span class="keyword">:</span> <span class="staexp">a0rglst</span><span class="keyword">,</span> t0ypopt<span class="keyword">:</span> <span class="staexp">t0ypopt</span><span class="keyword">,</span> e0xp<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">)</span><span class="keyword">:</span>
@@ -601,8 +774,10 @@ v1ar_set_def (
 
 <span class="keyword">fun</span> oftype_proj <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> e0xp<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> <span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0xp<span class="keyword">)</span>
+  <span class="comment">(* normalize first *)</span>
+  <span class="keyword">val</span> t <span class="keyword">=</span> t1yp_normalize <span class="keyword">(</span>e1xp<span class="keyword">.</span>e1xp_typ<span class="keyword">)</span>
 <span class="keyword">in</span>
-  <span class="keyword">case+</span> e1xp<span class="keyword">.</span>e1xp_typ <span class="keyword">of</span>
+  <span class="keyword">case+</span> t <span class="keyword">of</span>
   <span class="keyword">|</span> T1YPtup <span class="keyword">(</span>t1yps<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
     <span class="keyword">val</span> t1ypopt <span class="keyword">=</span> list0_nth_opt&lt;<span class="staexp">t1yp</span><span class="keyword">&gt;</span> <span class="keyword">(</span>t1yps<span class="keyword">,</span> i<span class="keyword">)</span>
   <span class="keyword">in</span>
@@ -617,6 +792,31 @@ v1ar_set_def (
       <span class="keyword">val</span> errmsg <span class="keyword">=</span> "projection out of bound"
     <span class="keyword">in</span>
       <span class="keyword">(</span>e1xp_proj<span class="keyword">,</span> tyerr_pool_add <span class="keyword">(</span>tyerr_pool_nil<span class="keyword">,</span> loc<span class="keyword">,</span> errmsg<span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">end</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> T1YPVar <span class="keyword">(</span>t1var<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> t1varlst <span class="keyword">=</span> make_t1ypvar_lst <span class="keyword">(</span>i + 1<span class="keyword">)</span>
+    <span class="keyword">val-</span> Some <span class="keyword">(</span>t1ypitem<span class="keyword">)</span> <span class="keyword">=</span> list0_nth_opt <span class="keyword">(</span>t1varlst<span class="keyword">,</span> i<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> t1Var_set_typ <span class="keyword">(</span>t1var<span class="keyword">,</span> T1YPtup_vl <span class="keyword">(</span>ref&lt;<span class="staexp">t1yplst</span><span class="keyword">&gt;</span> <span class="keyword">(</span>t1varlst<span class="keyword">)</span><span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make_proj <span class="keyword">(</span>loc<span class="keyword">,</span> e1xp<span class="keyword">,</span> i<span class="keyword">,</span> t1ypitem<span class="keyword">)</span><span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> T1YPtup_vl <span class="keyword">(</span>rft1yps<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> t1yps <span class="keyword">=</span> <span class="keyword">!</span>rft1yps
+    <span class="keyword">val</span> len <span class="keyword">=</span> list0_length <span class="keyword">(</span>t1yps<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">if</span> len <span class="keyword">&gt;</span> i <span class="keyword">then</span> <span class="keyword">let</span>
+      <span class="keyword">val-</span> Some <span class="keyword">(</span>t1ypitem<span class="keyword">)</span> <span class="keyword">=</span> list0_nth_opt <span class="keyword">(</span>t1yps<span class="keyword">,</span> i<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      <span class="keyword">(</span>e1xp_make_proj <span class="keyword">(</span>loc<span class="keyword">,</span> e1xp<span class="keyword">,</span> i<span class="keyword">,</span> t1ypitem<span class="keyword">)</span><span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> t1varlst <span class="keyword">=</span> make_t1ypvar_lst <span class="keyword">(</span>i + 1 - len<span class="keyword">)</span>
+      <span class="comment">(* get the last one *)</span>
+      <span class="keyword">val-</span> Some <span class="keyword">(</span>t1ypitem<span class="keyword">)</span> <span class="keyword">=</span> list0_nth_opt <span class="keyword">(</span>t1varlst<span class="keyword">,</span> i - len<span class="keyword">)</span>
+      <span class="keyword">val</span> t1yps <span class="keyword">=</span> list0_append <span class="keyword">(</span>t1yps<span class="keyword">,</span> t1varlst<span class="keyword">)</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>rft1yps := t1yps
+    <span class="keyword">in</span>
+      <span class="keyword">(</span>e1xp_make_proj <span class="keyword">(</span>loc<span class="keyword">,</span> e1xp<span class="keyword">,</span> i<span class="keyword">,</span> t1ypitem<span class="keyword">)</span><span class="keyword">,</span> tyerr_pool_nil<span class="keyword">)</span>
     <span class="keyword">end</span>
   <span class="keyword">end</span>
   <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> <span class="keyword">let</span>
@@ -680,15 +880,21 @@ v1ar_set_def (
       <span class="keyword">(</span>T1YPfun <span class="keyword">(</span>t1yp_args<span class="keyword">,</span> retty<span class="keyword">)</span><span class="keyword">,</span> retty<span class="keyword">)</span>
     <span class="keyword">end</span>
     <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr_loc <span class="keyword">(</span>loc<span class="keyword">)</span>
-      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr ": oftype_fix, return type not specified, int assumed"
-      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> prerr_newline <span class="keyword">(</span><span class="keyword">)</span>
-      <span class="keyword">val</span> errmsg <span class="keyword">=</span> "oftype_fix, return type not specified, int assumed"    
-      <span class="keyword">val</span> retty <span class="keyword">=</span> t1yp_int
+      <span class="keyword">val</span> retty <span class="keyword">=</span> T1YPVar <span class="keyword">(</span>t1Var_new <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
     <span class="keyword">in</span>
-      <span class="comment">(* no such var, assume it is int *)</span>
       <span class="keyword">(</span>T1YPfun <span class="keyword">(</span>t1yp_args<span class="keyword">,</span> retty<span class="keyword">)</span><span class="keyword">,</span> retty<span class="keyword">)</span>
     <span class="keyword">end</span>
+    <span class="comment">(*let
+      val () = prerr_loc (loc)
+      val () = prerr ": oftype_fix, return type not specified, int assumed"
+      val () = prerr_newline ()
+      val errmsg = "oftype_fix, return type not specified, int assumed"    
+      val retty = t1yp_int
+    in
+      (* no such var, assume it is int *)
+      (T1YPfun (t1yp_args, retty), retty)
+    end*)</span>
+    
   <span class="keyword">)</span>
 
   <span class="keyword">val</span> f_v1ar <span class="keyword">=</span> v1ar_make <span class="keyword">(</span>loc<span class="keyword">,</span> nam<span class="keyword">,</span> fixtyp<span class="keyword">)</span>
@@ -703,12 +909,24 @@ v1ar_set_def (
 
 <span class="keyword">fun</span> oftype_app <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> args<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> <span class="keyword">(</span>f<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype <span class="keyword">(</span>Gamma<span class="keyword">,</span> f<span class="keyword">)</span>
+  <span class="comment">(* do the normalization first *)</span>
+  <span class="keyword">val</span> e1xp_fun <span class="keyword">=</span> t1yp_normalize <span class="keyword">(</span>f<span class="keyword">.</span>e1xp_typ<span class="keyword">)</span>
 <span class="keyword">in</span>
-  <span class="keyword">case+</span> f<span class="keyword">.</span>e1xp_typ <span class="keyword">of</span>
+  <span class="keyword">case+</span> e1xp_fun <span class="keyword">of</span>
   <span class="keyword">|</span> T1YPfun <span class="keyword">(</span>paras_typ<span class="keyword">,</span> ret_typ<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
     <span class="keyword">val</span> <span class="keyword">(</span>args<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> typcheck <span class="keyword">(</span>Gamma<span class="keyword">,</span> args<span class="keyword">,</span> paras_typ<span class="keyword">)</span>
     <span class="keyword">val</span> e1xp <span class="keyword">=</span> e1xp_make_app <span class="keyword">(</span>loc<span class="keyword">,</span> f<span class="keyword">,</span> args<span class="keyword">,</span> ret_typ<span class="keyword">)</span>
   <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> T1YPVar <span class="keyword">(</span>t1var<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>args<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype <span class="keyword">(</span>Gamma<span class="keyword">,</span> args<span class="keyword">)</span>
+    <span class="keyword">val</span> ret_typ <span class="keyword">=</span> T1YPVar <span class="keyword">(</span>t1Var_new <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">val</span> ty_fun <span class="keyword">=</span> T1YPfun <span class="keyword">(</span>args<span class="keyword">.</span>e1xp_typ<span class="keyword">,</span> ret_typ<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> t1Var_set_typ <span class="keyword">(</span>t1var<span class="keyword">,</span> ty_fun<span class="keyword">)</span>
+    <span class="keyword">val</span> e1xp <span class="keyword">=</span> e1xp_make_app <span class="keyword">(</span>loc<span class="keyword">,</span> f<span class="keyword">,</span> args<span class="keyword">,</span> ret_typ<span class="keyword">)</span>
+    <span class="comment">// val _ = t1yp_normalize (f.e1xp_typ)  unnecessary, let others do this
+</span>  <span class="keyword">in</span>
     <span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
   <span class="keyword">end</span>
   <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> <span class="keyword">let</span>
@@ -750,7 +968,7 @@ v1ar_set_def (
 
 <span class="keyword">implement</span> typcheck <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0<span class="keyword">,</span> t1<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> <span class="keyword">(</span>e1<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0<span class="keyword">)</span>
-  <span class="keyword">val</span> ty_cmp <span class="keyword">=</span> lte_t1yp_t1yp <span class="keyword">(</span>e1<span class="keyword">.</span>e1xp_typ<span class="keyword">,</span> t1<span class="keyword">)</span>
+  <span class="keyword">val</span> ty_cmp <span class="keyword">=</span> match_t1yp_t1yp <span class="keyword">(</span>e1<span class="keyword">.</span>e1xp_typ<span class="keyword">,</span> t1<span class="keyword">)</span>
 <span class="keyword">in</span>
   <span class="keyword">if</span> ty_cmp <span class="keyword">=</span> true <span class="keyword">then</span> <span class="keyword">(</span>e1<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
   <span class="keyword">else</span> <span class="keyword">let</span>

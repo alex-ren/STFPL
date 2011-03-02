@@ -16,8 +16,10 @@
 /* please do your implementation in STFPL */
 
 let
-  val rec bsearch_fun: ((int -> int), int, int, int) -> int = 
-    lam (f: int -> int, x0: int, lb: int, ub: int) =>
+  val rec bsearch_fun = 
+  // val rec bsearch_fun: ((int -> int), int, int, int) -> int = 
+    lam (f, x0, lb, ub) =>
+    // lam (f: int -> int, x0: int, lb: int, ub: int) =>
       if lb <= ub then let
         val mid = lb + (ub - lb) / 2
       in
@@ -28,7 +30,8 @@ let
       end else ub
         
   val ISQRT_MAX = 65535
-  val isqrt: int -> int = lam (x: int) => 
+  val isqrt = lam (x) => 
+  // val isqrt: int -> int = lam (x: int) => 
     bsearch_fun (lam (i) => i * i, x, 0, ISQRT_MAX)
 
   val _ = print_int isqrt (0)

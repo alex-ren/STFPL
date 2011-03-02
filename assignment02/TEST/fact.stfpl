@@ -4,8 +4,10 @@
 
 let
   val
-  rec fact: int -> int =
-    lam (n: int) => if n >= 1 then n * fact (n-1) else 1
+  rec fact =
+  // rec fact: int -> int =
+    lam (n) => if n >= 1 then n * fact (n-1) else 1
+    // lam (n: int) => if n >= 1 then n * fact (n-1) else 1
   // end of [val rec]
   val _ = print "fact (10) = "
   val _ = print_int (fact 10)

@@ -9,6 +9,9 @@
 
 staload "trans1.sats"
 
+staload _(*anony*) = "prelude/DATS/list.dats"
+staload _(*anony*) = "prelude/DATS/list0.dats"
+
 macdef fprint_symbol = $Symbol.fprint_symbol
 macdef fprint_opr = $Absyn.fprint_opr
 
@@ -26,10 +29,12 @@ macdef fprint_opr = $Absyn.fprint_opr
 implement
 fprint_t1yp (out, t) = let
   macdef prstr (s) = fprint_string (out, ,(s))
+  val t = t1yp_normalize (t)
 in
   case+ t of
   | T1YPbase sym => fprint_symbol (out, sym)
   | T1YPfun (t1, t2) => let
+      val t1 = t1yp_normalize (t1)  // t1 can be T1YPVar
       val isatm = (case+ t1 of
         | T1YPbase _ => true | T1YPtup _ => true | _ => false
       ) : bool
@@ -41,9 +46,17 @@ in
       fprint_t1yp (out, t2)
     end // end of [T1YPfun]
   | T1YPtup ts => begin
-      prstr "("; fprint_t1yplst (out, ts); prstr ")"
+      prstr "("; fprint_t1yplst (out, ts); prstr ")" 
     end // end of [T1YPtup] 
+  | T1YPtup_vl rfts => begin
+      prstr "("; fprint_t1yplst (out, !rfts); prstr ")"
+    end // end of [T1YPtup_vl] 
+  | T1YPVar _ => prstr "T1YPVar(...)"
+  | T1YPdummy () => prstr "T1YPdummy()"
 end // end of [fprint_t1yp]
+
+implement print_t1yp (t) = fprint_t1yp (stdout_ref, t)
+implement prerr_t1yp (t) = fprint_t1yp (stderr_ref, t)
 
 implement
 fprint_t1yplst

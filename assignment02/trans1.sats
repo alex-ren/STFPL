@@ -12,15 +12,20 @@ staload Posloc = "contrib/parcomb/SATS/posloc.sats"
 staload Absyn = "absyn.sats"
 
 (* ****** ****** *)
+abstype t1Var
 
 datatype t1yp =
   | T1YPbase of $Symbol.symbol_t
   | T1YPfun of (t1yp, t1yp)
   | T1YPtup of t1yplst
+  | T1YPtup_vl of ref t1yplst
+  | T1YPVar of t1Var
+  | T1YPdummy of ()
 // end of [t1yp]
 
 where t1yplst = list0 (t1yp)
   and t1ypopt = option0 (t1yp)
+  and t1ypref = ref (t1yp)
 
 fun fprint_t1yp (out: FILEref, t: t1yp): void 
 fun fprint_t1yplst (out: FILEref, t: t1yplst): void 
@@ -30,6 +35,7 @@ fun prerr_t1yp (t: t1yp): void
 
 overload print with print_t1yp
 overload prerr with prerr_t1yp
+fun t1yp_normalize (t: t1yp): t1yp
 
 (* ****** ****** *)
 
