@@ -78,6 +78,10 @@ SOURCES := \
   trans1.sats \
   trans1.dats \
   test.dats \
+  trans2.sats \
+  trans2.dats \
+  trans_cpp.sats \
+  trans_cpp.dats \
 
 OBJECTS := $(call atsobjname,$(SOURCES))
 

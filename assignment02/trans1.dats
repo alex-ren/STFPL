@@ -158,6 +158,14 @@ end // end of [theConstTypFind]
 
 end // end of [local]
 
+(* fun e1xp_node_is_fun (e_node: e1xp_node): bool *)
+implement e1xp_node_is_fun (e_node) =
+  case+ e_node of
+  | E1XPann (e1, _) => e1xp_node_is_fun (e1.e1xp_node)
+  | E1XPfix (_, _, _) => true
+  | E1XPlam (_, _) => true
+  | _ => false
+
 (* ****** ****** *)
 (*
 fun lte_t1yp_t1yp
@@ -321,7 +329,8 @@ and match_t1yplst_t1yplst_l (
 (* ****** ****** *)
 implement
 v1ar_make (loc, sym, t) = '{
-  v1ar_loc= loc, v1ar_nam= sym, v1ar_typ= t, v1ar_def= option0_none ()
+  v1ar_loc= loc, v1ar_nam= sym, v1ar_typ= t, 
+  v1ar_def= None0, v1ar_val = ref<option0 valprim_t>(None0)
 } // end of [v1ar_make]
 
 implement
@@ -757,8 +766,8 @@ in
     val t1ypopt = list0_nth_opt<t1yp> (t1yps, i)
   in
     case+ t1ypopt of
-    | Some t1ypitem => (e1xp_make_proj (loc, e1xp, i, t1ypitem), tyerrs)
-    | None () => let
+    | Some0 t1ypitem => (e1xp_make_proj (loc, e1xp, i, t1ypitem), tyerrs)
+    | None0 () => let
       (* out of bound: use int as the type *)
       val e1xp_proj = e1xp_make_proj (loc, e1xp, i, t1yp_int)
       val () = prerr_loc (loc)
@@ -771,7 +780,7 @@ in
   end
   | T1YPVar (t1var) => let
     val t1varlst = make_t1ypvar_lst (i + 1)
-    val- Some (t1ypitem) = list0_nth_opt (t1varlst, i)
+    val- Some0 (t1ypitem) = list0_nth_opt (t1varlst, i)
     val () = t1Var_set_typ (t1var, T1YPtup_vl (ref<t1yplst> (t1varlst)))
   in
     (e1xp_make_proj (loc, e1xp, i, t1ypitem), tyerr_pool_nil)
@@ -781,13 +790,13 @@ in
     val len = list0_length (t1yps)
   in
     if len > i then let
-      val- Some (t1ypitem) = list0_nth_opt (t1yps, i)
+      val- Some0 (t1ypitem) = list0_nth_opt (t1yps, i)
     in
       (e1xp_make_proj (loc, e1xp, i, t1ypitem), tyerr_pool_nil)
     end else let
       val t1varlst = make_t1ypvar_lst (i + 1 - len)
       (* get the last one *)
-      val- Some (t1ypitem) = list0_nth_opt (t1varlst, i - len)
+      val- Some0 (t1ypitem) = list0_nth_opt (t1varlst, i - len)
       val t1yps = list0_append (t1yps, t1varlst)
       val () = !rft1yps := t1yps
     in

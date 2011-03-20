@@ -3,10 +3,36 @@ To build the program, please run
 
 
 Updates:
-  type inference
+  generating Intermediate Representation
 
 Caution:
-  The inference of tuple of unknown length is supported.
-  The type inference succeeds for all the files in the TEST folder except for one file TEST/list_opr.stfpl. (segment fault)
-  This is acceptable since list_opr.stfpl actually requires a list not a tuple.
+  can compile, but cannot link, following functions haven't been defined
+  extern fun tmpvar_new_anon (): tmpvar_t
+  extern fun tmpvar_new_name (v: v1ar): tmpvar_t
+    
+  extern fun funlab_make_anon (): funlab
+  extern fun funlab_make_name (f: v1ar): funlab
+  
+  extern fun funent_add (fl: funlab, ent: funent): void
+  
+  extern fun aux_exp_ret_app (loc: loc, e_fun: e1xp, e_arg: e1xp,
+    res: &instrlst, tmp_ret: tmpvar): valprim
 
+  have problem in dealing with recursive function definition
+
+
+Record:
+  Treat all functions as unary function
+  
+  ?? handle this --> not support since c is not function definition
+  val rec a = lam (x: int): int -> int => let
+    val f = lam (x: int) => x + 1
+    val d = c
+  in f end
+  and c = a (1)
+
+ 
+  ?? handle this --> not support since c is not function definition
+  val rec a = lam (x: int): int -> int => c
+  and c = a (1)
+   

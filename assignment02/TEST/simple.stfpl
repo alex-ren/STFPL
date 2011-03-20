@@ -1,0 +1,11 @@
+let
+  val foo = lam (x) => x + 1
+  val x = 100
+  val y = foo (x)
+  val _ = print_int (y)
+  val _ = print ("\n")
+in
+  ()
+end
+
+

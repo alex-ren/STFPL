@@ -16,6 +16,10 @@ abstype t1Var
 
 datatype t1yp =
   | T1YPbase of $Symbol.symbol_t
+  // by rzq: actually we lost the info
+  // about how many args the function
+  // takes (may be n args or 1 arg which
+  // is a tuple of n elements)
   | T1YPfun of (t1yp, t1yp)
   | T1YPtup of t1yplst
   | T1YPtup_vl of ref t1yplst
@@ -36,8 +40,10 @@ fun prerr_t1yp (t: t1yp): void
 overload print with print_t1yp
 overload prerr with prerr_t1yp
 fun t1yp_normalize (t: t1yp): t1yp
+fun t1yp_normalize_final (t: t1yp): t1yp
 
 (* ****** ****** *)
+abstype valprim_t (* declared in [trans2.sats] *)
 
 datatype e1xp_node =
   | E1XPann of (e1xp, t1yp)
@@ -69,7 +75,11 @@ and e1xpopt = option0 (e1xp)
 
 // two purpose: 1. as functoin args; 2. as let declarations
 and v1ar = '{  
-  v1ar_loc= $Posloc.location_t, v1ar_nam= $Symbol.symbol_t, v1ar_typ= t1yp, v1ar_def= e1xpopt
+  v1ar_loc= $Posloc.location_t, 
+  v1ar_nam= $Symbol.symbol_t, 
+  v1ar_typ= t1yp, 
+  v1ar_def= e1xpopt,
+  v1ar_val= ref (option0 (valprim_t))
 } // end of [v1ar]
 and v1arlst = list0 (v1ar)
 
@@ -85,6 +95,8 @@ and v1aldec = '{
 }
 and v1aldeclst = list0 (v1aldec)
 
+(* test the node is a first level function *)
+fun e1xp_node_is_fun (e_node: e1xp_node): bool
 (* ****** ****** *)
 
 

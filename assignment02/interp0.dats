@@ -125,7 +125,7 @@ fun eval_if (env: env, e_test: e0xp, e_then: e0xp, e_else: e0xpopt): v0al = let
   end
 
 
-extern fun fill_args (arglst: a0rglst, v: v0al): option0 env
+extern fun fill_args (arglst: a0rglst, v: v0al): option0 (list0 @(sym, v0al))
 
 extern fun eval_d0eclst (env: env, decs: d0eclst): env
 
@@ -154,11 +154,11 @@ implement eval (env, e): v0al =
     | V0ALclo (env1, e1') =>
       (case+ e1'.e0xp_node of
       | $Absyn.E0XPlam (arglst, tyret, ebody) => let
-        val opt_env1' = fill_args (arglst, v2)
+        val opt_ps = fill_args (arglst, v2)
       in
-        case+ opt_env1' of
-        | Some0 env1' => let
-          val env2 = $Symbol.symenv_inserts (env1', env1)
+        case+ opt_ps of
+        | Some0 ps => let
+          val env2 = $Symbol.symenv_inserts (env1, ps)
         in
           eval (env2, ebody)
         end
@@ -171,13 +171,13 @@ implement eval (env, e): v0al =
     | V0ALfix (env1, e1') => 
       (case+ e1'.e0xp_node of
       | $Absyn.E0XPfix (f, arglst, tyret, ebody) => let
-        val opt_env1' = fill_args (arglst, v2)
+        val opt_ps = fill_args (arglst, v2)
         val () = ETRACE_MSG ("======== eval $V0ALfix \n", ETRACE_LEVEL_DEBUG)
       in
-        case+ opt_env1' of
-        | Some0 env1' => let
+        case+ opt_ps of
+        | Some0 ps => let
           val env2 = $Symbol.symenv_insert (
-            $Symbol.symenv_inserts (env1', env1), f, v1)
+            $Symbol.symenv_inserts (env1, ps), f, v1)
         in
           eval (env2, ebody)
         end
@@ -215,8 +215,8 @@ implement eval (env, e): v0al =
       val vo =  list0_nth_opt<v0al> (vs, i)
     in
       case+ vo of
-      | Some v2 => v2
-      | None () => ETRACE_MSG_OPR ("eval proj out of bound\n", ETRACE_LEVEL_INFO, 
+      | Some0 v2 => v2
+      | None0 () => ETRACE_MSG_OPR ("eval proj out of bound\n", ETRACE_LEVEL_INFO, 
                       abort (ERRORCODE_TYPE_ERROR))
     end
     | _ => ETRACE_MSG_OPR ("eval proj not tuple\n", ETRACE_LEVEL_INFO, 
@@ -254,28 +254,26 @@ implement eval (env, e): v0al =
   (* | _ => abort (ERRORCODE_TYPE_ERROR) *)
   (* end of [eval] *)
 
-(* extern fun fill_args (arglst: $Absyn.a0rglst, v: v0al): option0 env *)
+(* returning None0 means error *)
+(* extern fun fill_args (arglst: $Absyn.a0rglst, v: v0al): option0 (list0 @(sym, v0al)) *)
 implement fill_args (arglst, v) = let
   val args_len = list0_length (arglst)
-  val env = symenv_make ()
+  val ret = nil (): list0 @(sym, v0al)
 in
   if args_len = 1 then let
     val- cons (arg, nil ()) = arglst
   in
-    Some0 ($Symbol.symenv_insert (env, arg.a0rg_nam, v))
+    Some0 (cons (@(arg.a0rg_nam, v), ret))
   end
   else if args_len = 0 then case+ v of
-  | V0ALtup (nil ()) => Some0 (env)
+  | V0ALtup (nil ()) => Some0 (ret)
   | _ => None0
   else case+ v of
   | V0ALtup vs => if args_len <> list0_length (vs) then None0 else let
     val syms_vs = list0_map2_fun<$Absyn.a0rg, v0al> (
         arglst, vs, lam (arg, v) => @(arg.a0rg_nam, v))
   in
-    Some0 (list0_fold_left<env>< @(sym, v0al)> (
-             lam (init, x) => $Symbol.symenv_insert (init, x.0, x.1), 
-             env, syms_vs)
-          )
+    Some0 (syms_vs)
   end
   | _ => None0
 end

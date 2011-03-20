@@ -73,8 +73,11 @@ fun{a:t@ype}
 symenv_insert (env: symenv_t a, sym: symbol_t, x: a): symenv_t a
 
 fun{a:t@ype}
-symenv_inserts (newenv: symenv_t a, oldenv: symenv_t a): symenv_t a
+symenv_inserts (env: symenv_t a, ps: list0 @(symbol_t, a)): symenv_t a
 (* ****** ****** *)
+
+fun{a:t@ype}
+symenv_listize (env: symenv_t a): list0 @(symbol_t, a)
 
 
 (* end of [symbol.sats] *)

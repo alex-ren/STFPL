@@ -1,0 +1,8 @@
+let
+  val a = lam (x: int, y: int) => x + y
+  val b = lam (x: (int, int)) => x.0 + x.1
+  val c = if (1 > 0) then a else b
+  val d = c (1, 2)
+in
+  ()
+end
