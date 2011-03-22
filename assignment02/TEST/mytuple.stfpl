@@ -1,0 +1,16 @@
+
+let
+  val a = (1, 2)
+  val f = lam (x) => x.0 + x.1
+  val d = f (a)
+  val _ = print "1 + 2 = "
+  val _ = print_int d
+  val _ = print "\n"
+
+  val b = (2, 3, 4)
+  val _ = f (a)
+in
+  f (b)
+end
+
+
