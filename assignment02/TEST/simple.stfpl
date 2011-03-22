@@ -1,11 +1,23 @@
 let
-  val foo = lam (x) => x + 1
-  val x = 100
-  val y = foo (x)
+  val foo = lam (x) => x.1 + 1
+  val foo2 = lam (x, y) => x + 1
+  val foo3 = lam (x) => x + 1
+  
+  val t = if false then (100, 200) else (33, 44)
+  val y = foo2 (t)
+  val _ = print ("should see \n45\n")
+  val _ = print_int (foo (t))
+  val _ = print ("\n")
+  
+  val _ = print ("should see \n34\n")
   val _ = print_int (y)
   val _ = print ("\n")
+
+  val _ = print ("should see \n100\n")
+  val _ = print_int (foo3 99)
+  val _ = print ("\n")
 in
-  ()
+  (3, 4)
 end
 
 

@@ -13,8 +13,10 @@ let
     lam (n) => if n >= 1 then isevn (n-1) else false
     // lam (n: int) => if n >= 1 then isevn (n-1) else false
   // end of [val]
+
+  val _ = if isevn (10) then print "10 is even\n" else print "10 is odd\n"
 in
-  isevn (10)
+  ()
 end // end of [let]
 
 /* ****** ****** */

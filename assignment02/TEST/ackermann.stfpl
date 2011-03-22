@@ -11,6 +11,7 @@ let
       if m=0 then n+1 else (if n=0 then ack(m-1, 1) else ack(m-1, ack(m, n-1)))
     // end of [lam]
   // end of [val rec]
+  val _ = print "should see \nack (3, 3) = 61\n"
   val _ = print "ack (3, 3) = "
   val _ = print_int (ack (3, 3))
   val _ = print "\n"

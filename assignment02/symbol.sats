@@ -9,7 +9,7 @@ abstype symbol_t // a boxed abstract type
 
 (* ****** ****** *)
 
-fun symbol_get_name (x: symbol_t):<> string
+fun symbol_get_name (x: symbol_t): string
 fun symbol_make_name (name: string): symbol_t
 
 (* ****** ****** *)

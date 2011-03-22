@@ -150,19 +150,19 @@
   <span class="keyword">end</span>
 
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3085"><span class="dyncstdec">fill_args <span class="keyword">(</span>arglst<span class="keyword">:</span> <span class="staexp">a0rglst</span><span class="keyword">,</span> v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 env</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3085"><span class="dyncstdec">fill_args <span class="keyword">(</span>arglst<span class="keyword">:</span> <span class="staexp">a0rglst</span><span class="keyword">,</span> v<span class="keyword">:</span> <span class="staexp">v0al</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 <span class="keyword">(</span>list0 <span class="keyword">@(</span>sym<span class="keyword">,</span> v0al<span class="keyword">)</span><span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3147"><span class="dyncstdec">eval_d0eclst <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> decs<span class="keyword">:</span> <span class="staexp">d0eclst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3164"><span class="dyncstdec">eval_d0eclst <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> decs<span class="keyword">:</span> <span class="staexp">d0eclst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3203"><span class="dyncstdec">eval_d0ec <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> dec<span class="keyword">:</span> <span class="staexp">d0ec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3220"><span class="dyncstdec">eval_d0ec <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> dec<span class="keyword">:</span> <span class="staexp">d0ec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3252"><span class="dyncstdec">eval_v0aldeclst <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> valdecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3316"><span class="dyncstdec">eval_v0aldeclst_rec <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> valdecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3269"><span class="dyncstdec">eval_v0aldeclst <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> valdecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3333"><span class="dyncstdec">eval_v0aldeclst_rec <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> valdecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3385"><span class="dyncstdec">eval_v0aldec <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> valdec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3442"><span class="dyncstdec">eval_v0aldec_rec <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> valdec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3402"><span class="dyncstdec">eval_v0aldec <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> valdec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3459"><span class="dyncstdec">eval_v0aldec_rec <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> valdec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">env</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3504"><span class="dyncstdec">eval_opr <span class="keyword">(</span>opr<span class="keyword">:</span> <span class="staexp">opr</span><span class="keyword">,</span> vs<span class="keyword">:</span> <span class="staexp">v0allst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">v0al</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3521"><span class="dyncstdec">eval_opr <span class="keyword">(</span>opr<span class="keyword">:</span> <span class="staexp">opr</span><span class="keyword">,</span> vs<span class="keyword">:</span> <span class="staexp">v0allst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">v0al</span></span></a>
 
 <span class="keyword">implement</span> interp0_exp <span class="keyword">(</span>e<span class="keyword">)</span> <span class="keyword">=</span> eval <span class="keyword">(</span>symenv_make <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">,</span> e<span class="keyword">)</span>
   
@@ -179,11 +179,11 @@
     <span class="keyword">|</span> V0ALclo <span class="keyword">(</span>env1<span class="keyword">,</span> e1'<span class="keyword">)</span> <span class="keyword">=&gt;</span>
       <span class="keyword">(</span><span class="keyword">case+</span> e1'<span class="keyword">.</span>e0xp_node <span class="keyword">of</span>
       <span class="keyword">|</span> $Absyn<span class="keyword">.</span>E0XPlam <span class="keyword">(</span>arglst<span class="keyword">,</span> tyret<span class="keyword">,</span> ebody<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-        <span class="keyword">val</span> opt_env1' <span class="keyword">=</span> fill_args <span class="keyword">(</span>arglst<span class="keyword">,</span> v2<span class="keyword">)</span>
+        <span class="keyword">val</span> opt_ps <span class="keyword">=</span> fill_args <span class="keyword">(</span>arglst<span class="keyword">,</span> v2<span class="keyword">)</span>
       <span class="keyword">in</span>
-        <span class="keyword">case+</span> opt_env1' <span class="keyword">of</span>
-        <span class="keyword">|</span> Some0 env1' <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-          <span class="keyword">val</span> env2 <span class="keyword">=</span> $Symbol<span class="keyword">.</span>symenv_inserts <span class="keyword">(</span>env1'<span class="keyword">,</span> env1<span class="keyword">)</span>
+        <span class="keyword">case+</span> opt_ps <span class="keyword">of</span>
+        <span class="keyword">|</span> Some0 ps <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+          <span class="keyword">val</span> env2 <span class="keyword">=</span> $Symbol<span class="keyword">.</span>symenv_inserts <span class="keyword">(</span>env1<span class="keyword">,</span> ps<span class="keyword">)</span>
         <span class="keyword">in</span>
           eval <span class="keyword">(</span>env2<span class="keyword">,</span> ebody<span class="keyword">)</span>
         <span class="keyword">end</span>
@@ -196,13 +196,13 @@
     <span class="keyword">|</span> V0ALfix <span class="keyword">(</span>env1<span class="keyword">,</span> e1'<span class="keyword">)</span> <span class="keyword">=&gt;</span> 
       <span class="keyword">(</span><span class="keyword">case+</span> e1'<span class="keyword">.</span>e0xp_node <span class="keyword">of</span>
       <span class="keyword">|</span> $Absyn<span class="keyword">.</span>E0XPfix <span class="keyword">(</span>f<span class="keyword">,</span> arglst<span class="keyword">,</span> tyret<span class="keyword">,</span> ebody<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-        <span class="keyword">val</span> opt_env1' <span class="keyword">=</span> fill_args <span class="keyword">(</span>arglst<span class="keyword">,</span> v2<span class="keyword">)</span>
+        <span class="keyword">val</span> opt_ps <span class="keyword">=</span> fill_args <span class="keyword">(</span>arglst<span class="keyword">,</span> v2<span class="keyword">)</span>
         <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ETRACE_MSG <span class="keyword">(</span>"======== eval $V0ALfix \n"<span class="keyword">,</span> ETRACE_LEVEL_DEBUG<span class="keyword">)</span>
       <span class="keyword">in</span>
-        <span class="keyword">case+</span> opt_env1' <span class="keyword">of</span>
-        <span class="keyword">|</span> Some0 env1' <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">case+</span> opt_ps <span class="keyword">of</span>
+        <span class="keyword">|</span> Some0 ps <span class="keyword">=&gt;</span> <span class="keyword">let</span>
           <span class="keyword">val</span> env2 <span class="keyword">=</span> $Symbol<span class="keyword">.</span>symenv_insert <span class="keyword">(</span>
-            $Symbol<span class="keyword">.</span>symenv_inserts <span class="keyword">(</span>env1'<span class="keyword">,</span> env1<span class="keyword">)</span><span class="keyword">,</span> f<span class="keyword">,</span> v1<span class="keyword">)</span>
+            $Symbol<span class="keyword">.</span>symenv_inserts <span class="keyword">(</span>env1<span class="keyword">,</span> ps<span class="keyword">)</span><span class="keyword">,</span> f<span class="keyword">,</span> v1<span class="keyword">)</span>
         <span class="keyword">in</span>
           eval <span class="keyword">(</span>env2<span class="keyword">,</span> ebody<span class="keyword">)</span>
         <span class="keyword">end</span>
@@ -240,8 +240,8 @@
       <span class="keyword">val</span> vo <span class="keyword">=</span>  list0_nth_opt&lt;<span class="staexp">v0al</span><span class="keyword">&gt;</span> <span class="keyword">(</span>vs<span class="keyword">,</span> i<span class="keyword">)</span>
     <span class="keyword">in</span>
       <span class="keyword">case+</span> vo <span class="keyword">of</span>
-      <span class="keyword">|</span> Some v2 <span class="keyword">=&gt;</span> v2
-      <span class="keyword">|</span> None <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"eval proj out of bound\n"<span class="keyword">,</span> ETRACE_LEVEL_INFO<span class="keyword">,</span> 
+      <span class="keyword">|</span> Some0 v2 <span class="keyword">=&gt;</span> v2
+      <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"eval proj out of bound\n"<span class="keyword">,</span> ETRACE_LEVEL_INFO<span class="keyword">,</span> 
                       abort <span class="keyword">(</span>ERRORCODE_TYPE_ERROR<span class="keyword">)</span><span class="keyword">)</span>
     <span class="keyword">end</span>
     <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"eval proj not tuple\n"<span class="keyword">,</span> ETRACE_LEVEL_INFO<span class="keyword">,</span> 
@@ -279,28 +279,26 @@
   <span class="comment">(* | _ =&gt; abort (ERRORCODE_TYPE_ERROR) *)</span>
   <span class="comment">(* end of [eval] *)</span>
 
-<span class="comment">(* extern fun fill_args (arglst: $Absyn.a0rglst, v: v0al): option0 env *)</span>
+<span class="comment">(* returning None0 means error *)</span>
+<span class="comment">(* extern fun fill_args (arglst: $Absyn.a0rglst, v: v0al): option0 (list0 @(sym, v0al)) *)</span>
 <span class="keyword">implement</span> fill_args <span class="keyword">(</span>arglst<span class="keyword">,</span> v<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> args_len <span class="keyword">=</span> list0_length <span class="keyword">(</span>arglst<span class="keyword">)</span>
-  <span class="keyword">val</span> env <span class="keyword">=</span> symenv_make <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">val</span> ret <span class="keyword">=</span> nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 <span class="keyword">@(</span>sym<span class="keyword">,</span> v0al<span class="keyword">)</span></span>
 <span class="keyword">in</span>
   <span class="keyword">if</span> args_len <span class="keyword">=</span> 1 <span class="keyword">then</span> <span class="keyword">let</span>
     <span class="keyword">val-</span> cons <span class="keyword">(</span>arg<span class="keyword">,</span> nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=</span> arglst
   <span class="keyword">in</span>
-    Some0 <span class="keyword">(</span>$Symbol<span class="keyword">.</span>symenv_insert <span class="keyword">(</span>env<span class="keyword">,</span> arg<span class="keyword">.</span>a0rg_nam<span class="keyword">,</span> v<span class="keyword">)</span><span class="keyword">)</span>
+    Some0 <span class="keyword">(</span>cons <span class="keyword">(</span><span class="keyword">@(</span>arg<span class="keyword">.</span>a0rg_nam<span class="keyword">,</span> v<span class="keyword">)</span><span class="keyword">,</span> ret<span class="keyword">)</span><span class="keyword">)</span>
   <span class="keyword">end</span>
   <span class="keyword">else</span> <span class="keyword">if</span> args_len <span class="keyword">=</span> 0 <span class="keyword">then</span> <span class="keyword">case+</span> v <span class="keyword">of</span>
-  <span class="keyword">|</span> V0ALtup <span class="keyword">(</span>nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> Some0 <span class="keyword">(</span>env<span class="keyword">)</span>
+  <span class="keyword">|</span> V0ALtup <span class="keyword">(</span>nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> Some0 <span class="keyword">(</span>ret<span class="keyword">)</span>
   <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> None0
   <span class="keyword">else</span> <span class="keyword">case+</span> v <span class="keyword">of</span>
   <span class="keyword">|</span> V0ALtup vs <span class="keyword">=&gt;</span> <span class="keyword">if</span> args_len &lt;&gt; list0_length <span class="keyword">(</span>vs<span class="keyword">)</span> <span class="keyword">then</span> None0 <span class="keyword">else</span> <span class="keyword">let</span>
     <span class="keyword">val</span> syms_vs <span class="keyword">=</span> list0_map2_fun&lt;<span class="staexp">$Absyn<span class="keyword">.</span>a0rg</span><span class="keyword">,</span> <span class="staexp">v0al</span><span class="keyword">&gt;</span> <span class="keyword">(</span>
         arglst<span class="keyword">,</span> vs<span class="keyword">,</span> <span class="keyword">lam</span> <span class="keyword">(</span>arg<span class="keyword">,</span> v<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">@(</span>arg<span class="keyword">.</span>a0rg_nam<span class="keyword">,</span> v<span class="keyword">)</span><span class="keyword">)</span>
   <span class="keyword">in</span>
-    Some0 <span class="keyword">(</span>list0_fold_left&lt;<span class="staexp">env</span><span class="keyword">&gt;&lt;</span> <span class="staexp"><span class="keyword">@(</span>sym<span class="keyword">,</span> v0al<span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
-             <span class="keyword">lam</span> <span class="keyword">(</span>init<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=&gt;</span> $Symbol<span class="keyword">.</span>symenv_insert <span class="keyword">(</span>init<span class="keyword">,</span> x<span class="keyword">.</span>0<span class="keyword">,</span> x<span class="keyword">.</span>1<span class="keyword">)</span><span class="keyword">,</span> 
-             env<span class="keyword">,</span> syms_vs<span class="keyword">)</span>
-          <span class="keyword">)</span>
+    Some0 <span class="keyword">(</span>syms_vs<span class="keyword">)</span>
   <span class="keyword">end</span>
   <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> None0
 <span class="keyword">end</span>

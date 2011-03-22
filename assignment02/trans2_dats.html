@@ -1,0 +1,641 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(*
+** CAS CS525, Spring 2011
+** Instructor: Hongwei Xi
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">"trans1.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"trans2.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"error.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"symbol.sats"</span>
+
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "symbol.dats"</span>
+
+<span class="keyword">typedef</span> <span class="staexp"><a name="211"><span class="stacstdec">opr <span class="keyword">=</span> $Absyn<span class="keyword">.</span>opr</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="236"><span class="stacstdec">loc <span class="keyword">=</span> $Posloc<span class="keyword">.</span>location_t</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="269"><span class="stacstdec">symbol <span class="keyword">=</span> $Symbol<span class="keyword">.</span>symbol_t</span></a></span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/list.dats"</span> 
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/list0.dats"</span> 
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/reference.dats"</span> 
+
+<span class="keyword">#define</span> <span class="neuexp">:: list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">cons list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">nil list0_nil</span>
+
+<span class="keyword">#define</span> <span class="neuexp">Some0 option0_some</span>
+<span class="keyword">#define</span> <span class="neuexp">None0 option0_none</span>
+
+<span class="keyword">extern</span> <span class="keyword">val</span> <a name="596"><span class="dyncstdec">tmpvar_void<span class="keyword">:</span> <span class="staexp">tmpvar</span></span></a><span class="keyword">;</span>
+
+<span class="keyword">fun</span> instr_add <span class="keyword">(</span>
+  res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">instr</span>
+<span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> res := list0_cons <span class="keyword">(</span>x<span class="keyword">,</span> res<span class="keyword">)</span>
+
+<span class="keyword">fun</span> instr_make <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> ins_node<span class="keyword">:</span> <span class="staexp">instr_node</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">instr</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  instr_loc <span class="keyword">=</span> loc<span class="keyword">,</span> instr_node <span class="keyword">=</span> ins_node
+<span class="keyword">}</span>  <span class="comment">// end of [instr_make]
+</span>
+<span class="comment">(* fully reverse *)</span>
+<span class="keyword">fun</span> instr_reverse <span class="keyword">(</span>instrs<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">instrlst</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>instrs<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">,</span> accu<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">instrlst</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> instrs <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>instr<span class="keyword">,</span> instrs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> inode <span class="keyword">=</span> instr<span class="keyword">.</span>instr_node
+      <span class="keyword">val</span> iloc <span class="keyword">=</span> instr<span class="keyword">.</span>instr_loc
+    <span class="keyword">in</span>
+      <span class="keyword">case+</span> inode <span class="keyword">of</span>
+      <span class="keyword">|</span> INSTRcond <span class="keyword">(</span>tmpv<span class="keyword">,</span> vp<span class="keyword">,</span> ins_then<span class="keyword">,</span> ins_else<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> ins_then1 <span class="keyword">=</span> instr_reverse <span class="keyword">(</span>ins_then<span class="keyword">)</span>
+        <span class="keyword">val</span> ins_else1 <span class="keyword">=</span> instr_reverse <span class="keyword">(</span>ins_else<span class="keyword">)</span>
+        <span class="keyword">val</span> inode1 <span class="keyword">=</span> INSTRcond <span class="keyword">(</span>tmpv<span class="keyword">,</span> vp<span class="keyword">,</span> ins_then1<span class="keyword">,</span> ins_else1<span class="keyword">)</span>
+        <span class="keyword">val</span> instr1 <span class="keyword">=</span> instr_make <span class="keyword">(</span>iloc<span class="keyword">,</span> inode1<span class="keyword">)</span>
+        <span class="keyword">val</span> accu <span class="keyword">=</span> instr1 :: accu
+      <span class="keyword">in</span>
+        loop <span class="keyword">(</span>instrs1<span class="keyword">,</span> accu<span class="keyword">)</span>
+      <span class="keyword">end</span>
+      <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> loop <span class="keyword">(</span>instrs1<span class="keyword">,</span> instr :: accu<span class="keyword">)</span>
+    <span class="keyword">end</span>
+    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> accu
+<span class="keyword">in</span>
+  loop <span class="keyword">(</span>instrs<span class="keyword">,</span> nil<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> tmpvar_new
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1588"><span class="dyncstdec">tmpvar_new_anon <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tmpvar_t</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1628"><span class="dyncstdec">tmpvar_new_name <span class="keyword">(</span>v<span class="keyword">:</span> <span class="staexp">v1ar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tmpvar_t</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> tmpvar_new <span class="keyword">with</span> tmpvar_new_anon</span>
+<span class="neuexp"><span class="keyword">overload</span> tmpvar_new <span class="keyword">with</span> tmpvar_new_name</span>
+
+<span class="keyword">local</span>
+<span class="keyword">assume</span> <span class="staexp">tmpvar_t <span class="keyword">=</span> symbol_t</span>
+<span class="keyword">val</span> tmpvar_count <span class="keyword">=</span> ref&lt;<span class="staexp">int</span><span class="keyword">&gt;</span> <span class="keyword">(</span>0<span class="keyword">)</span>
+<span class="keyword">val</span> tmpvar_prefix <span class="keyword">=</span> "__v_"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">in</span>
+
+<span class="keyword">implement</span> tmpvar_void <span class="keyword">=</span> symbol_make_name <span class="keyword">(</span>"dummy_void"<span class="keyword">)</span>
+<span class="keyword">val</span> valprim_void <span class="keyword">=</span> VPtup <span class="keyword">(</span>tmpvar_void<span class="keyword">,</span> list0_nil<span class="keyword">)</span>  <span class="comment">// todo must be put here
+</span>
+<span class="keyword">implement</span> tmpvar_new_anon <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> i <span class="keyword">=</span> <span class="keyword">!</span>tmpvar_count
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>tmpvar_count := i + 1
+
+  <span class="keyword">val</span> id <span class="keyword">=</span> tostring_int <span class="keyword">(</span>i<span class="keyword">)</span>
+  <span class="keyword">val</span> name <span class="keyword">=</span> string0_append <span class="keyword">(</span>tmpvar_prefix<span class="keyword">,</span> id<span class="keyword">)</span>
+<span class="keyword">in</span>
+  symbol_make_name <span class="keyword">(</span>name<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> tmpvar_new_name <span class="keyword">(</span>v<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> nam <span class="keyword">=</span> symbol_get_name <span class="keyword">(</span>v<span class="keyword">.</span>v1ar_nam<span class="keyword">)</span>
+
+  <span class="keyword">val</span> i <span class="keyword">=</span> <span class="keyword">!</span>tmpvar_count
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>tmpvar_count := i + 1
+
+  <span class="keyword">val</span> id <span class="keyword">=</span> tostring_int <span class="keyword">(</span>i<span class="keyword">)</span>
+  <span class="keyword">val</span> fullname <span class="keyword">=</span> string0_append <span class="keyword">(</span>tmpvar_prefix<span class="keyword">,</span> string0_append <span class="keyword">(</span>nam<span class="keyword">,</span> id<span class="keyword">)</span><span class="keyword">)</span>
+<span class="keyword">in</span>
+  symbol_make_name <span class="keyword">(</span>fullname<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> tmpvar_get_name <span class="keyword">(</span>v<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="comment">// val () = printf ("tmpvar_get_name\n", @())
+</span>  <span class="keyword">val</span> ret <span class="keyword">=</span> symbol_get_name <span class="keyword">(</span>v<span class="keyword">)</span>
+  <span class="comment">// val () = printf ("tmpvar_get_name10\n", @())
+</span><span class="keyword">in</span>
+  ret
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+
+<span class="keyword">local</span>
+  <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="2672"><span class="dyncstdec">valprim_encode <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim_t</span></span></a>
+  <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="2727"><span class="dyncstdec">valprim_decode <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">valprim_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+<span class="keyword">in</span>
+  <span class="keyword">fun</span> v1ar_get_val
+    <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">v1ar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> r <span class="keyword">=</span> x<span class="keyword">.</span>v1ar_val
+  <span class="keyword">in</span>
+    <span class="keyword">case+</span> <span class="keyword">!</span>r <span class="keyword">of</span>
+    <span class="keyword">|</span> Some0 <span class="keyword">(</span>vp<span class="keyword">)</span> <span class="keyword">=&gt;</span> Some0 <span class="keyword">(</span>valprim_decode <span class="keyword">(</span>vp<span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> None0
+  <span class="keyword">end</span> <span class="comment">// end of [v1ar_get_val]
+</span>  
+  <span class="keyword">fun</span> v1ar_initset_val <span class="keyword">(</span>
+    x<span class="keyword">:</span> <span class="staexp">v1ar</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprim</span>
+  <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> r <span class="keyword">=</span> x<span class="keyword">.</span>v1ar_val
+    <span class="keyword">val</span> vp <span class="keyword">=</span> valprim_encode <span class="keyword">(</span>vp<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>r := Some0 <span class="keyword">(</span>vp<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="comment">// nothing
+</span>  <span class="keyword">end</span> <span class="comment">// [v1ar_set_val]
+</span>  
+<span class="keyword">end</span> <span class="comment">// end of [local]
+</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="3206"><span class="stacstdec">funent <span class="keyword">=</span> <span class="keyword">'{</span>
+  funent_fun<span class="keyword">=</span> funlab_t
+<span class="keyword">,</span> funent_narg<span class="keyword">=</span> int
+<span class="keyword">,</span> funent_body<span class="keyword">=</span> instrlst
+<span class="keyword">,</span> funent_ret<span class="keyword">=</span> valprim
+<span class="keyword">}</span></span></a></span>
+
+<span class="keyword">assume</span> <span class="staexp">funent_t <span class="keyword">=</span> funent</span>
+
+
+<span class="keyword">implement</span> funent_get_lab <span class="keyword">(</span>ent<span class="keyword">)</span> <span class="keyword">=</span> ent<span class="keyword">.</span>funent_fun
+<span class="keyword">implement</span> funent_get_narg <span class="keyword">(</span>ent<span class="keyword">)</span> <span class="keyword">=</span> ent<span class="keyword">.</span>funent_narg
+<span class="keyword">implement</span> funent_get_body <span class="keyword">(</span>ent<span class="keyword">)</span> <span class="keyword">=</span> ent<span class="keyword">.</span>funent_body
+<span class="keyword">implement</span> funent_get_ret <span class="keyword">(</span>ent<span class="keyword">)</span> <span class="keyword">=</span> ent<span class="keyword">.</span>funent_ret
+
+
+<span class="keyword">implement</span> funent_make_label <span class="keyword">(</span>fl<span class="keyword">,</span> nargs<span class="keyword">,</span> body<span class="keyword">,</span> ret<span class="keyword">)</span> <span class="keyword">=</span> 
+  <span class="keyword">'{</span>funent_fun <span class="keyword">=</span> fl<span class="keyword">,</span>
+    funent_narg <span class="keyword">=</span> nargs<span class="keyword">,</span>
+    funent_body <span class="keyword">=</span> body<span class="keyword">,</span>
+    funent_ret <span class="keyword">=</span> ret
+    <span class="keyword">}</span>
+
+<span class="comment">(* ***** ****** *)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> funlab_make
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3738"><span class="dyncstdec">funlab_make_anon <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funlab</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3777"><span class="dyncstdec">funlab_make_name <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">v1ar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funlab</span></span></a>  <span class="comment">// simiar v1ar's lead to different names
+</span>
+<span class="neuexp"><span class="keyword">overload</span> funlab_make <span class="keyword">with</span> funlab_make_anon</span>
+<span class="neuexp"><span class="keyword">overload</span> funlab_make <span class="keyword">with</span> funlab_make_name</span>
+
+<span class="comment">(* ***** ****** *)</span>
+
+<span class="keyword">fun</span> funent_make <span class="keyword">(</span>
+  label<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> narg<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">,</span> body<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">,</span> ret<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funent</span> <span class="keyword">=</span> <span class="keyword">'{</span>
+  funent_fun<span class="keyword">=</span> label<span class="keyword">,</span>
+  funent_narg<span class="keyword">=</span> narg<span class="keyword">,</span>
+  funent_body<span class="keyword">=</span> body<span class="keyword">,</span>
+  funent_ret<span class="keyword">=</span> ret
+  <span class="keyword">}</span>
+
+<span class="comment">(*
+There is a global map for this function:
+*)</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4195"><span class="dyncstdec">funent_add <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4249"><span class="dyncstdec">funent_lookup <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funent</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4295"><span class="dyncstdec">funent_getall <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 funent</span></span></a>
+
+<span class="keyword">local</span>
+<span class="keyword">val</span> funlab_count <span class="keyword">=</span> ref&lt;<span class="staexp">int</span><span class="keyword">&gt;</span> <span class="keyword">(</span>0<span class="keyword">)</span>
+<span class="keyword">assume</span> <span class="staexp">funlab_t <span class="keyword">=</span> symbol_t</span>
+<span class="keyword">val</span> fun_table <span class="keyword">=</span> ref&lt;<span class="staexp">symenv_t <span class="keyword">(</span>funent<span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>symenv_make <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+<span class="keyword">val</span> fl_prefix <span class="keyword">=</span> "__f_"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">in</span>
+
+<span class="keyword">implement</span> funlab_get_name <span class="keyword">(</span>fl<span class="keyword">)</span> <span class="keyword">=</span> symbol_get_name <span class="keyword">(</span>fl<span class="keyword">)</span>
+
+<span class="keyword">implement</span> funlab_make_name <span class="keyword">(</span>f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> nam <span class="keyword">=</span> symbol_get_name <span class="keyword">(</span>f<span class="keyword">.</span>v1ar_nam<span class="keyword">)</span>
+  <span class="keyword">val</span> i <span class="keyword">=</span> <span class="keyword">!</span>funlab_count
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>funlab_count := i + 1
+  <span class="keyword">val</span> id <span class="keyword">=</span> tostring_int <span class="keyword">(</span>i<span class="keyword">)</span>
+  <span class="keyword">val</span> fullname <span class="keyword">=</span> fl_prefix + nam + "_" + id
+<span class="keyword">in</span>
+  symbol_make_name <span class="keyword">(</span>fullname<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> funlab_make_anon <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> nam <span class="keyword">=</span> "lam"
+  <span class="keyword">val</span> i <span class="keyword">=</span> <span class="keyword">!</span>funlab_count
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>funlab_count := i + 1
+  <span class="keyword">val</span> id <span class="keyword">=</span> tostring_int <span class="keyword">(</span>i<span class="keyword">)</span>
+  <span class="keyword">val</span> fullname <span class="keyword">=</span> fl_prefix + nam + "_" + id
+<span class="keyword">in</span>
+  symbol_make_name <span class="keyword">(</span>fullname<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> funent_add <span class="keyword">(</span>fl<span class="keyword">,</span> ent<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> table <span class="keyword">=</span> <span class="keyword">!</span>fun_table
+  <span class="keyword">val</span> table <span class="keyword">=</span> symenv_insert <span class="keyword">(</span>table<span class="keyword">,</span> fl<span class="keyword">,</span> ent<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>fun_table := table
+<span class="keyword">in</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> funent_getall <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> helper <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp"><span class="keyword">@(</span>symbol_t<span class="keyword">,</span> funent<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funent</span> <span class="keyword">=</span> x<span class="keyword">.</span>1
+  <span class="keyword">val</span> xs <span class="keyword">=</span> symenv_listize&lt;<span class="staexp">funent</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="keyword">!</span>fun_table<span class="keyword">)</span>
+<span class="keyword">in</span>
+  list0_map_fun&lt; <span class="staexp"><span class="keyword">@(</span>symbol_t<span class="keyword">,</span> funent<span class="keyword">)</span></span><span class="keyword">&gt;&lt;</span><span class="staexp">funent</span><span class="keyword">&gt;</span> <span class="keyword">(</span>xs<span class="keyword">,</span> helper<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> mainlab <span class="keyword">=</span> symbol_make_name <span class="keyword">(</span>"__main"<span class="keyword">)</span>
+
+<span class="keyword">end</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="5437"><span class="dyncstdec">aux_exp <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+
+<span class="comment">(* ret is supposed to be used in the evaluation *)</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="5543"><span class="dyncstdec">aux_exp_ret <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+
+<span class="comment">(* this function only handle E1XPfix and E1XPlam and E1XPann *)</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="5679"><span class="dyncstdec">aux_exp_fun <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+
+<span class="keyword">fun</span> auxlst_exp <span class="keyword">(</span>
+  es<span class="keyword">:</span> <span class="staexp">e1xplst</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span>
+<span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">valprimlst</span> <span class="keyword">=</span> <span class="keyword">case+</span> es <span class="keyword">of</span>
+  <span class="keyword">|</span> list0_cons <span class="keyword">(</span>e<span class="keyword">,</span> es<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> v <span class="keyword">=</span> aux_exp <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+      <span class="keyword">val</span> vs <span class="keyword">=</span> auxlst_exp <span class="keyword">(</span>es<span class="keyword">,</span> res<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      list0_cons <span class="keyword">(</span>v<span class="keyword">,</span> vs<span class="keyword">)</span>
+    <span class="keyword">end</span>
+  <span class="keyword">|</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span>
+
+<span class="keyword">fun</span> aux_exp_fix_lab
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">v1ar</span><span class="keyword">,</span> v_args<span class="keyword">:</span> <span class="staexp">v1arlst</span><span class="keyword">,</span> e_body<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> vp_fun <span class="keyword">=</span> VPfun <span class="keyword">(</span>fl<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> v1ar_initset_val <span class="keyword">(</span>f<span class="keyword">,</span> vp_fun<span class="keyword">)</span>
+  <span class="keyword">val</span> narg <span class="keyword">=</span> loop <span class="keyword">(</span>v_args<span class="keyword">,</span> 0<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">fun</span> loop <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">v1arlst</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span> <span class="keyword">=</span>
+      <span class="keyword">case+</span> xs <span class="keyword">of</span>
+      <span class="keyword">|</span> cons <span class="keyword">(</span>x<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+          <span class="keyword">val</span> vp <span class="keyword">=</span> VParg <span class="keyword">(</span>n<span class="keyword">)</span>
+          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> v1ar_initset_val <span class="keyword">(</span>x<span class="keyword">,</span> vp<span class="keyword">)</span>
+        <span class="keyword">in</span>
+          loop <span class="keyword">(</span>xs<span class="keyword">,</span> n+1<span class="keyword">)</span>
+        <span class="keyword">end</span>
+      <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> n
+  <span class="keyword">}</span>
+  <span class="keyword">var</span> res<span class="keyword">:</span> <span class="staexp">instrlst</span> <span class="keyword">=</span> nil
+  <span class="keyword">val</span> vp_ret <span class="keyword">=</span> aux_exp <span class="keyword">(</span>e_body<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">val</span> res <span class="keyword">=</span> instr_reverse <span class="keyword">(</span>res<span class="keyword">)</span>
+  <span class="keyword">val</span> ent <span class="keyword">=</span> funent_make <span class="keyword">(</span>fl<span class="keyword">,</span> narg<span class="keyword">,</span> res<span class="keyword">,</span> vp_ret<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> funent_add <span class="keyword">(</span>fl<span class="keyword">,</span> ent<span class="keyword">)</span>
+<span class="keyword">in</span>
+  VPfun <span class="keyword">(</span>fl<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">fun</span> aux_exp_lam_lab <span class="keyword">(</span>v_args<span class="keyword">:</span> <span class="staexp">v1arlst</span><span class="keyword">,</span> e_body<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="comment">(* handle the arguments *)</span>
+  <span class="keyword">val</span> narg <span class="keyword">=</span> loop <span class="keyword">(</span>v_args<span class="keyword">,</span> 0<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">fun</span> loop <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">v1arlst</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span> <span class="keyword">=</span>
+      <span class="keyword">case+</span> xs <span class="keyword">of</span>
+      <span class="keyword">|</span> cons <span class="keyword">(</span>x<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+          <span class="keyword">val</span> vp <span class="keyword">=</span> VParg <span class="keyword">(</span>n<span class="keyword">)</span>
+          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> v1ar_initset_val <span class="keyword">(</span>x<span class="keyword">,</span> vp<span class="keyword">)</span>
+        <span class="keyword">in</span>
+          loop <span class="keyword">(</span>xs<span class="keyword">,</span> n+1<span class="keyword">)</span>
+        <span class="keyword">end</span>
+      <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> n
+  <span class="keyword">}</span>
+  <span class="keyword">var</span> res<span class="keyword">:</span> <span class="staexp">instrlst</span> <span class="keyword">=</span> nil
+  <span class="keyword">val</span> vp_ret <span class="keyword">=</span> aux_exp <span class="keyword">(</span>e_body<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">val</span> res <span class="keyword">=</span> instr_reverse <span class="keyword">(</span>res<span class="keyword">)</span>
+
+  <span class="keyword">val</span> ent <span class="keyword">=</span> funent_make <span class="keyword">(</span>fl<span class="keyword">,</span> narg<span class="keyword">,</span> res<span class="keyword">,</span> vp_ret<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> funent_add <span class="keyword">(</span>fl<span class="keyword">,</span> ent<span class="keyword">)</span>
+<span class="keyword">in</span>
+  VPfun <span class="keyword">(</span>fl<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> aux_exp <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>
+  <span class="keyword">case</span> e<span class="keyword">.</span>e1xp_node <span class="keyword">of</span>
+  <span class="keyword">|</span> E1XPann <span class="keyword">(</span>e<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> aux_exp <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPapp <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> wrapper <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPbool b <span class="keyword">=&gt;</span> VPbool <span class="keyword">(</span>b<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPfix <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> fl <span class="keyword">=</span> funlab_make_anon <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">in</span>
+    aux_exp_fun <span class="keyword">(</span>e<span class="keyword">,</span> fl<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPif <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> wrapper <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPint i <span class="keyword">=&gt;</span> VPint <span class="keyword">(</span>i<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPlam <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> fl <span class="keyword">=</span> funlab_make_anon <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">in</span>
+    aux_exp_fun <span class="keyword">(</span>e<span class="keyword">,</span> fl<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPlet <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> wrapper <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPopr <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> wrapper <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPproj <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> wrapper <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPstr <span class="keyword">(</span>str<span class="keyword">)</span> <span class="keyword">=&gt;</span> VPstr <span class="keyword">(</span>str<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPtup exps <span class="keyword">=&gt;</span> wrapper <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPvar v <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> vp_opt <span class="keyword">=</span> v1ar_get_val <span class="keyword">(</span>v<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">case+</span> vp_opt <span class="keyword">of</span>
+    <span class="keyword">|</span> Some0 <span class="keyword">(</span>vp<span class="keyword">)</span> <span class="keyword">=&gt;</span> vp
+    <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span>
+      ETRACE_MSG_OPR <span class="keyword">(</span>"aux_exp v1ar doesn't have valprim\n"<span class="keyword">,</span> ETRACE_LEVEL_ERROR<span class="keyword">,</span>
+                    abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">end</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> wrapper <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> tmp_ret <span class="keyword">=</span> tmpvar_new <span class="keyword">(</span><span class="keyword">)</span>
+    <span class="keyword">in</span>
+      aux_exp_ret <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">,</span> tmp_ret<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">}</span> <span class="comment">// end of [where]
+</span>
+<span class="comment">// end of [aux_exp]
+</span><span class="comment">(* ****** ****** *)</span>
+<span class="keyword">fun</span> instr_add_call <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> tmpv<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span>
+  vpf<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> vpargs<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">,</span> iswrapper<span class="keyword">:</span> <span class="staexp">bool</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ins_node <span class="keyword">=</span> INSTRcall <span class="keyword">(</span>tmpv<span class="keyword">,</span> vpf<span class="keyword">,</span> vpargs<span class="keyword">,</span> iswrapper<span class="keyword">)</span>
+  <span class="keyword">val</span> ins <span class="keyword">=</span> instr_make <span class="keyword">(</span>loc<span class="keyword">,</span> ins_node<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add <span class="keyword">(</span>res<span class="keyword">,</span> ins<span class="keyword">)</span>
+<span class="keyword">in</span>
+<span class="keyword">end</span>  <span class="comment">// end of [instr_add_call]
+</span>
+<span class="keyword">fun</span> instr_add_cond <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> tmpv<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> vp_test<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> 
+  instr1<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">,</span> instr2<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ins_node <span class="keyword">=</span> INSTRcond <span class="keyword">(</span>tmpv<span class="keyword">,</span> vp_test<span class="keyword">,</span> instr1<span class="keyword">,</span> instr2<span class="keyword">)</span>
+  <span class="keyword">val</span> ins <span class="keyword">=</span> instr_make <span class="keyword">(</span>loc<span class="keyword">,</span> ins_node<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add <span class="keyword">(</span>res<span class="keyword">,</span> ins<span class="keyword">)</span>
+<span class="keyword">in</span>
+<span class="keyword">end</span>  <span class="comment">// end of [instr_add_cond]
+</span>
+<span class="keyword">fun</span> instr_add_move <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> tmpv<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ins_node <span class="keyword">=</span> INSTRmove_val <span class="keyword">(</span>tmpv<span class="keyword">,</span> vp<span class="keyword">)</span>
+  <span class="keyword">val</span> ins <span class="keyword">=</span> instr_make <span class="keyword">(</span>loc<span class="keyword">,</span> ins_node<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add <span class="keyword">(</span>res<span class="keyword">,</span> ins<span class="keyword">)</span>
+<span class="keyword">in</span>
+<span class="keyword">end</span>  <span class="comment">// end of [instr_add_move]
+</span>
+<span class="keyword">fun</span> instr_add_opr <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> tmpv<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> opr<span class="keyword">:</span> <span class="staexp">opr</span><span class="keyword">,</span> 
+  vps<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ins_node <span class="keyword">=</span> INSTRopr <span class="keyword">(</span>tmpv<span class="keyword">,</span> opr<span class="keyword">,</span> vps<span class="keyword">)</span>
+  <span class="keyword">val</span> ins <span class="keyword">=</span> instr_make <span class="keyword">(</span>loc<span class="keyword">,</span> ins_node<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add <span class="keyword">(</span>res<span class="keyword">,</span> ins<span class="keyword">)</span>
+<span class="keyword">in</span>
+<span class="keyword">end</span>  <span class="comment">// end of [instr_add_opr]
+</span>
+<span class="keyword">fun</span> instr_add_tup <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> tmpv<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span>
+  vps<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ins_node <span class="keyword">=</span> INSTRtup <span class="keyword">(</span>tmpv<span class="keyword">,</span> vps<span class="keyword">)</span>
+  <span class="keyword">val</span> ins <span class="keyword">=</span> instr_make <span class="keyword">(</span>loc<span class="keyword">,</span> ins_node<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add <span class="keyword">(</span>res<span class="keyword">,</span> ins<span class="keyword">)</span>
+<span class="keyword">in</span>
+<span class="keyword">end</span>  <span class="comment">// end of [instr_add_tup]
+</span>
+<span class="keyword">fun</span> instr_add_proj <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> tmpv<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span>
+  vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> pos<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ins_node <span class="keyword">=</span> INSTRproj <span class="keyword">(</span>tmpv<span class="keyword">,</span> vp<span class="keyword">,</span> pos<span class="keyword">)</span>
+  <span class="keyword">val</span> ins <span class="keyword">=</span> instr_make <span class="keyword">(</span>loc<span class="keyword">,</span> ins_node<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add <span class="keyword">(</span>res<span class="keyword">,</span> ins<span class="keyword">)</span>
+<span class="keyword">in</span>
+<span class="keyword">end</span>  <span class="comment">// end of [instr_add_proj]
+</span>
+<span class="keyword">fun</span> aux_exp_ret_if <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> e_test<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> e_then<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> oe_else<span class="keyword">:</span> <span class="staexp">e1xpopt</span><span class="keyword">,</span> 
+  res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> tmp_ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> v_test <span class="keyword">=</span> aux_exp <span class="keyword">(</span>e_test<span class="keyword">,</span> res<span class="keyword">)</span>
+
+  <span class="keyword">var</span> res_then<span class="keyword">:</span> <span class="staexp">instrlst</span> <span class="keyword">=</span> list0_nil
+  <span class="keyword">val</span> v_then <span class="keyword">=</span> aux_exp <span class="keyword">(</span>e_then<span class="keyword">,</span> res_then<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add_move <span class="keyword">(</span>e_then<span class="keyword">.</span>e1xp_loc<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> v_then<span class="keyword">,</span> res_then<span class="keyword">)</span>
+
+  <span class="keyword">var</span> res_else<span class="keyword">:</span> <span class="staexp">instrlst</span> <span class="keyword">=</span> list0_nil
+  <span class="keyword">val</span> <span class="keyword">(</span>v_else<span class="keyword">,</span> loc_else<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">case+</span> oe_else <span class="keyword">of</span>
+    <span class="keyword">|</span> Some0 e_else <span class="keyword">=&gt;</span> <span class="keyword">(</span>aux_exp <span class="keyword">(</span>e_else<span class="keyword">,</span> res_else<span class="keyword">)</span><span class="keyword">,</span> e_else<span class="keyword">.</span>e1xp_loc<span class="keyword">)</span>
+    <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="comment">// val () = printf ("aux_exp_ret_if -- else is none\n", @())
+</span>    <span class="keyword">in</span>
+      <span class="keyword">(</span>valprim_void<span class="keyword">,</span> e_then<span class="keyword">.</span>e1xp_loc<span class="keyword">)</span>  <span class="comment">// use the location of then
+</span>    <span class="keyword">end</span>
+    <span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add_move <span class="keyword">(</span>loc_else<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> v_else<span class="keyword">,</span> res_else<span class="keyword">)</span>
+  
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add_cond <span class="keyword">(</span>loc<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> v_test<span class="keyword">,</span> res_then<span class="keyword">,</span> res_else<span class="keyword">,</span> res<span class="keyword">)</span>
+<span class="keyword">in</span>
+  VPtmp <span class="keyword">(</span>tmp_ret<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">fun</span> aux_exp_ret_opr <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> opr<span class="keyword">:</span> <span class="staexp">opr</span><span class="keyword">,</span> exps<span class="keyword">:</span> <span class="staexp">e1xplst</span><span class="keyword">,</span> 
+  res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> tmp_ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> vps <span class="keyword">=</span> auxlst_exp <span class="keyword">(</span>exps<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add_opr <span class="keyword">(</span>loc<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> opr<span class="keyword">,</span> vps<span class="keyword">,</span> res<span class="keyword">)</span>
+<span class="keyword">in</span>
+  VPtmp <span class="keyword">(</span>tmp_ret<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">fun</span> aux_exp_v1aldeclst <span class="keyword">(</span>v1aldecs<span class="keyword">:</span> <span class="staexp">v1aldeclst</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> v1aldecs <span class="keyword">of</span>
+  <span class="keyword">|</span> cons <span class="keyword">(</span>v1aldec<span class="keyword">,</span> v1aldecs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> v1ar <span class="keyword">=</span> v1aldec<span class="keyword">.</span>v1aldec_var
+    <span class="keyword">val</span> vpopt <span class="keyword">=</span> v1ar_get_val <span class="keyword">(</span>v1ar<span class="keyword">)</span>
+    <span class="keyword">val</span> vp <span class="keyword">=</span> 
+      <span class="keyword">case+</span> vpopt <span class="keyword">of</span>
+      <span class="keyword">|</span> Some0 vp <span class="keyword">=&gt;</span> 
+        <span class="keyword">(</span><span class="keyword">case+</span> vp <span class="keyword">of</span>
+        <span class="comment">// if exists sth. then must be funlab
+</span>        <span class="keyword">|</span> VPfun fl <span class="keyword">=&gt;</span> aux_exp_fun <span class="keyword">(</span>v1aldec<span class="keyword">.</span>v1aldec_def<span class="keyword">,</span> fl<span class="keyword">)</span>
+        <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>
+          "aux_exp_v1aldeclst var has a valprim which is not VPfun\n"<span class="keyword">,</span>
+          ETRACE_LEVEL_ERROR<span class="keyword">,</span>
+          abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+        <span class="keyword">)</span>
+      <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> aux_exp_ret <span class="keyword">(</span>v1aldec<span class="keyword">.</span>v1aldec_def<span class="keyword">,</span> res<span class="keyword">,</span> tmpvar_new <span class="keyword">(</span>v1ar<span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> v1ar_initset_val <span class="keyword">(</span>v1ar<span class="keyword">,</span> vp<span class="keyword">)</span>  <span class="comment">// vp may be equal to VPfun fl, just let it be
+</span>  <span class="keyword">in</span>
+    aux_exp_v1aldeclst <span class="keyword">(</span>v1aldecs1<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+
+<span class="comment">(* generating labels for all the functions *)</span>
+<span class="comment">(* r1: round 1 *)</span>
+<span class="keyword">fun</span> aux_exp_v1aldeclst_rec_r1 <span class="keyword">(</span>v1aldecs<span class="keyword">:</span> <span class="staexp">v1aldeclst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> v1aldecs <span class="keyword">of</span>
+  <span class="keyword">|</span> cons <span class="keyword">(</span>v1aldec<span class="keyword">,</span> v1aldecs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> v <span class="keyword">=</span> v1aldec<span class="keyword">.</span>v1aldec_var
+    <span class="keyword">val</span> e <span class="keyword">=</span> v1aldec<span class="keyword">.</span>v1aldec_def
+    <span class="keyword">val</span> e_node <span class="keyword">=</span> e<span class="keyword">.</span>e1xp_node
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> 
+      <span class="keyword">if</span> e1xp_node_is_fun <span class="keyword">(</span>e_node<span class="keyword">)</span> <span class="keyword">=</span> true <span class="keyword">then</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> fl <span class="keyword">=</span> funlab_make_name <span class="keyword">(</span>v<span class="keyword">)</span>
+        <span class="keyword">val</span> vp_fun <span class="keyword">=</span> VPfun <span class="keyword">(</span>fl<span class="keyword">)</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> v1ar_initset_val <span class="keyword">(</span>v<span class="keyword">,</span> vp_fun<span class="keyword">)</span>
+      <span class="keyword">in</span> <span class="keyword">end</span>
+  <span class="keyword">in</span>
+    aux_exp_v1aldeclst_rec_r1 <span class="keyword">(</span>v1aldecs1<span class="keyword">)</span>
+  <span class="keyword">end</span>  <span class="comment">// end of [cons]
+</span>  <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+
+<span class="keyword">fun</span> aux_exp_v1aldeclst_rec <span class="keyword">(</span>v1aldecs<span class="keyword">:</span> <span class="staexp">v1aldeclst</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="comment">// scan for the first round
+</span>  <span class="comment">// val () = printf ("aux_exp_v1aldeclst_rec\n", @())
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> aux_exp_v1aldeclst_rec_r1 <span class="keyword">(</span>v1aldecs<span class="keyword">)</span>
+<span class="keyword">in</span>
+  aux_exp_v1aldeclst <span class="keyword">(</span>v1aldecs<span class="keyword">,</span> res<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">fun</span> aux_exp_d1eclst <span class="keyword">(</span>d1ecs<span class="keyword">:</span> <span class="staexp">d1eclst</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> d1ecs <span class="keyword">of</span>
+  <span class="keyword">|</span> cons <span class="keyword">(</span>d1ec<span class="keyword">,</span> d1ecs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="comment">// val () = printf ("aux_exp_d1eclst\n", @())
+</span>    <span class="keyword">val+</span> D1ECval <span class="keyword">(</span>isrec<span class="keyword">,</span> v1aldecs<span class="keyword">)</span> <span class="keyword">=</span> d1ec<span class="keyword">.</span>d1ec_node 
+    <span class="comment">(* no matter it is recursive or not, I decide to treat them as the same *)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">if</span> isrec <span class="keyword">=</span> true <span class="keyword">then</span> aux_exp_v1aldeclst_rec <span class="keyword">(</span>v1aldecs<span class="keyword">,</span> res<span class="keyword">)</span>
+             <span class="keyword">else</span> aux_exp_v1aldeclst_rec <span class="keyword">(</span>v1aldecs<span class="keyword">,</span> res<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">in</span>
+    aux_exp_d1eclst <span class="keyword">(</span>d1ecs1<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+
+<span class="keyword">fun</span> aux_exp_ret_let <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> d1ecs<span class="keyword">:</span> <span class="staexp">d1eclst</span><span class="keyword">,</span> e1xp<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> 
+  res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> tmp_ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="comment">// val () = printf ("aux_exp_ret_let\n", @())
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> aux_exp_d1eclst <span class="keyword">(</span>d1ecs<span class="keyword">,</span> res<span class="keyword">)</span>
+<span class="keyword">in</span>
+  aux_exp_ret <span class="keyword">(</span>e1xp<span class="keyword">,</span> res<span class="keyword">,</span> tmp_ret<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">fun</span> aux_exp_ret_proj <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> e1xp<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> pos<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">,</span> 
+  res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> tmp_ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> vp <span class="keyword">=</span> aux_exp <span class="keyword">(</span>e1xp<span class="keyword">,</span> res<span class="keyword">)</span>
+
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> 
+    <span class="keyword">(</span><span class="keyword">case+</span> vp <span class="keyword">of</span> 
+    <span class="keyword">|</span> VParg _ <span class="keyword">=&gt;</span> instr_add_proj <span class="keyword">(</span>loc<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> vp<span class="keyword">,</span> pos<span class="keyword">,</span> res<span class="keyword">)</span>
+    <span class="keyword">|</span> VPtmp _ <span class="keyword">=&gt;</span> instr_add_proj <span class="keyword">(</span>loc<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> vp<span class="keyword">,</span> pos<span class="keyword">,</span> res<span class="keyword">)</span>
+    <span class="keyword">|</span> VPtup _ <span class="keyword">=&gt;</span> instr_add_proj <span class="keyword">(</span>loc<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> vp<span class="keyword">,</span> pos<span class="keyword">,</span> res<span class="keyword">)</span>
+    <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"aux_exp_ret_proj left part is not a tuple\n"<span class="keyword">,</span> ETRACE_LEVEL_ERROR<span class="keyword">,</span>
+                      abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">)</span>
+<span class="keyword">in</span>
+  VPtmp <span class="keyword">(</span>tmp_ret<span class="keyword">)</span>
+<span class="comment">(*  // obsolete code
+  case+ vp of
+  | VPtup (_, vps) =&gt; let
+    val vp_opt = list0_nth_opt (vps, pos)
+  in
+    case+ vp_opt of
+    | Some0 vp =&gt; let
+      val () = instr_add_move (loc, tmp_ret, vp, res)
+    in
+      VPtmp (tmp_ret)
+    end
+    | None0 () =&gt; ETRACE_MSG_OPR ("aux_exp_ret_proj proj out of bound\n", ETRACE_LEVEL_ERROR,
+                    abort (ERRORCODE_FORBIDDEN))
+  end
+*)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">fun</span> aux_exp_ret_app <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> e_fun<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> e_arg<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span>
+  res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> tmp_ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> vp_f <span class="keyword">=</span> aux_exp <span class="keyword">(</span>e_fun<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">val</span> vp_arg <span class="keyword">=</span> aux_exp <span class="keyword">(</span>e_arg<span class="keyword">,</span> res<span class="keyword">)</span>
+
+  <span class="comment">(* treat all functioins as unary functions *)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>vp_args<span class="keyword">,</span> iswrapper<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">case+</span> vp_arg <span class="keyword">of</span>
+              <span class="keyword">|</span> VPtup <span class="keyword">(</span>_<span class="keyword">,</span> vps<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>vps<span class="keyword">,</span> false<span class="keyword">)</span>
+              <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> <span class="keyword">(</span>cons <span class="keyword">(</span>vp_arg<span class="keyword">,</span> nil<span class="keyword">)</span><span class="keyword">,</span> true<span class="keyword">)</span>
+              <span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>valprimlst<span class="keyword">,</span> bool<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add_call <span class="keyword">(</span>loc<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> vp_f<span class="keyword">,</span> vp_args<span class="keyword">,</span> iswrapper<span class="keyword">,</span> res<span class="keyword">)</span>
+<span class="keyword">in</span>
+  VPtmp <span class="keyword">(</span>tmp_ret<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">fun</span> aux_exp_ret_tuple <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> e1xps<span class="keyword">:</span> <span class="staexp">e1xplst</span><span class="keyword">,</span>
+  res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> tmp_ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> vps <span class="keyword">=</span> auxlst_exp <span class="keyword">(</span>e1xps<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add_tup <span class="keyword">(</span>loc<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> vps<span class="keyword">,</span> res<span class="keyword">)</span>
+<span class="keyword">in</span>
+  VPtup <span class="keyword">(</span>tmp_ret<span class="keyword">,</span> vps<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span>
+aux_exp_ret <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">,</span> ret<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> loc <span class="keyword">=</span> e<span class="keyword">.</span>e1xp_loc
+  <span class="comment">// val () = ETRACE_MSG ("aux_exp_ret\n", ETRACE_LEVEL_DEBUG)
+</span><span class="keyword">in</span>
+  <span class="keyword">case</span> e<span class="keyword">.</span>e1xp_node <span class="keyword">of</span>
+  <span class="keyword">|</span> E1XPann <span class="keyword">(</span>e<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> aux_exp_ret <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">,</span> ret<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPapp <span class="keyword">(</span>e_fun<span class="keyword">,</span> e_arg<span class="keyword">)</span> <span class="keyword">=&gt;</span> aux_exp_ret_app <span class="keyword">(</span>loc<span class="keyword">,</span> e_fun<span class="keyword">,</span> e_arg<span class="keyword">,</span> res<span class="keyword">,</span> ret<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPbool _ <span class="keyword">=&gt;</span> aux_exp <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPfix <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"aux_exp_ret shouldn't handle E1XPfix\n"<span class="keyword">,</span> 
+                    ETRACE_LEVEL_ERROR<span class="keyword">,</span> abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPif <span class="keyword">(</span>e_test<span class="keyword">,</span> e_then<span class="keyword">,</span> oe_else<span class="keyword">)</span> <span class="keyword">=&gt;</span> 
+    aux_exp_ret_if <span class="keyword">(</span>loc<span class="keyword">,</span> e_test<span class="keyword">,</span> e_then<span class="keyword">,</span> oe_else<span class="keyword">,</span> res<span class="keyword">,</span> ret<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPint _ <span class="keyword">=&gt;</span> aux_exp <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPlam <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"aux_exp_ret shouldn't handle E1XPlam\n"<span class="keyword">,</span> 
+                    ETRACE_LEVEL_ERROR<span class="keyword">,</span> abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPlet <span class="keyword">(</span>d1ecs<span class="keyword">,</span> e1xp<span class="keyword">)</span> <span class="keyword">=&gt;</span> aux_exp_ret_let <span class="keyword">(</span>loc<span class="keyword">,</span> d1ecs<span class="keyword">,</span> e1xp<span class="keyword">,</span> res<span class="keyword">,</span> ret<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPopr <span class="keyword">(</span>opr<span class="keyword">,</span> exps<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="comment">// val () = printf ("aux_opr\n", @())
+</span>  <span class="keyword">in</span>
+    aux_exp_ret_opr <span class="keyword">(</span>loc<span class="keyword">,</span> opr<span class="keyword">,</span> exps<span class="keyword">,</span> res<span class="keyword">,</span> ret<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPproj <span class="keyword">(</span>e1xp<span class="keyword">,</span> pos<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="comment">// val () = printf ("aux_proj\n", @())
+</span>  <span class="keyword">in</span>
+    aux_exp_ret_proj <span class="keyword">(</span>loc<span class="keyword">,</span> e1xp<span class="keyword">,</span> pos<span class="keyword">,</span> res<span class="keyword">,</span> ret<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPstr _ <span class="keyword">=&gt;</span> aux_exp <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPtup e1xps <span class="keyword">=&gt;</span> aux_exp_ret_tuple <span class="keyword">(</span>loc<span class="keyword">,</span> e1xps<span class="keyword">,</span> res<span class="keyword">,</span> ret<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPvar _ <span class="keyword">=&gt;</span> aux_exp <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="comment">(* extern fun aux_exp_fun (e: e1xp, fl: funlab): valprim *)</span>
+<span class="comment">(* this function only handle E1XPfix and E1XPlam and E1XPann *)</span>
+<span class="keyword">implement</span> aux_exp_fun <span class="keyword">(</span>e<span class="keyword">,</span> fl<span class="keyword">)</span> <span class="keyword">=</span> 
+  <span class="keyword">case+</span> e<span class="keyword">.</span>e1xp_node <span class="keyword">of</span>
+  <span class="keyword">|</span> E1XPann <span class="keyword">(</span>e1<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> aux_exp_fun <span class="keyword">(</span>e1<span class="keyword">,</span> fl<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPfix <span class="keyword">(</span>f<span class="keyword">,</span> args<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=&gt;</span> aux_exp_fix_lab <span class="keyword">(</span>f<span class="keyword">,</span> args<span class="keyword">,</span> body<span class="keyword">,</span> fl<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPlam <span class="keyword">(</span>args<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=&gt;</span> aux_exp_lam_lab <span class="keyword">(</span>args<span class="keyword">,</span> body<span class="keyword">,</span> fl<span class="keyword">)</span>
+  <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"aux_exp_fun handle non-function\n"<span class="keyword">,</span> ETRACE_LEVEL_ERROR<span class="keyword">,</span>
+                    abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+
+<span class="comment">(*
+trans2_exp (e: e1xp): instrlst
+*)</span>
+<span class="keyword">implement</span>
+trans2_exp <span class="keyword">(</span>e<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="comment">// val () = ETRACE_MSG ("trans2_exp\n", ETRACE_LEVEL_DEBUG)
+</span>
+  <span class="keyword">var</span> res<span class="keyword">:</span> <span class="staexp">instrlst</span> <span class="keyword">=</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">val</span> v <span class="keyword">=</span> aux_exp <span class="keyword">(</span>e<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="comment">(* reverse the main let *)</span>
+  <span class="keyword">val</span> res <span class="keyword">=</span> instr_reverse <span class="keyword">(</span>res<span class="keyword">)</span>
+
+  <span class="keyword">val</span> fns <span class="keyword">=</span> funent_getall <span class="keyword">(</span><span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">(</span>res<span class="keyword">,</span> fns<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [trans2.dats] *)</span>
+
+
+</pre>
+</body>
+</html>

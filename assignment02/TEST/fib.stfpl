@@ -7,6 +7,7 @@ let
     if n >= 2 then fib (n-1) + fib (n-2) else n
   // end of [val rec]
   val fib20 = fib (20)
+  val _ = print "should see \nfib (20) = 6765\n"
   val _ = print "fib (20) = "
   val _ = print_int (fib20)
   val _ = print "\n"

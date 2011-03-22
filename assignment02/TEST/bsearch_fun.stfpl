@@ -34,6 +34,7 @@ let
   // val isqrt: int -> int = lam (x: int) => 
     bsearch_fun (lam (i) => i * i, x, 0, ISQRT_MAX)
 
+  val _ = print "should see 0 1 1 2 4 5 in multiple line\n"
   val _ = print_int isqrt (0)
   val _ = print "\n"
   val _ = print_int isqrt (1)
@@ -44,8 +45,10 @@ let
   val _ = print "\n"
   val _ = print_int isqrt (17)
   val _ = print "\n"
+  val _ = print_int isqrt (25)
+  val _ = print "\n"
 in
-  print_int isqrt (25)
+  ()
 end
 
 /* ****** ****** */

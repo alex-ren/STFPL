@@ -34,72 +34,75 @@
 </span>
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">fun</span> <a name="148"><span class="dyncstdec">symbol_get_name <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">string</span></span></a>
-<span class="keyword">fun</span> <a name="192"><span class="dyncstdec">symbol_make_name <span class="keyword">(</span>name<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a>
+<span class="keyword">fun</span> <a name="148"><span class="dyncstdec">symbol_get_name <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+<span class="keyword">fun</span> <a name="190"><span class="dyncstdec">symbol_make_name <span class="keyword">(</span>name<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a>
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">fun</span> <a name="260"><span class="dyncstdec">fprint_symbol <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="258"><span class="dyncstdec">fprint_symbol <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_symbol</span>
 
-<span class="keyword">fun</span> <a name="348"><span class="dyncstdec">print_symbol <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="346"><span class="dyncstdec">print_symbol <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> print <span class="keyword">with</span> print_symbol</span>
 
-<span class="keyword">fun</span> <a name="419"><span class="dyncstdec">prerr_symbol <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="417"><span class="dyncstdec">prerr_symbol <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> prerr <span class="keyword">with</span> prerr_symbol</span>
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">fun</span> <a name="511"><span class="dyncstdec">eq_symbol_symbol <span class="keyword">(</span>x1<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">,</span> x2<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="keyword">fun</span> <a name="509"><span class="dyncstdec">eq_symbol_symbol <span class="keyword">(</span>x1<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">,</span> x2<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> <span class="keyword">=</span> <span class="keyword">with</span> eq_symbol_symbol</span>
 
-<span class="keyword">fun</span> <a name="603"><span class="dyncstdec">neq_symbol_symbol <span class="keyword">(</span>x1<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">,</span> x2<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="keyword">fun</span> <a name="601"><span class="dyncstdec">neq_symbol_symbol <span class="keyword">(</span>x1<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">,</span> x2<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> &lt;&gt; <span class="keyword">with</span> neq_symbol_symbol</span>
 
-<span class="keyword">fun</span> <a name="698"><span class="dyncstdec">compare_symbol_symbol <span class="keyword">(</span>x1<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">,</span> x2<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">Sgn</span></span></a>
+<span class="keyword">fun</span> <a name="696"><span class="dyncstdec">compare_symbol_symbol <span class="keyword">(</span>x1<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">,</span> x2<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">Sgn</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> compare <span class="keyword">with</span> compare_symbol_symbol</span>
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">val</span> <a name="826"><span class="dyncstdec">symbol_BOOL <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "bool" for [bool] type
-</span><span class="keyword">val</span> <a name="879"><span class="dyncstdec">symbol_INT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "int" for [int] type
-</span><span class="keyword">val</span> <a name="929"><span class="dyncstdec">symbol_STRING <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "string" for [string] type
-</span><span class="keyword">val</span> <a name="988"><span class="dyncstdec">symbol_UNIT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "unit" for [unit] type
+<span class="keyword">val</span> <a name="824"><span class="dyncstdec">symbol_BOOL <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "bool" for [bool] type
+</span><span class="keyword">val</span> <a name="877"><span class="dyncstdec">symbol_INT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "int" for [int] type
+</span><span class="keyword">val</span> <a name="927"><span class="dyncstdec">symbol_STRING <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "string" for [string] type
+</span><span class="keyword">val</span> <a name="986"><span class="dyncstdec">symbol_UNIT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "unit" for [unit] type
 </span>
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">val</span> <a name="1063"><span class="dyncstdec">symbol_UMINUS <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "~"
+<span class="keyword">val</span> <a name="1061"><span class="dyncstdec">symbol_UMINUS <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "~"
 </span>
-<span class="keyword">val</span> <a name="1100"><span class="dyncstdec">symbol_PLUS <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "+"
-</span><span class="keyword">val</span> <a name="1134"><span class="dyncstdec">symbol_MINUS <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "-"
-</span><span class="keyword">val</span> <a name="1169"><span class="dyncstdec">symbol_TIMES <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "*"
-</span><span class="keyword">val</span> <a name="1204"><span class="dyncstdec">symbol_SLASH <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "/"
+<span class="keyword">val</span> <a name="1098"><span class="dyncstdec">symbol_PLUS <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "+"
+</span><span class="keyword">val</span> <a name="1132"><span class="dyncstdec">symbol_MINUS <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "-"
+</span><span class="keyword">val</span> <a name="1167"><span class="dyncstdec">symbol_TIMES <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "*"
+</span><span class="keyword">val</span> <a name="1202"><span class="dyncstdec">symbol_SLASH <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "/"
 </span>
-<span class="keyword">val</span> <a name="1240"><span class="dyncstdec">symbol_GT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "&gt;"
-</span><span class="keyword">val</span> <a name="1272"><span class="dyncstdec">symbol_GTE <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "&gt;="
-</span><span class="keyword">val</span> <a name="1306"><span class="dyncstdec">symbol_LT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "&lt;"
-</span><span class="keyword">val</span> <a name="1338"><span class="dyncstdec">symbol_LTE <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "&lt;="
-</span><span class="keyword">val</span> <a name="1372"><span class="dyncstdec">symbol_EQ <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "="
-</span><span class="keyword">val</span> <a name="1404"><span class="dyncstdec">symbol_NEQ <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "&lt;&gt;"
+<span class="keyword">val</span> <a name="1238"><span class="dyncstdec">symbol_GT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "&gt;"
+</span><span class="keyword">val</span> <a name="1270"><span class="dyncstdec">symbol_GTE <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "&gt;="
+</span><span class="keyword">val</span> <a name="1304"><span class="dyncstdec">symbol_LT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "&lt;"
+</span><span class="keyword">val</span> <a name="1336"><span class="dyncstdec">symbol_LTE <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "&lt;="
+</span><span class="keyword">val</span> <a name="1370"><span class="dyncstdec">symbol_EQ <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "="
+</span><span class="keyword">val</span> <a name="1402"><span class="dyncstdec">symbol_NEQ <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "&lt;&gt;"
 </span>
-<span class="keyword">val</span> <a name="1439"><span class="dyncstdec">symbol_PRINT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "print"
-</span><span class="keyword">val</span> <a name="1478"><span class="dyncstdec">symbol_PRINT_INT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "print_int"
+<span class="keyword">val</span> <a name="1437"><span class="dyncstdec">symbol_PRINT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "print"
+</span><span class="keyword">val</span> <a name="1476"><span class="dyncstdec">symbol_PRINT_INT <span class="keyword">:</span> <span class="staexp">symbol_t</span></span></a> <span class="comment">// "print_int"
 </span>
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">abstype</span> <span class="staexp"><a name="1551"><span class="stacstdec">symenv_t</span></a></span> <span class="keyword">(</span>a<span class="keyword">:</span> t@ype<span class="keyword">)</span>
+<span class="keyword">abstype</span> <span class="staexp"><a name="1549"><span class="stacstdec">symenv_t</span></a></span> <span class="keyword">(</span>a<span class="keyword">:</span> t@ype<span class="keyword">)</span>
 
-<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="1585"><span class="dyncstdec">symenv_make <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">symenv_t <span class="keyword">(</span>a<span class="keyword">)</span></span></span></a>
-
-<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
-<a name="1628"><span class="dyncstdec">symenv_lookup <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">symenv_t a</span><span class="keyword">,</span> sym<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 a</span></span></a>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="1583"><span class="dyncstdec">symenv_make <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">symenv_t <span class="keyword">(</span>a<span class="keyword">)</span></span></span></a>
 
 <span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
-<a name="1700"><span class="dyncstdec">symenv_insert <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">symenv_t a</span><span class="keyword">,</span> sym<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">symenv_t a</span></span></a>
+<a name="1626"><span class="dyncstdec">symenv_lookup <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">symenv_t a</span><span class="keyword">,</span> sym<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 a</span></span></a>
 
 <span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
-<a name="1779"><span class="dyncstdec">symenv_inserts <span class="keyword">(</span>newenv<span class="keyword">:</span> <span class="staexp">symenv_t a</span><span class="keyword">,</span> oldenv<span class="keyword">:</span> <span class="staexp">symenv_t a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">symenv_t a</span></span></a>
+<a name="1698"><span class="dyncstdec">symenv_insert <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">symenv_t a</span><span class="keyword">,</span> sym<span class="keyword">:</span> <span class="staexp">symbol_t</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">symenv_t a</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="1777"><span class="dyncstdec">symenv_inserts <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">symenv_t a</span><span class="keyword">,</span> ps<span class="keyword">:</span> <span class="staexp">list0 <span class="keyword">@(</span>symbol_t<span class="keyword">,</span> a<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">symenv_t a</span></span></a>
 <span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="1882"><span class="dyncstdec">symenv_listize <span class="keyword">(</span>env<span class="keyword">:</span> <span class="staexp">symenv_t a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 <span class="keyword">@(</span>symbol_t<span class="keyword">,</span> a<span class="keyword">)</span></span></span></a>
 
 
 <span class="comment">(* end of [symbol.sats] *)</span>

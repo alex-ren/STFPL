@@ -1,8 +1,20 @@
 let
-  val a = lam (x: int, y: int) => x + y
+  val a = lam (x: int, y: int) => x * y
   val b = lam (x: (int, int)) => x.0 + x.1
-  val c = if (1 > 0) then a else b
-  val d = c (1, 2)
+
+  val ca = if (1 > 0) then a else b
+  val d = ca (1, 2)
+
+  val _ = print "should see \n2\n"
+  val _ = print_int d
+  val _ = print "\n"
+
+  val cb = if (~1 > 0) then a else b
+  val d = cb (1, 2)
+
+  val _ = print "should see \n3\n"
+  val _ = print_int d
+  val _ = print "\n"
 in
   ()
 end

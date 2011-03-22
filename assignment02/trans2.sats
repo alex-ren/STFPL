@@ -24,6 +24,8 @@ typedef e1xp = $Trans1.e1xp
 abstype tmpvar_t
 typedef tmpvar = tmpvar_t
 
+fun tmpvar_get_name (v: tmpvar): string
+
 fun fprint_tmpvar (out: FILEref, x: tmpvar): void
 overload fprint with fprint_tmpvar
 fun print_tmpvar (x: tmpvar): void
@@ -66,7 +68,7 @@ datatype valprim = // primitive values
   | VPint of int // integer constants
   | VPstr of string // string constants
   | VPtmp of tmpvar // tmporaries
-  | VPtup of valprimlst // tuples 
+  | VPtup of (tmpvar, valprimlst) // (name of tuples, tuples)
 
 (*
 ** please extend the datatype if you need to
@@ -82,10 +84,13 @@ overload fprint with fprint_valprimlst
 (* ****** ****** *)
 
 datatype instr_node =
-  | INSTRcall of (tmpvar, valprim, valprimlst) // fun call
-  | INSTRcond of (valprim, instrlst, instrlst) // conditional
+  | INSTRcall of (tmpvar, valprim, valprimlst, bool(*iswrapper*)) // fun call
+  // conditional  // no return val, so no tmpvar
+  | INSTRcond of (tmpvar, valprim, instrlst, instrlst) 
   | INSTRmove_val of (tmpvar(*x*), valprim(*v*)) // x := v
   | INSTRopr of (tmpvar, $Absyn.opr, valprimlst) // primtive operator
+  | INSTRtup of (tmpvar, valprimlst) // create tuple
+  | INSTRproj of (tmpvar, valprim, int) // projection
 
 where instr = '{
   instr_loc= $Posloc.location_t, instr_node = instr_node
@@ -111,6 +116,11 @@ fun funent_get_body (ent: funent): instrlst
 fun funent_get_ret (ent: funent): valprim
 
 fun funlab_get_name (fl: funlab): string
+
+val mainlab: funlab
+
+fun funent_make_label (
+  fl: funlab, nargs: int, body: instrlst, ret: valprim): funent
 
 
 (* ****** ****** *)

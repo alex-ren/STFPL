@@ -7,6 +7,7 @@ let
   val fact = fix f (n) => if n >= 1 then n * f (n-1) else 1
   // val fact = fix f (n:int): int => if n >= 1 then n * f (n-1) else 1
 
+ val _ = print "should see \nfact (10) = 3628800\n"
  val fact10 = fact (10)
  val _ = print "fact (10) = "
  val _ = print_int (fact10)

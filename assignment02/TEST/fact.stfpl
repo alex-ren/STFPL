@@ -9,6 +9,7 @@ let
     lam (n) => if n >= 1 then n * fact (n-1) else 1
     // lam (n: int) => if n >= 1 then n * fact (n-1) else 1
   // end of [val rec]
+  val _ = print "should see \nfact (10) = 3628800\n"
   val _ = print "fact (10) = "
   val _ = print_int (fact 10)
   val _ = print "\n"

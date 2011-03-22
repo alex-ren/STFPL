@@ -114,7 +114,8 @@ end // end of [string_get_symbol]
 *)
 
 implement
-string_get_symbol (name) = let
+string_get_symbol (name) = // '{symbol_name = "dd", symbol_index = 3}
+let
   var res: sym?
   val (fpf_x | x) = HASHTBLref_decode (theTable)
   val ans = $H.hashtbl_search (x, name, res)
@@ -148,7 +149,14 @@ end // end of [local]
 
 (* ****** ****** *)
 
-implement symbol_get_name (x) = x.symbol_name
+implement symbol_get_name (x) = let
+  // val () = printf ("symbol_get_name\n", @())
+  val ret = x.symbol_name
+  // val () = printf ("symbol_get_name10\n", @())
+in
+  ret
+end
+
 implement symbol_make_name (name) = string_get_symbol (name)
 
 (* ****** ****** *)

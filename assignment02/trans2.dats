@@ -28,7 +28,7 @@ staload _(*anon*) = "prelude/DATS/reference.dats"
 #define Some0 option0_some
 #define None0 option0_none
 
-val valprim_void = VPtup (list0_nil)
+extern val tmpvar_void: tmpvar;
 
 fun instr_add (
   res: &instrlst, x: instr
@@ -37,6 +37,31 @@ fun instr_add (
 fun instr_make (loc: loc, ins_node: instr_node): instr = '{
   instr_loc = loc, instr_node = ins_node
 }  // end of [instr_make]
+
+(* fully reverse *)
+fun instr_reverse (instrs: instrlst): instrlst = let
+  fun loop (instrs: instrlst, accu: instrlst): instrlst =
+    case+ instrs of
+    | cons (instr, instrs1) => let
+      val inode = instr.instr_node
+      val iloc = instr.instr_loc
+    in
+      case+ inode of
+      | INSTRcond (tmpv, vp, ins_then, ins_else) => let
+        val ins_then1 = instr_reverse (ins_then)
+        val ins_else1 = instr_reverse (ins_else)
+        val inode1 = INSTRcond (tmpv, vp, ins_then1, ins_else1)
+        val instr1 = instr_make (iloc, inode1)
+        val accu = instr1 :: accu
+      in
+        loop (instrs1, accu)
+      end
+      | _ => loop (instrs1, instr :: accu)
+    end
+    | nil () => accu
+in
+  loop (instrs, nil)
+end
 
 symintr tmpvar_new
 extern fun tmpvar_new_anon (): tmpvar_t
@@ -49,6 +74,10 @@ assume tmpvar_t = symbol_t
 val tmpvar_count = ref<int> (0)
 val tmpvar_prefix = "__v_": string
 in
+
+implement tmpvar_void = symbol_make_name ("dummy_void")
+val valprim_void = VPtup (tmpvar_void, list0_nil)  // todo must be put here
+
 implement tmpvar_new_anon () = let
   val i = !tmpvar_count
   val () = !tmpvar_count := i + 1
@@ -71,6 +100,13 @@ in
   symbol_make_name (fullname)
 end
 
+implement tmpvar_get_name (v) = let
+  // val () = printf ("tmpvar_get_name\n", @())
+  val ret = symbol_get_name (v)
+  // val () = printf ("tmpvar_get_name10\n", @())
+in
+  ret
+end
 
 end
 
@@ -115,6 +151,12 @@ implement funent_get_body (ent) = ent.funent_body
 implement funent_get_ret (ent) = ent.funent_ret
 
 
+implement funent_make_label (fl, nargs, body, ret) = 
+  '{funent_fun = fl,
+    funent_narg = nargs,
+    funent_body = body,
+    funent_ret = ret
+    }
 
 (* ***** ****** *)
 
@@ -162,6 +204,16 @@ in
   symbol_make_name (fullname)
 end
 
+implement funlab_make_anon () = let
+  val nam = "lam"
+  val i = !funlab_count
+  val () = !funlab_count := i + 1
+  val id = tostring_int (i)
+  val fullname = fl_prefix + nam + "_" + id
+in
+  symbol_make_name (fullname)
+end
+
 implement funent_add (fl, ent) = let
   val table = !fun_table
   val table = symenv_insert (table, fl, ent)
@@ -175,6 +227,8 @@ implement funent_getall () = let
 in
   list0_map_fun< @(symbol_t, funent)><funent> (xs, helper)
 end
+
+implement mainlab = symbol_make_name ("__main")
 
 end
 
@@ -216,6 +270,7 @@ fun aux_exp_fix_lab
   }
   var res: instrlst = nil
   val vp_ret = aux_exp (e_body, res)
+  val res = instr_reverse (res)
   val ent = funent_make (fl, narg, res, vp_ret)
   val () = funent_add (fl, ent)
 in
@@ -237,6 +292,7 @@ fun aux_exp_lam_lab (v_args: v1arlst, e_body: e1xp, fl: funlab): valprim = let
   }
   var res: instrlst = nil
   val vp_ret = aux_exp (e_body, res)
+  val res = instr_reverse (res)
 
   val ent = funent_make (fl, narg, res, vp_ret)
   val () = funent_add (fl, ent)
@@ -249,17 +305,23 @@ implement aux_exp (e, res) = (
   | E1XPann (e, _) => aux_exp (e, res)
   | E1XPapp (_, _) => wrapper (e, res)
   | E1XPbool b => VPbool (b)
-  | E1XPfix (_, _, _) => ETRACE_MSG_OPR ("aux_exp shouldn't handle E1XPfix\n", 
-                    ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+  | E1XPfix (_, _, _) => let
+    val fl = funlab_make_anon ()
+  in
+    aux_exp_fun (e, fl)
+  end
   | E1XPif (_, _, _) => wrapper (e, res)
   | E1XPint i => VPint (i)
-  | E1XPlam (_, _) => ETRACE_MSG_OPR ("aux_exp shouldn't handle E1XPlam\n", 
-                    ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+  | E1XPlam (_, _) => let
+    val fl = funlab_make_anon ()
+  in
+    aux_exp_fun (e, fl)
+  end
   | E1XPlet (_, _) => wrapper (e, res)
   | E1XPopr (_, _) => wrapper (e, res)
   | E1XPproj (_, _) => wrapper (e, res)
   | E1XPstr (str) => VPstr (str)
-  | E1XPtup exps => VPtup (auxlst_exp (exps, res))
+  | E1XPtup exps => wrapper (e, res)
   | E1XPvar v => let
     val vp_opt = v1ar_get_val (v)
   in
@@ -279,16 +341,16 @@ implement aux_exp (e, res) = (
 // end of [aux_exp]
 (* ****** ****** *)
 fun instr_add_call (loc: loc, tmpv: tmpvar,
-  vpf: valprim, vpargs: valprimlst, res: &instrlst): void = let
-  val ins_node = INSTRcall (tmpv, vpf, vpargs)
+  vpf: valprim, vpargs: valprimlst, iswrapper: bool, res: &instrlst): void = let
+  val ins_node = INSTRcall (tmpv, vpf, vpargs, iswrapper)
   val ins = instr_make (loc, ins_node)
   val () = instr_add (res, ins)
 in
 end  // end of [instr_add_call]
 
-fun instr_add_cond (loc: loc, vp_test: valprim, 
+fun instr_add_cond (loc: loc, tmpv: tmpvar, vp_test: valprim, 
   instr1: instrlst, instr2: instrlst, res: &instrlst): void = let
-  val ins_node = INSTRcond (vp_test, instr1, instr2)
+  val ins_node = INSTRcond (tmpv, vp_test, instr1, instr2)
   val ins = instr_make (loc, ins_node)
   val () = instr_add (res, ins)
 in
@@ -301,12 +363,29 @@ fun instr_add_move (loc: loc, tmpv: tmpvar, vp: valprim, res: &instrlst): void =
 in
 end  // end of [instr_add_move]
 
-fun instr_add_opr (loc: loc, tmpv: tmpvar, opr: opr, vps: valprimlst, res: &instrlst): void = let
+fun instr_add_opr (loc: loc, tmpv: tmpvar, opr: opr, 
+  vps: valprimlst, res: &instrlst): void = let
   val ins_node = INSTRopr (tmpv, opr, vps)
   val ins = instr_make (loc, ins_node)
   val () = instr_add (res, ins)
 in
 end  // end of [instr_add_opr]
+
+fun instr_add_tup (loc: loc, tmpv: tmpvar,
+  vps: valprimlst, res: &instrlst): void = let
+  val ins_node = INSTRtup (tmpv, vps)
+  val ins = instr_make (loc, ins_node)
+  val () = instr_add (res, ins)
+in
+end  // end of [instr_add_tup]
+
+fun instr_add_proj (loc: loc, tmpv: tmpvar,
+  vp: valprim, pos: int, res: &instrlst): void = let
+  val ins_node = INSTRproj (tmpv, vp, pos)
+  val ins = instr_make (loc, ins_node)
+  val () = instr_add (res, ins)
+in
+end  // end of [instr_add_proj]
 
 fun aux_exp_ret_if (loc: loc, e_test: e1xp, e_then: e1xp, oe_else: e1xpopt, 
   res: &instrlst, tmp_ret: tmpvar): valprim = let
@@ -319,11 +398,15 @@ fun aux_exp_ret_if (loc: loc, e_test: e1xp, e_then: e1xp, oe_else: e1xpopt,
   var res_else: instrlst = list0_nil
   val (v_else, loc_else) = (case+ oe_else of
     | Some0 e_else => (aux_exp (e_else, res_else), e_else.e1xp_loc)
-    | None0 () => (valprim_void, e_then.e1xp_loc)  // use the location of then
+    | None0 () => let
+      // val () = printf ("aux_exp_ret_if -- else is none\n", @())
+    in
+      (valprim_void, e_then.e1xp_loc)  // use the location of then
+    end
     )
   val () = instr_add_move (loc_else, tmp_ret, v_else, res_else)
   
-  val () = instr_add_cond (loc, v_test, res_then, res_else, res)
+  val () = instr_add_cond (loc, tmp_ret, v_test, res_then, res_else, res)
 in
   VPtmp (tmp_ret)
 end
@@ -380,6 +463,7 @@ fun aux_exp_v1aldeclst_rec_r1 (v1aldecs: v1aldeclst): void =
 
 fun aux_exp_v1aldeclst_rec (v1aldecs: v1aldeclst, res: &instrlst): void = let
   // scan for the first round
+  // val () = printf ("aux_exp_v1aldeclst_rec\n", @())
   val () = aux_exp_v1aldeclst_rec_r1 (v1aldecs)
 in
   aux_exp_v1aldeclst (v1aldecs, res)
@@ -388,6 +472,7 @@ end
 fun aux_exp_d1eclst (d1ecs: d1eclst, res: &instrlst): void =
   case+ d1ecs of
   | cons (d1ec, d1ecs1) => let
+    // val () = printf ("aux_exp_d1eclst\n", @())
     val+ D1ECval (isrec, v1aldecs) = d1ec.d1ec_node 
     (* no matter it is recursive or not, I decide to treat them as the same *)
     val () = (if isrec = true then aux_exp_v1aldeclst_rec (v1aldecs, res)
@@ -399,6 +484,7 @@ fun aux_exp_d1eclst (d1ecs: d1eclst, res: &instrlst): void =
 
 fun aux_exp_ret_let (loc: loc, d1ecs: d1eclst, e1xp: e1xp, 
   res: &instrlst, tmp_ret: tmpvar): valprim = let
+  // val () = printf ("aux_exp_ret_let\n", @())
   val () = aux_exp_d1eclst (d1ecs, res)
 in
   aux_exp_ret (e1xp, res, tmp_ret)
@@ -407,9 +493,20 @@ end
 fun aux_exp_ret_proj (loc: loc, e1xp: e1xp, pos: int, 
   res: &instrlst, tmp_ret: tmpvar): valprim = let
   val vp = aux_exp (e1xp, res)
+
+  val () = 
+    (case+ vp of 
+    | VParg _ => instr_add_proj (loc, tmp_ret, vp, pos, res)
+    | VPtmp _ => instr_add_proj (loc, tmp_ret, vp, pos, res)
+    | VPtup _ => instr_add_proj (loc, tmp_ret, vp, pos, res)
+    | _ => ETRACE_MSG_OPR ("aux_exp_ret_proj left part is not a tuple\n", ETRACE_LEVEL_ERROR,
+                      abort (ERRORCODE_FORBIDDEN))
+    )
 in
+  VPtmp (tmp_ret)
+(*  // obsolete code
   case+ vp of
-  | VPtup (vps) => let
+  | VPtup (_, vps) => let
     val vp_opt = list0_nth_opt (vps, pos)
   in
     case+ vp_opt of
@@ -421,8 +518,7 @@ in
     | None0 () => ETRACE_MSG_OPR ("aux_exp_ret_proj proj out of bound\n", ETRACE_LEVEL_ERROR,
                     abort (ERRORCODE_FORBIDDEN))
   end
-  | _ => ETRACE_MSG_OPR ("aux_exp_ret_proj left part is not a tuple\n", ETRACE_LEVEL_ERROR,
-                    abort (ERRORCODE_FORBIDDEN))
+*)
 end
 
 fun aux_exp_ret_app (loc: loc, e_fun: e1xp, e_arg: e1xp,
@@ -431,18 +527,27 @@ fun aux_exp_ret_app (loc: loc, e_fun: e1xp, e_arg: e1xp,
   val vp_arg = aux_exp (e_arg, res)
 
   (* treat all functioins as unary functions *)
-  val vp_args = (case+ vp_arg of
-              | VPtup vps => vps
-              | _ => cons (vp_arg, nil)
-              ): valprimlst
-  val () = instr_add_call (loc, tmp_ret, vp_f, vp_args, res)
+  val (vp_args, iswrapper) = (case+ vp_arg of
+              | VPtup (_, vps) => (vps, false)
+              | _ => (cons (vp_arg, nil), true)
+              ): (valprimlst, bool)
+  val () = instr_add_call (loc, tmp_ret, vp_f, vp_args, iswrapper, res)
 in
   VPtmp (tmp_ret)
+end
+
+fun aux_exp_ret_tuple (loc: loc, e1xps: e1xplst,
+  res: &instrlst, tmp_ret: tmpvar): valprim = let
+  val vps = auxlst_exp (e1xps, res)
+  val () = instr_add_tup (loc, tmp_ret, vps, res)
+in
+  VPtup (tmp_ret, vps)
 end
 
 implement
 aux_exp_ret (e, res, ret) = let
   val loc = e.e1xp_loc
+  // val () = ETRACE_MSG ("aux_exp_ret\n", ETRACE_LEVEL_DEBUG)
 in
   case e.e1xp_node of
   | E1XPann (e, _) => aux_exp_ret (e, res, ret)
@@ -456,10 +561,18 @@ in
   | E1XPlam (_, _) => ETRACE_MSG_OPR ("aux_exp_ret shouldn't handle E1XPlam\n", 
                     ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
   | E1XPlet (d1ecs, e1xp) => aux_exp_ret_let (loc, d1ecs, e1xp, res, ret)
-  | E1XPopr (opr, exps) => aux_exp_ret_opr (loc, opr, exps, res, ret)
-  | E1XPproj (e1xp, pos) => aux_exp_ret_proj (loc, e1xp, pos, res, ret)
+  | E1XPopr (opr, exps) => let
+    // val () = printf ("aux_opr\n", @())
+  in
+    aux_exp_ret_opr (loc, opr, exps, res, ret)
+  end
+  | E1XPproj (e1xp, pos) => let
+    // val () = printf ("aux_proj\n", @())
+  in
+    aux_exp_ret_proj (loc, e1xp, pos, res, ret)
+  end
   | E1XPstr _ => aux_exp (e, res)
-  | E1XPtup _ => aux_exp (e, res)
+  | E1XPtup e1xps => aux_exp_ret_tuple (loc, e1xps, res, ret)
   | E1XPvar _ => aux_exp (e, res)
 end
 
@@ -475,13 +588,18 @@ implement aux_exp_fun (e, fl) =
 
 (* ****** ****** *)
 
+
 (*
 trans2_exp (e: e1xp): instrlst
 *)
 implement
 trans2_exp (e) = let
+  // val () = ETRACE_MSG ("trans2_exp\n", ETRACE_LEVEL_DEBUG)
+
   var res: instrlst = list0_nil ()
   val v = aux_exp (e, res)
+  (* reverse the main let *)
+  val res = instr_reverse (res)
 
   val fns = funent_getall ()
 in

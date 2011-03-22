@@ -31,7 +31,13 @@ staload Trans2 = "trans2.sats"
 // fun print_tmpvar (x: tmpvar): void
 // overload print with print_tmpvar
 
-// datatype typ_cpp = 
+(*
+abstype cppvar_t
+typedef cppvar cppvar_t
+
+datatype stat_cpp =
+  | CPPopr (cppvar, j
+*)
 
 abstype ostream_t
 typedef ostream = ostream_t
