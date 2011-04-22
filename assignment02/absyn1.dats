@@ -13,6 +13,7 @@ staload _(*anony*) = "prelude/DATS/list.dats"
 staload _(*anony*) = "prelude/DATS/list0.dats"
 
 macdef fprint_symbol = $Symbol.fprint_symbol
+macdef symbol_get_name = $Symbol.symbol_get_name
 macdef fprint_opr = $Absyn.fprint_opr
 
 (* ****** ****** *)
@@ -27,18 +28,61 @@ macdef fprint_opr = $Absyn.fprint_opr
 (* ****** ****** *)
 
 implement
+tostring_t1yp (t) = let
+  val t = t1yp_normalize (t)
+in
+  case+ t of
+  | T1YPbase sym => symbol_get_name (sym)
+  | T1YPfun (nargs_ref, t1, t2) => let
+      val t1 = t1yp_normalize (t1)  // t1 can be T1YPVar
+      val isatm = (case+ t1 of
+        | T1YPbase _ => true | T1YPtup _ => true | _ => false
+      ) : bool
+    in  
+      "<" + tostring_int (!nargs_ref) + ">" +
+          (if ~isatm then "(" else "") + 
+          tostring_t1yp (t1) +
+          (if ~isatm then ")" else "") +
+          " -> " + tostring_t1yp (t2)
+    end // end of [T1YPfun]
+  | T1YPtup ts => begin
+      "(" + tostring_t1yplst (ts) + ")" 
+    end // end of [T1YPtup] 
+  | T1YPtup_vl rfts => begin
+      "(" + tostring_t1yplst (!rfts) + ")"
+    end // end of [T1YPtup_vl] 
+  | T1YPVar _ => "T1YPVar(...)"
+  | T1YPdummy () => "T1YPdummy()"
+end // end of [toString_t1yp]
+
+implement
+tostring_t1yplst
+  (ts) = loop (ts, 0, "") where {
+  fun loop (ts: t1yplst, i: int, accu: string):<cloref1> string =
+    case+ ts of
+    | list0_cons (t, ts) => loop (ts, i+1, accu) where {
+        val accu = accu + (if i > 0 then ", " else "") + tostring_t1yp (t)
+      } // end of [list0_cons]
+    | list0_nil () => accu // end of [list0_nil]
+  // end of [loop]
+} // end of [tostring_t1yplst]
+
+implement
 fprint_t1yp (out, t) = let
   macdef prstr (s) = fprint_string (out, ,(s))
   val t = t1yp_normalize (t)
 in
   case+ t of
   | T1YPbase sym => fprint_symbol (out, sym)
-  | T1YPfun (t1, t2) => let
+  | T1YPfun (nargs_ref, t1, t2) => let
       val t1 = t1yp_normalize (t1)  // t1 can be T1YPVar
       val isatm = (case+ t1 of
         | T1YPbase _ => true | T1YPtup _ => true | _ => false
       ) : bool
     in  
+      prstr "<";
+      prstr (tostring_int (!nargs_ref));
+      prstr ">";
       if ~isatm then prstr "(";
       fprint_t1yp (out, t1);
       if ~isatm then prstr ")";
@@ -54,7 +98,6 @@ in
   | T1YPVar _ => prstr "T1YPVar(...)"
   | T1YPdummy () => prstr "T1YPdummy()"
 end // end of [fprint_t1yp]
-
 implement print_t1yp (t) = fprint_t1yp (stdout_ref, t)
 implement prerr_t1yp (t) = fprint_t1yp (stderr_ref, t)
 

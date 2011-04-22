@@ -11,6 +11,8 @@ staload "error.sats"
 
 implement abort (err: int) = $raise Fatal (err)
 
+
+
 (* ****** ****** *)
 
 (* end of [error.dats] *)

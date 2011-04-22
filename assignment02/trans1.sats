@@ -20,7 +20,7 @@ datatype t1yp =
   // about how many args the function
   // takes (may be n args or 1 arg which
   // is a tuple of n elements)
-  | T1YPfun of (t1yp, t1yp)
+  | T1YPfun of (ref int(*args*), t1yp, t1yp)
   | T1YPtup of t1yplst
   | T1YPtup_vl of ref t1yplst
   | T1YPVar of t1Var
@@ -33,6 +33,9 @@ where t1yplst = list0 (t1yp)
 
 fun fprint_t1yp (out: FILEref, t: t1yp): void 
 fun fprint_t1yplst (out: FILEref, t: t1yplst): void 
+
+fun tostring_t1yp (t: t1yp): string
+fun tostring_t1yplst (t: t1yplst): string
 
 fun print_t1yp (t: t1yp): void 
 fun prerr_t1yp (t: t1yp): void 
@@ -94,9 +97,13 @@ and v1aldec = '{
 , v1aldec_def= e1xp
 }
 and v1aldeclst = list0 (v1aldec)
+// end of [where]
 
 (* test the node is a first level function *)
+fun e0xp_node_is_fun (e_node: $Absyn.e0xp_node): option0 t1yp
+(* test the node is a first level function *)
 fun e1xp_node_is_fun (e_node: e1xp_node): bool
+
 (* ****** ****** *)
 
 
@@ -147,6 +154,7 @@ fun d1ec_make_val (_: $Posloc.location_t, isrec: bool, vds: v1aldeclst): d1ec
 fun trans1_typ (_: $Absyn.t0yp): t1yp
 fun trans1_exp (_: $Absyn.e0xp): e1xp
 
+fun trans1_build_err (t_act: t1yp, t_expect: t1yp): string
 (* ****** ****** *)
 
 (* end of [trans1.sats] *)

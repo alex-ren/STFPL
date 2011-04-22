@@ -329,7 +329,7 @@ implement aux_exp (e, res) = (
     | Some0 (vp) => vp
     | None0 () =>
       ETRACE_MSG_OPR ("aux_exp v1ar doesn't have valprim\n", ETRACE_LEVEL_ERROR,
-                    abort (ERRORCODE_FORBIDDEN))
+                    abort (ERRORCODE_FORBIDDEN))  // todo closure
   end) where {
   fun wrapper (e: e1xp, res: &instrlst): valprim = let
       val tmp_ret = tmpvar_new ()

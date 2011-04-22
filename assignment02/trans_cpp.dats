@@ -34,7 +34,7 @@ val header = "#include <cstdio>\n\n"
 val ftyp_0 = "__ftype0": string  // nullary function type
 val ftyp_1 = "__ftype1": string  // multi args function type
 val header_ftyp = "typedef void * (*" + ftyp_0 + ")();\n"
-val header_ftyp = header_ftyp + "typedef void * (*" + ftyp_1 + ")(void **);\n"
+val header_ftyp = header_ftyp + "typedef void * (*" + ftyp_1 + ")(void *);\n"
 
 (* string functions *)
 extern
@@ -52,8 +52,10 @@ fun string_formalize (str: string): string = let
 
   val cs = loop (cs, nil)
   val cs = list0_reverse (cs)
+  val cs = string_implode (cs)
+  val cs = "\"" + cs + "\""
 in
-  string_implode (cs)
+  cs
 end
 
 
@@ -125,7 +127,7 @@ fun trans_cpp_fun_decl (fns: list0 funent_t, os: &ostream): void = let
     val stat = "\nvoid * " + nam + "("
     val stat = stat + (if nargs = 0 then ");\n" 
                        else if nargs = 1 then "void *);\n"
-                       else "void **);\n")
+                       else "void *);\n")  // todo
   in
     init + stat
   end
@@ -153,7 +155,7 @@ fun trans_cpp_fun_def (fns: list0 funent_t, os: &ostream): void = let
     val fundef = "\nvoid * " + nam + "("
     val fundef = fundef + (if nargs = 0 then ")" 
                            else if nargs = 1 then ("void * " + arg_pad + ")")
-                           else ("void ** " + arg_pad + ")"))
+                           else ("void * " + arg_pad + ")"))
     val fundef = fundef + "\n" + scope_beg + "\n"
     val funbody = trans_cpp_fun_body (nargs, body, ret)
     val fundef = fundef + statements_to_string (funbody, 1)
@@ -179,7 +181,7 @@ end
 
 implement trans_cpp_valprim (vp, isunary) = 
   case+ vp of
-  | VParg (n) => if isunary then arg_pad else "" + arg_pad + "" + "[" + tostring_int (n) + "]"
+  | VParg (n) => if isunary then arg_pad else "((void **)" + arg_pad + ")" + "[" + tostring_int (n) + "]"
   | VPbool (b) => tostring_bool (b)
   | VPfun (fl) => funlab_get_name (fl)
   | VPint (i) => tostring_int (i)
@@ -293,7 +295,7 @@ implement trans_cpp_instr_opr (ret, opr, args, isunary) = let
     | _ when sym = symbol_PRINT => let
         val- s :: _ = vs
       in
-        ("printf(\"%s\", \"" + s + "\")", false) 
+        ("printf(\"%s\", " + s + ")", false) 
       end // end of [_ when ...]
     | _ when sym = symbol_PRINT_INT => let
         val- i  :: _ = vs
@@ -389,7 +391,7 @@ in
     val args_stats = trans_cpp_instr_tup (ret, args, isunary)
 
     val para_str = if (nargs = 0) then "()"
-                   else ("((void **)" + ret_str + ")"): string
+                   else ("((void *)" + ret_str + ")"): string
 
     val stats = STATplain (ret_str + " = (" + typfun +
         f_str + ")" + para_str + ";") :: nil
@@ -402,7 +404,7 @@ in
     val v_str = trans_cpp_valprim (v, isunary)
 
     val para_str = if (nargs = 0) then "()"
-                   else ("((void **)" + v_str + ")"): string
+                   else ("((void *)" + v_str + ")"): string
 
     val stats = STATplain ("void * " + ret_str + " = (" + typfun +
         f_str + ")" + para_str + ";") :: nil

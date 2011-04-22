@@ -157,4 +157,20 @@ distclean: clean
 ###### end of [Makefile] ######
 
 
+xref::
+	$(ATSOPT) -IATS PARCOMB -IATS LIB \
+          --posmark_xref=XREF -d absyn.dats > xref_absyn_dats.html
+	$(ATSOPT) -IATS PARCOMB -IATS LIB \
+	  --posmark_xref=XREF -d fixity.dats > xref_fixity_dats.html
+	$(ATSOPT) -IATS PARCOMB -IATS LIB \
+	  --posmark_xref=XREF -d parser.dats > xref_parser_dats.html
+
+	$(ATSOPT) --posmark_xref=XREF -d symbol.dats > xref_symbol_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d interp0.dats > xref_interp0_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d interp1.dats > xref_interp1_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d error.dats > xref_error_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d trans1.dats > xref_trans1_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d trans2.dats > xref_trans2_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d trans_cpp.dats > xref_trans_cpp_dats.html
+
 

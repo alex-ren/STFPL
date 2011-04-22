@@ -165,6 +165,7 @@ implement symbol_BOOL = symbol_make_name "bool"
 implement symbol_INT = symbol_make_name "int"
 implement symbol_STRING = symbol_make_name "string"
 implement symbol_UNIT = symbol_make_name "unit"
+implement symbol_LIST = symbol_make_name "list"
 
 implement symbol_UMINUS = symbol_make_name "~"
 

@@ -40,6 +40,7 @@ val symbol_BOOL : symbol_t // "bool" for [bool] type
 val symbol_INT : symbol_t // "int" for [int] type
 val symbol_STRING : symbol_t // "string" for [string] type
 val symbol_UNIT : symbol_t // "unit" for [unit] type
+val symbol_LIST : symbol_t // "list" for [list] type
 
 (* ****** ****** *)
 
@@ -59,6 +60,12 @@ val symbol_NEQ : symbol_t // "<>"
 
 val symbol_PRINT : symbol_t // "print"
 val symbol_PRINT_INT : symbol_t // "print_int"
+
+val symbol_LIST_NIL : symbol_t // "list_nil"
+val symbol_LIST_CONS : symbol_t // "list_cons"
+val symbol_LIST_IS_EMPTY : symbol_t // "list_is_empty"
+val symbol_LIST_HEAD : symbol_t // "list_head"
+val symbol_LIST_TAIL : symbol_t // "list_tail"
 
 (* ****** ****** *)
 
@@ -82,3 +89,5 @@ symenv_listize (env: symenv_t a): list0 @(symbol_t, a)
 
 (* end of [symbol.sats] *)
 (* vi: set syntax=sml: *)
+
+

@@ -41,15 +41,15 @@ main () = () where {
   //   print "Please input a program written in STFPL:"; print_newline ()
   // end // end of [val]
   val prog = parse_from_stdin ()
-  // val () = print "\n\nbefore type checking ==================================\n\n"
-  // val () = print "prog =\n"
-  // val () = fprint_e0xp (stdout_ref, prog)
-  // val () = print_newline ()
+  val () = print "\n\nbefore type checking ==================================\n\n"
+  val () = print "prog =\n"
+  val () = fprint_e0xp (stdout_ref, prog)
+  val () = print_newline ()
 
-  // val () = print "\n\nafter type inference ==================================\n\n"
+  val () = print "\n\nafter type inference ==================================\n\n"
   val prog1 = trans1_exp (prog)
-  // val () = fprint_e1xp (stdout_ref, prog1)
-  // val () = print_newline ()
+  val () = fprint_e1xp (stdout_ref, prog1)
+  val () = print_newline ()
 
   // val () = print "\n\ninterp0 ==================================\n\n"
   // val v = interp0_exp(prog)
@@ -64,11 +64,11 @@ main () = () where {
   // val () = print_newline ()
 
   // val () = print "\n\ntransform to IR ==================================\n\n"
-  val (irs, fns) = trans2_exp (prog1)
+  // val (irs, fns) = trans2_exp (prog1)
 
-  val os = trans_cpp (irs, fns)
-  val () = print_ostream (os)
-  val () = print_newline ()
+  // val os = trans_cpp (irs, fns)
+  // val () = print_ostream (os)
+  // val () = print_newline ()
 } // end of [main]
 
 (* ****** ****** *)
