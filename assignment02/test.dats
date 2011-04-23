@@ -18,6 +18,7 @@ dynload "parser.dats"
 dynload "interp0.dats"
 dynload "interp1.dats"
 dynload "trans1.dats"
+dynload "libfunctions.dats"
 dynload "trans2.dats"
 dynload "trans_cpp.dats"
 

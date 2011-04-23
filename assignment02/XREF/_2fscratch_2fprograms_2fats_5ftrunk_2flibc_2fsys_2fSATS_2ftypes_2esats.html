@@ -1,0 +1,242 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2010 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the  terms of the  GNU General Public License as published by the Free
+** Software Foundation; either version 2.1, or (at your option) any later
+** version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see  the  file  COPYING.  If not, write to the Free
+** Software Foundation, 51  Franklin  Street,  Fifth  Floor,  Boston,  MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* author: Hongwei Xi (hwxi AT cs DOT bu DOT edu)  *)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="extern">%{#
+#include "libc/sys/CATS/types.cats"
+%}</span> <span class="comment">// end of [%{#]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="1573"><span class="stacstdec">blksize_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_blksize_type"</span></a></span> <span class="comment">// I/O block size
+</span><span class="keyword">abst@ype</span>
+<span class="staexp"><a name="1638"><span class="stacstdec">blkcnt_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_blkcnt_type"</span></a></span> <span class="comment">// number of blocks allowed
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="1733"><span class="stacstdec">clock_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_clock_type"</span></a></span> <span class="comment">// for CLOCKS_PER_SEC
+</span><span class="keyword">fun</span> <a name="1793"><span class="dyncstdec">lint_of_clock <span class="keyword">(</span>c<span class="keyword">:</span> <span class="staexp">clock_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a> <span class="keyword">=</span> "atslib_lint_of_clock"
+<span class="neuexp"><span class="keyword">overload</span> lint_of <span class="keyword">with</span> lint_of_clock</span>
+<span class="keyword">fun</span> <a name="1893"><span class="dyncstdec">double_of_clock <span class="keyword">(</span>c<span class="keyword">:</span> <span class="staexp">clock_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">double</span></span></a> <span class="keyword">=</span> "atslib_double_of_clock"
+<span class="neuexp"><span class="keyword">overload</span> double_of <span class="keyword">with</span> double_of_clock</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span> <span class="staexp"><a name="2030"><span class="stacstdec">clockid_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_clockid_type"</span></a></span> <span class="comment">// for clock ID type
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="2120"><span class="stacstdec">dev_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_dev_type"</span></a></span> <span class="comment">// for device IDs
+</span><span class="keyword">castfn</span> <a name="2175"><span class="dyncstdec">dev_of_uint <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">uint</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">dev_t</span></span></a>
+<span class="keyword">castfn</span> <a name="2213"><span class="dyncstdec">uint_of_dev <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">dev_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">uint</span></span></a>
+<span class="keyword">fun</span> <a name="2248"><span class="dyncstdec">eq_dev_dev <span class="keyword">(</span>x1<span class="keyword">:</span> <span class="staexp">dev_t</span><span class="keyword">,</span> x2<span class="keyword">:</span> <span class="staexp">dev_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a> <span class="keyword">=</span> "atslib_eq_dev_dev"
+<span class="neuexp"><span class="keyword">overload</span> <span class="keyword">=</span> <span class="keyword">with</span> eq_dev_dev</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="2368"><span class="stacstdec">fsblkcnt_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_fsblkcnt_type"</span></a></span> <span class="comment">// file system block counts
+</span><span class="keyword">castfn</span> <a name="2443"><span class="dyncstdec">ulint_of_fsblkcnt <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">fsblkcnt_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">ulint</span></span></a>
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="2493"><span class="stacstdec">fsfilcnt_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_fsfilcnt_type"</span></a></span> <span class="comment">// file system file counts
+</span><span class="keyword">castfn</span> <a name="2567"><span class="dyncstdec">ulint_of_fsfilcnt <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">fsfilcnt_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">ulint</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="2639"><span class="stacstdec">ino_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_ino_type"</span></a></span> <span class="comment">// for file serial numbers
+</span><span class="keyword">castfn</span> <a name="2703"><span class="dyncstdec">int_of_ino <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">ino_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a>
+<span class="keyword">fun</span> <a name="2736"><span class="dyncstdec">eq_ino_ino <span class="keyword">(</span>x1<span class="keyword">:</span> <span class="staexp">ino_t</span><span class="keyword">,</span> x2<span class="keyword">:</span> <span class="staexp">ino_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a> <span class="keyword">=</span> "atslib_eq_ino_ino"
+<span class="neuexp"><span class="keyword">overload</span> <span class="keyword">=</span> <span class="keyword">with</span> eq_ino_ino</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="2856"><span class="stacstdec">key_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_key_type"</span></a></span> <span class="comment">// for XSI interprocess communication
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="2955"><span class="stacstdec">mode_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_mode_type"</span></a></span> <span class="comment">// file mode
+</span><span class="comment">//
+</span><span class="keyword">castfn</span> <a name="3010"><span class="dyncstdec">mode_of_int <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">mode_t</span></span></a>
+<span class="keyword">castfn</span> <a name="3048"><span class="dyncstdec">int_of_mode <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">mode_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a>
+<span class="keyword">castfn</span> <a name="3086"><span class="dyncstdec">mode_of_uint <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">uint</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">mode_t</span></span></a>
+<span class="keyword">castfn</span> <a name="3126"><span class="dyncstdec">uint_of_mode <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">mode_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">uint</span></span></a>
+<span class="comment">//
+</span><span class="keyword">fun</span> <a name="3166"><span class="dyncstdec">eq_mode_mode
+  <span class="keyword">(</span>m1<span class="keyword">:</span> <span class="staexp">mode_t</span><span class="keyword">,</span> m2<span class="keyword">:</span> <span class="staexp">mode_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a> <span class="keyword">=</span> "atslib_eq_mode_mode"
+<span class="neuexp"><span class="keyword">overload</span> <span class="keyword">=</span> <span class="keyword">with</span> eq_mode_mode</span>
+<span class="keyword">fun</span> <a name="3271"><span class="dyncstdec">neq_mode_mode
+  <span class="keyword">(</span>m1<span class="keyword">:</span> <span class="staexp">mode_t</span><span class="keyword">,</span> m2<span class="keyword">:</span> <span class="staexp">mode_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a> <span class="keyword">=</span> "atslib_neq_mode_mode"
+<span class="neuexp"><span class="keyword">overload</span> &lt;&gt; <span class="keyword">with</span> neq_mode_mode</span>
+<span class="comment">//
+</span><span class="keyword">fun</span> <a name="3383"><span class="dyncstdec">lor_mode_mode
+  <span class="keyword">(</span>m1<span class="keyword">:</span> <span class="staexp">mode_t</span><span class="keyword">,</span> m2<span class="keyword">:</span> <span class="staexp">mode_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">mode_t</span></span></a> <span class="keyword">=</span> "atslib_lor_mode_mode"
+<span class="neuexp"><span class="keyword">overload</span> lor <span class="keyword">with</span> lor_mode_mode</span>
+<span class="keyword">fun</span> <a name="3493"><span class="dyncstdec">land_mode_mode
+  <span class="keyword">(</span>m1<span class="keyword">:</span> <span class="staexp">mode_t</span><span class="keyword">,</span> m2<span class="keyword">:</span> <span class="staexp">mode_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">mode_t</span></span></a> <span class="keyword">=</span> "atslib_land_mode_mode"
+<span class="neuexp"><span class="keyword">overload</span> land <span class="keyword">with</span> land_mode_mode</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="3634"><span class="stacstdec">nlink_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_nlink_type"</span></a></span> <span class="comment">// number of hard links to a file
+</span><span class="keyword">castfn</span> <a name="3709"><span class="dyncstdec">nlink_of_int <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">nlink_t</span></span></a>
+<span class="keyword">castfn</span> <a name="3747"><span class="dyncstdec">int_of_nlink <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">nlink_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span></span></a>
+<span class="keyword">castfn</span> <a name="3785"><span class="dyncstdec">nlink_of_lint <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">lint</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">nlink_t</span></span></a>
+<span class="keyword">castfn</span> <a name="3825"><span class="dyncstdec">lint_of_nlink <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">nlink_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">lint</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="3889"><span class="stacstdec">whence_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_int_type"</span></a></span>
+<span class="keyword">macdef</span> <span class="neuexp">SEEK_SET <span class="keyword">=</span> <span class="keyword">$extval</span> <span class="keyword">(</span>whence_t<span class="keyword">,</span> "SEEK_SET"<span class="keyword">)</span></span>
+<span class="keyword">macdef</span> <span class="neuexp">SEEK_CUR <span class="keyword">=</span> <span class="keyword">$extval</span> <span class="keyword">(</span>whence_t<span class="keyword">,</span> "SEEK_CUR"<span class="keyword">)</span></span>
+<span class="keyword">macdef</span> <span class="neuexp">SEEK_END <span class="keyword">=</span> <span class="keyword">$extval</span> <span class="keyword">(</span>whence_t<span class="keyword">,</span> "SEEK_END"<span class="keyword">)</span></span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="4100"><span class="stacstdec">off_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_off_type"</span></a></span> <span class="comment">// file size in bytes
+</span><span class="keyword">castfn</span> <a name="4159"><span class="dyncstdec">off_of_lint <span class="keyword">(</span>li<span class="keyword">:</span> <span class="staexp">lint</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">off_t</span></span></a>
+<span class="keyword">castfn</span> <a name="4198"><span class="dyncstdec">lint_of_off <span class="keyword">(</span>off<span class="keyword">:</span> <span class="staexp">off_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a>
+<span class="keyword">castfn</span> <a name="4238"><span class="dyncstdec">off_of_size <span class="keyword">(</span>sz<span class="keyword">:</span> <span class="staexp">size_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">off_t</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: for process IDs // a signed integer type
+</span><span class="comment">//
+</span><span class="keyword">abst@ype</span>
+<span class="staexp"><a name="4356"><span class="stacstdec">pid_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_pid_type"</span></a></span>
+<span class="keyword">castfn</span> <a name="4393"><span class="dyncstdec">pid_of_int <span class="keyword">(</span>int<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">pid_t</span></span></a>
+<span class="keyword">castfn</span> <a name="4431"><span class="dyncstdec">int_of_pid <span class="keyword">(</span>pid<span class="keyword">:</span> <span class="staexp">pid_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a>
+<span class="keyword">castfn</span> <a name="4469"><span class="dyncstdec">pid_of_lint <span class="keyword">(</span>lint<span class="keyword">:</span> <span class="staexp">lint</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">pid_t</span></span></a>
+<span class="keyword">castfn</span> <a name="4510"><span class="dyncstdec">lint_of_pid <span class="keyword">(</span>pid<span class="keyword">:</span> <span class="staexp">pid_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="4574"><span class="stacstdec">gid_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_gid_type"</span></a></span> <span class="comment">// for user IDs
+</span><span class="keyword">castfn</span> <a name="4627"><span class="dyncstdec">int_of_gid <span class="keyword">(</span>gid<span class="keyword">:</span> <span class="staexp">gid_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a>
+<span class="keyword">castfn</span> <a name="4665"><span class="dyncstdec">gid_of_int <span class="keyword">(</span>int<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">gid_t</span></span></a>
+<span class="keyword">castfn</span> <a name="4703"><span class="dyncstdec">lint_of_gid <span class="keyword">(</span>gid<span class="keyword">:</span> <span class="staexp">gid_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a>
+<span class="keyword">castfn</span> <a name="4743"><span class="dyncstdec">gid_of_lint <span class="keyword">(</span>lint<span class="keyword">:</span> <span class="staexp">lint</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">gid_t</span></span></a>
+
+<span class="comment">(******* ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="4807"><span class="stacstdec">uid_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_uid_type"</span></a></span> <span class="comment">// for user IDs
+</span><span class="keyword">castfn</span> <a name="4860"><span class="dyncstdec">int_of_uid <span class="keyword">(</span>uid<span class="keyword">:</span> <span class="staexp">uid_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a>
+<span class="keyword">castfn</span> <a name="4898"><span class="dyncstdec">uid_of_int <span class="keyword">(</span>int<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">uid_t</span></span></a>
+<span class="keyword">castfn</span> <a name="4936"><span class="dyncstdec">lint_of_uid <span class="keyword">(</span>uid<span class="keyword">:</span> <span class="staexp">uid_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a>
+<span class="keyword">castfn</span> <a name="4976"><span class="dyncstdec">uid_of_lint <span class="keyword">(</span>lint<span class="keyword">:</span> <span class="staexp">lint</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">uid_t</span></span></a>
+
+<span class="comment">(******* ****** *)</span>
+
+<span class="comment">(*
+//
+// HX-2010-09-19:
+// [size_t0ype] and [ssize_t0ype] are declared in $ATSHOME/prelude/basic_sta.sats
+//
+abst@ype
+size_t = $extype"ats_size_type" // for sizes of objects
+abst@ype
+ssize_t = $extype"ats_ssize_type" // for sizes or error indication
+*)</span>
+
+<span class="comment">(******* ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="5314"><span class="stacstdec">time_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_time_type"</span></a></span> <span class="comment">// for time in seconds
+</span><span class="keyword">castfn</span> <a name="5376"><span class="dyncstdec">lint_of_time <span class="keyword">(</span>t<span class="keyword">:</span> <span class="staexp">time_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> lint_of <span class="keyword">with</span> lint_of_time</span>
+<span class="keyword">fun</span> <a name="5448"><span class="dyncstdec">double_of_time <span class="keyword">(</span>t<span class="keyword">:</span> <span class="staexp">time_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">double_t0ype</span></span></a> <span class="keyword">=</span> "atslib_double_of_time"
+<span class="neuexp"><span class="keyword">overload</span> double_of <span class="keyword">with</span> double_of_time</span>
+
+<span class="comment">(******* ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: for timers returned by [timer_create]
+</span><span class="comment">//
+</span><span class="keyword">abst@ype</span> <span class="staexp"><a name="5636"><span class="stacstdec">timer_t <span class="keyword">(</span>id<span class="keyword">:</span>int<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_timer_type"</span></a></span>
+<span class="comment">// end of [timer_t]
+</span>
+<span class="comment">(******* ****** *)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="5729"><span class="stacstdec">useconds_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_useconds_type"</span></a></span> <span class="comment">// for time in microseconds
+</span><span class="keyword">castfn</span> <a name="5804"><span class="dyncstdec">lint_of_useconds <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">useconds_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> lint_of <span class="keyword">with</span> lint_of_useconds</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="5894"><span class="stacstdec">suseconds_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_suseconds_type"</span></a></span> <span class="comment">// for time in microseconds
+</span><span class="keyword">castfn</span> <a name="5971"><span class="dyncstdec">lint_of_suseconds <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">suseconds_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> lint_of <span class="keyword">with</span> lint_of_suseconds</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [types.sats] *)</span>
+</pre>
+</body>
+</html>

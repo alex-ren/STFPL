@@ -1,0 +1,941 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2008 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published by the
+** Free Software Foundation; either version 2.1, or (at your option)  any
+** later version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see the  file COPYING.  If not, please write to the
+** Free Software Foundation,  51 Franklin Street, Fifth Floor, Boston, MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* author: Hongwei Xi (hwxi AT cs DOT bu DOT edu) *)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#include</span> <span class="neuexp">"prelude/params.hats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#if</span> <span class="neuexp">VERBOSE_PRELUDE</span> <span class="keyword">#then</span>
+<span class="keyword">#print</span> <span class="neuexp">"Loading [list.sats] starts!\n"</span>
+<span class="keyword">#endif</span> <span class="comment">// end of [VERBOSE_PRELUDE]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="extern">%{#
+#include "prelude/CATS/list.cats"
+%}</span> <span class="comment">// end of [%{#]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+** Notes (HX-2009-11-8):
+**
+** if a function f returns a list, then usually the returned list is
+** a linear list; if needed, please call the function [list_of_list_vt]
+** to turn the linear list into a nonlnear one; as [list_of_list_vt] is
+** a cast function (castfn), there is no run-time cost associated with
+** calling it.
+**
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+// this is defined in [basic_sta.sats]
+datatype // t@ype+: covariant
+list_t0ype_int_type (a:t@ype+, int) =
+  | {n:int | n &gt;= 0}
+    list_cons (a, n+1) of (a, list_t0ype_int_type (a, n))
+  | list_nil (a, 0)
+// end of [datatype]
+stadef list = list_t0ype_int_type
+typedef List (a:t@ype) = [n:int | n &gt;= 0] list (a, n)
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">prfun</span> <a name="2449"><span class="dyncstdec"><span class="prfexp">list_length_is_nonnegative
+  <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>t@ype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>int<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">[</span>n&gt;=0<span class="keyword">]</span> void</span></span></span></a>
+<span class="comment">// end of [list_length_is_nonnegative]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">exception</span> ListSubscriptException <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">)</span></span>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: a casting function
+</span><span class="comment">// implemented in [prelude/DATS/list.dats]
+</span><span class="comment">//
+</span><span class="keyword">castfn</span> <a name="2730"><span class="dyncstdec">list_of_list_vt
+  <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>t@ype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_of_list_vt]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: always inlining
+</span><span class="comment">//
+</span><span class="keyword">fun</span><span class="keyword">{</span><span class="keyword">}</span> <a name="2886"><span class="dyncstdec">list_is_empty <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>t@ype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool <span class="keyword">(</span>n == 0<span class="keyword">)</span></span></span></a>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="keyword">}</span> <a name="2959"><span class="dyncstdec">list_isnot_empty <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>t@ype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool <span class="keyword">(</span>n <span class="keyword">&gt;</span> 0<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> <span class="keyword">~</span> <span class="keyword">with</span> list_isnot_empty</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3096"><span class="dyncstdec">list_app_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_app_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3265"><span class="dyncstdec">list_app_fun <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3342"><span class="dyncstdec">list_app_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3447"><span class="dyncstdec">list_app_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3558"><span class="dyncstdec">list_app_cloref <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> void<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+
+<span class="comment">(*
+symintr list_app
+overload list_app with list_app_fun
+overload list_app with list_app_clo
+overload list_app with list_app_cloptr
+overload list_app with list_app_cloref
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3842"><span class="dyncstdec">list_app2_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+    <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+  <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+  <span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+  <span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+  <span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [list_app2_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4069"><span class="dyncstdec">list_app2_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_app2_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4221"><span class="dyncstdec">list_app2_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_app2_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4397"><span class="dyncstdec">list_app2_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_app2_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4582"><span class="dyncstdec">list_app2_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [list_app2_cloref]
+</span>
+<span class="comment">(*
+symintr list_app2
+overload list_app2 with list_app2_fun
+overload list_app2 with list_app2_clo
+overload list_app2 with list_app2_cloptr
+overload list_app2 with list_app2_cloref
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="4940"><span class="dyncstdec">list_append <span class="staexp"><span class="keyword">{</span>i<span class="keyword">,</span>j<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> j<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> i+j<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> + <span class="keyword">with</span> list_append</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="5058"><span class="dyncstdec">list_append1_vt <span class="staexp"><span class="keyword">{</span>i<span class="keyword">,</span>j<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> j<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> i+j<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_append1_vt]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="5183"><span class="dyncstdec">list_append2_vt <span class="staexp"><span class="keyword">{</span>i<span class="keyword">,</span>j<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> j<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> i+j<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_append2_vt]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5336"><span class="dyncstdec">list_assoc_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span> viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>eq<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List <span class="keyword">@(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span></span><span class="keyword">,</span> eq<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a1<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>eq<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a1</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">eq</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a2</span></span></a> <span class="comment">// end of [list_assoc_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5546"><span class="dyncstdec">list_assoc_fun <span class="staexp"><span class="keyword">{</span>eq<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">List <span class="keyword">@(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span></span><span class="keyword">,</span> eq<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a1<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>eq<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a1</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">eq</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a2</span></span></a> <span class="comment">// end of [list_assoc_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5695"><span class="dyncstdec">list_assoc_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>eq<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List <span class="keyword">@(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span></span><span class="keyword">,</span> eq<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a1<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>eq<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a1</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">eq</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a2</span></span></a> <span class="comment">// end of [list_assoc_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5868"><span class="dyncstdec">list_assoc_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>eq<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List <span class="keyword">@(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span></span><span class="keyword">,</span> eq<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a1<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>eq<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a1</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">eq</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a2</span></span></a> <span class="comment">// end of [list_assoc_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="6050"><span class="dyncstdec">list_assoc_cloref <span class="staexp"><span class="keyword">{</span>eq<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">List <span class="keyword">@(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span></span><span class="keyword">,</span> eq<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a1<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>eq<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a1</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">eq</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a2</span></span></a> <span class="comment">// end of [list_assoc_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="6225"><span class="dyncstdec">list_concat <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List <span class="keyword">(</span>List a<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">List_vt a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="6305"><span class="dyncstdec">list_drop
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>int<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat <span class="keyword">|</span> i &lt;= n<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n-i<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_drop]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="6425"><span class="dyncstdec">list_drop_exn <span class="staexp"><span class="keyword">{</span>n<span class="keyword">,</span>i<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>i &lt;= n<span class="keyword">]</span> list <span class="keyword">(</span>a<span class="keyword">,</span> n-i<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_drop_exn]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="6570"><span class="dyncstdec">list_exists_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a> <span class="comment">// end of [list_exists_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="6745"><span class="dyncstdec">list_exists_fun <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="6821"><span class="dyncstdec">list_exists_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="6929"><span class="dyncstdec">list_exists_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="7043"><span class="dyncstdec">list_exists_cloref <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="comment">(*
+symintr list_exists
+overload list_exists with list_exists_fun
+overload list_exists with list_exists_clo
+overload list_exists with list_exists_cloptr
+overload list_exists with list_exists_cloref
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="7355"><span class="dyncstdec">list_exists2_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+    <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+  <span class="keyword">|</span> xs1<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+  <span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+  <span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span>
+  <span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="comment">// end of [list_exists2_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="7590"><span class="dyncstdec">list_exists2_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="7712"><span class="dyncstdec">list_exists2_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a> <span class="comment">// end of [list_exists2_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="7894"><span class="dyncstdec">list_exists2_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a> <span class="comment">// end of [list_exists2_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="8085"><span class="dyncstdec">list_exists2_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="comment">// end of [list_exists2_cloref]
+</span>
+<span class="comment">(*
+symintr list_exists2
+overload list_exists2 with list_exists2_fun
+overload list_exists2 with list_exists2_fun
+overload list_exists2 with list_exists2_cloptr
+overload list_exists2 with list_exists2_cloref
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <span class="comment">// HX: this function is O(n)-time
+</span><a name="8510"><span class="dyncstdec">list_extend <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> y<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n+1<span class="keyword">)</span></span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="8609"><span class="dyncstdec">list_filter_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n'<span class="keyword">:</span>nat <span class="keyword">|</span> n' &lt;= n<span class="keyword">]</span> list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n'<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="8796"><span class="dyncstdec">list_filter_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n'<span class="keyword">:</span>nat <span class="keyword">|</span> n' &lt;= n<span class="keyword">]</span> list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n'<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_filter_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="8949"><span class="dyncstdec">list_filter_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n'<span class="keyword">:</span>nat <span class="keyword">|</span> n' &lt;= n<span class="keyword">]</span> list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n'<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="9103"><span class="dyncstdec">list_filter_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n'<span class="keyword">:</span>nat <span class="keyword">|</span> n' &lt;= n<span class="keyword">]</span> list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n'<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="9263"><span class="dyncstdec">list_filter_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n'<span class="keyword">:</span>nat <span class="keyword">|</span> n' &lt;= n<span class="keyword">]</span> list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n'<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_filter_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="9446"><span class="dyncstdec">list_find_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a</span></span></a> <span class="comment">// end of [list_find_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="9624"><span class="dyncstdec">list_find_fun <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="9709"><span class="dyncstdec">list_find_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="9822"><span class="dyncstdec">list_find_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="9941"><span class="dyncstdec">list_find_cloref <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">init<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="10065"><span class="dyncstdec">list_fold_left_funenv <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> init<span class="keyword">,</span> a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> init</span><span class="keyword">,</span> ini<span class="keyword">:</span> <span class="staexp">init</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">init</span></span></a> <span class="comment">// end of [list_fold_left_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">init<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="10273"><span class="dyncstdec">list_fold_left_fun <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>init<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> init</span><span class="keyword">,</span> ini<span class="keyword">:</span> <span class="staexp">init</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">init</span></span></a>
+<span class="comment">// end of [list_fold_left_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">init<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="10420"><span class="dyncstdec">list_fold_left_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> init<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> init</span><span class="keyword">,</span> ini<span class="keyword">:</span> <span class="staexp">init</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">List a</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">init</span></span></a> <span class="comment">// end of [list_fold_left_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">init<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="10594"><span class="dyncstdec">list_fold_left_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> init<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> init</span><span class="keyword">,</span> ini<span class="keyword">:</span> <span class="staexp">init</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">List a</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">init</span></span></a> <span class="comment">// end of [list_fold_left_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">init<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="10777"><span class="dyncstdec">list_fold_left_cloref <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>init<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> init</span><span class="keyword">,</span> ini<span class="keyword">:</span> <span class="staexp">init</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">init</span></span></a>
+<span class="comment">// end of [list_fold_left_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">init<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="10958"><span class="dyncstdec">list_fold2_left_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> init<span class="keyword">,</span> a1<span class="keyword">,</span> a2<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> init</span>
+<span class="keyword">,</span> ini<span class="keyword">:</span> <span class="staexp">init</span>
+<span class="keyword">,</span> xs1<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">init</span></span></a>
+<span class="comment">// end of [list_fold2_left_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">init<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="11217"><span class="dyncstdec">list_fold2_left_cloptr
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> init<span class="keyword">,</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> init</span>
+<span class="keyword">,</span> ini<span class="keyword">:</span> <span class="staexp">init</span><span class="keyword">,</span> xs1<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">init</span></span></a> <span class="comment">// end of [list_fold2_left_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">init<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="11447"><span class="dyncstdec">list_fold2_left_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>init<span class="keyword">,</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> init</span><span class="keyword">,</span> ini<span class="keyword">:</span> <span class="staexp">init</span><span class="keyword">,</span> xs1<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">init</span></span></a> <span class="comment">// end of [list_fold2_left_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">sink<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="11668"><span class="dyncstdec">list_fold_right_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">,</span> sink<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> sink</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> snk<span class="keyword">:</span> <span class="staexp">sink</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">sink</span></span></a> <span class="comment">// end of [list_fold_right_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">sink<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="11880"><span class="dyncstdec">list_fold_right_fun <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">,</span> sink<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> sink</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> snk<span class="keyword">:</span> <span class="staexp">sink</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">sink</span></span></a>
+<span class="comment">// end of [list_fold_right_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">sink<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="12029"><span class="dyncstdec">list_fold_right_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">,</span> sink<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> sink</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> snk<span class="keyword">:</span> <span class="staexp">sink</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">sink</span></span></a>
+<span class="comment">// end of [list_fold_right_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">sink<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="12202"><span class="dyncstdec">list_fold_right_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">,</span> sink<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> sink</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> snk<span class="keyword">:</span> <span class="staexp">sink</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">sink</span></span></a>
+<span class="comment">// end of [list_fold_right_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">sink<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="12384"><span class="dyncstdec">list_fold_right_cloref <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">,</span> sink<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> sink</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> snk<span class="keyword">:</span> <span class="staexp">sink</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">sink</span></span></a>
+<span class="comment">// end of [list_fold_right_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">sink<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="12567"><span class="dyncstdec">list_fold2_right_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">,</span> sink<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> sink</span>
+<span class="keyword">,</span> xs1<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> snk<span class="keyword">:</span> <span class="staexp">sink</span>
+<span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">sink</span></span></a>
+<span class="comment">// end of [list_fold2_right_funenv]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="12833"><span class="dyncstdec">list_forall_funenv <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="comment">// end of [list_forall_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="13003"><span class="dyncstdec">list_forall_fun <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="13079"><span class="dyncstdec">list_forall_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="13187"><span class="dyncstdec">list_forall_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="13301"><span class="dyncstdec">list_forall_cloref <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="comment">(*
+symintr list_forall
+overload list_forall with list_forall_fun
+overload list_forall with list_forall_clo
+overload list_forall with list_forall_cloptr
+overload list_forall with list_forall_cloref
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="13613"><span class="dyncstdec">list_forall2_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs1<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span>
+<span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="comment">// end of [list_forall2_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="13836"><span class="dyncstdec">list_forall2_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>p<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="13958"><span class="dyncstdec">list_forall2_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span><span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="14110"><span class="dyncstdec">list_forall2_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="14269"><span class="dyncstdec">list_forall2_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>p<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>p<span class="keyword">&gt;</span> bool</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">p</span><span class="keyword">&gt;</span> <span class="staexp">bool</span></span></a> <span class="comment">// end of [list_forall2_cloref]
+</span>
+<span class="comment">(*
+symintr list_forall2
+overload list_forall2 with list_forall2_fun
+overload list_forall2 with list_forall2_clo
+overload list_forall2 with list_forall2_cloptr
+overload list_forall2 with list_forall2_cloref
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="14663"><span class="dyncstdec">list_foreach_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_foreach_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="14840"><span class="dyncstdec">list_foreach_fun <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="14921"><span class="dyncstdec">list_foreach_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [list_foreach_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="15059"><span class="dyncstdec">list_foreach_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [list_foreach_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="15206"><span class="dyncstdec">list_foreach_cloref <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="15320"><span class="dyncstdec">list_foreach2_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_foreach2_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="15543"><span class="dyncstdec">list_foreach2_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_foreach2_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="15703"><span class="dyncstdec">list_foreach2_clo
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_foreach2_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="15891"><span class="dyncstdec">list_foreach2_cloptr
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_foreach2_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="16088"><span class="dyncstdec">list_foreach2_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_foreach2_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="16274"><span class="dyncstdec">list_iforeach_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> natLt n<span class="keyword">,</span> a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_iforeach_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="16475"><span class="dyncstdec">list_iforeach_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>natLt n<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [list_iforeach_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="16613"><span class="dyncstdec">list_iforeach_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> natLt n<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [list_iforeach_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="16775"><span class="dyncstdec">list_iforeach_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> natLt n<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [list_iforeach_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="16946"><span class="dyncstdec">list_iforeach_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>natLt n<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [list_iforeach_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="17118"><span class="dyncstdec">list_iforeach2_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+    <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+  <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+  <span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+  <span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> natLt n<span class="keyword">,</span> a1<span class="keyword">,</span> a2<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+  <span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [list_iforeach2_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="17364"><span class="dyncstdec">list_iforeach2_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>natLt n<span class="keyword">,</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_iforeach2_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="17535"><span class="dyncstdec">list_iforeach2_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> natLt n<span class="keyword">,</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_iforeach2_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="17732"><span class="dyncstdec">list_iforeach2_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> natLt n<span class="keyword">,</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_iforeach2_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="17936"><span class="dyncstdec">list_iforeach2_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>natLt n<span class="keyword">,</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [list_iforeach2_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="18133"><span class="dyncstdec">list_get_elt_at <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">natLt n</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">a</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> <span class="keyword">[</span><span class="keyword">]</span> <span class="keyword">with</span> list_get_elt_at</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="18239"><span class="dyncstdec">list_get_elt_at_exn <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">Nat</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n<span class="keyword">&gt;</span>0<span class="keyword">]</span> a</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="18322"><span class="dyncstdec">list_get_elt_at_opt <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">Nat</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">Option_vt a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="18413"><span class="dyncstdec">list_head <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>pos<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">a</span></span></a>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="18467"><span class="dyncstdec">list_head_exn <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n<span class="keyword">&gt;</span>0<span class="keyword">]</span> a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="18557"><span class="dyncstdec">list_last <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>pos<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">a</span></span></a>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="18611"><span class="dyncstdec">list_last_exn <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n<span class="keyword">&gt;</span>0<span class="keyword">]</span> a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="18701"><span class="dyncstdec">list_length <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int n</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> length <span class="keyword">with</span> list_length</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">//
+</span><span class="comment">// HX: please try [list_vt_make_elt]
+</span><span class="comment">// fun{a:t@ype} list_make_elt {n:nat} (x: a, n: int n):&lt;&gt; list (a, n)
+</span><span class="comment">//
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="18964"><span class="dyncstdec">list_map_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span><span class="keyword">)</span>
+  <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_map_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="19166"><span class="dyncstdec">list_map_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="19278"><span class="dyncstdec">list_map_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_map_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="19441"><span class="dyncstdec">list_map_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_map_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="19613"><span class="dyncstdec">list_map_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> b<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_map_cloref]
+</span>
+<span class="comment">(*
+symintr list_map
+overload list_map with list_map_fun
+overload list_map with list_map_clo
+overload list_map with list_map_cloptr
+overload list_map with list_map_cloref
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="19960"><span class="dyncstdec">list_map2_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+    <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+  <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+  <span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span>
+  <span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span>
+  <span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_map2_funenv]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="20207"><span class="dyncstdec">list_map2_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a> <span class="comment">// end of [list_map2_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="20379"><span class="dyncstdec">list_map2_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a> <span class="comment">// end of [list_map2_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="20575"><span class="dyncstdec">list_map2_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a> <span class="comment">// end of [list_map2_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="20780"><span class="dyncstdec">list_map2_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a> <span class="comment">// end of [list_map2_cloref]
+</span>
+<span class="comment">(*
+symintr list_map2
+overload list_map2 with list_map2_fun
+overload list_map2 with list_map2_clo
+overload list_map2 with list_map2_cloptr
+overload list_map2 with list_map2_cloref
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="21148"><span class="dyncstdec">list_nth <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">natLt n</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">a</span></span></a>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="21213"><span class="dyncstdec">list_nth_exn <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">Nat</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n<span class="keyword">&gt;</span>0<span class="keyword">]</span> a</span></span></a>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="21288"><span class="dyncstdec">list_nth_opt <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">Nat</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">Option_vt a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="21372"><span class="dyncstdec">list_reverse_append <span class="staexp"><span class="keyword">{</span>i<span class="keyword">,</span>j<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> j<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> i+j<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_reverse_append]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="21523"><span class="dyncstdec">list_reverse_append1_vt <span class="staexp"><span class="keyword">{</span>i<span class="keyword">,</span>j<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> j<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> i+j<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="21628"><span class="dyncstdec">list_reverse_append2_vt <span class="staexp"><span class="keyword">{</span>i<span class="keyword">,</span>j<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> j<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> i+j<span class="keyword">)</span></span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="21757"><span class="dyncstdec">list_reverse <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="21849"><span class="dyncstdec">list_set_elt_at <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">natLt n</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="21940"><span class="dyncstdec">list_set_elt_at_exn <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">Nat</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n<span class="keyword">&gt;</span>0<span class="keyword">]</span> list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="22041"><span class="dyncstdec">list_set_elt_at_opt <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">Nat</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">Option_vt <span class="keyword">(</span>list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span><span class="keyword">)</span></span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="22164"><span class="dyncstdec">list_split_at <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>int<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat <span class="keyword">|</span> i &lt;= n<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span>list_vt <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span><span class="keyword">,</span> list <span class="keyword">(</span>a<span class="keyword">,</span> n-i<span class="keyword">)</span><span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_split_at]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="22329"><span class="dyncstdec">list_take <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>int<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat <span class="keyword">|</span> i &lt;= n<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_take]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="22448"><span class="dyncstdec">list_take_exn <span class="staexp"><span class="keyword">{</span>n<span class="keyword">,</span>i<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>i &lt;= n<span class="keyword">]</span> list_vt <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_take_exn]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// list_tabulate: try list_vt_tabulate
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="22655"><span class="dyncstdec">list_tail <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>pos<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n-1<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="22722"><span class="dyncstdec">list_tail_exn <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>n<span class="keyword">&gt;</span>0<span class="keyword">]</span> list <span class="keyword">(</span>a<span class="keyword">,</span> n-1<span class="keyword">)</span></span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="22826"><span class="dyncstdec">list_zip <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span><span class="keyword">@(</span>a<span class="keyword">,</span> b<span class="keyword">)</span><span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_zip]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="22976"><span class="dyncstdec">list_zipwth_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_zipwth_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="23147"><span class="dyncstdec">list_zipwth_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a> <span class="comment">// end of [list_zipwth_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="23347"><span class="dyncstdec">list_zipwth_cloptr <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloptr<span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a> <span class="comment">// end of [list_zipwth_cloptr]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="23556"><span class="dyncstdec">list_zipwth_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>b<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a> <span class="comment">// end of [list_zipwth_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="23749"><span class="dyncstdec">list_unzip <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xys<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span><span class="keyword">@(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span><span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span>list_vt <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span><span class="keyword">,</span> list_vt <span class="keyword">(</span>a2<span class="keyword">,</span> n<span class="keyword">)</span><span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_unzip]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+** HX:
+** if the list to be sorted is long (say, containing 10K+ elements),
+** please try to use [list_vt_mergesort] instead
+*)</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="24024"><span class="dyncstdec">list_mergesort
+  <span class="staexp"><span class="keyword">{</span>env<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>
+  xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> lte<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">,</span> a<span class="keyword">,</span> <span class="keyword">!</span>env<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>env</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a> <span class="comment">// end of [list_mergesort]
+</span>
+<span class="comment">(*
+** HX:
+** this is not a realistic implementation. please try to use
+** [list_vt_quicksort] instead
+*)</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="24290"><span class="dyncstdec">list_quicksort <span class="staexp"><span class="keyword">{</span>env<span class="keyword">:</span>viewtype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> lte<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">,</span> a<span class="keyword">,</span> <span class="keyword">!</span>env<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>env</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list_quicksort]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#if</span> <span class="neuexp">VERBOSE_PRELUDE</span> <span class="keyword">#then</span>
+<span class="keyword">#print</span> <span class="neuexp">"Loading [list.sats] finishes!\n"</span>
+<span class="keyword">#endif</span> <span class="comment">// end of [VERBOSE_PRELUDE]
+</span>
+<span class="comment">(* end of [list.sats] *)</span>
+</pre>
+</body>
+</html>

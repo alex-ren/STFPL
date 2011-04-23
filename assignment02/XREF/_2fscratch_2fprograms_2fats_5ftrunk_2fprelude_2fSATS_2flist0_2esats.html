@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2011 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published by the
+** Free Software Foundation; either version 2.1, or (at your option)  any
+** later version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see the  file COPYING.  If not, please write to the
+** Free Software Foundation,  51 Franklin Street, Fifth Floor, Boston, MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* Author: Hongwei Xi (hwxi AT cs DOT bu DOT edu) *)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* 
+** HX:
+** Note that the functions declared in this file are for supporting list
+** processing in an ML-like manner. Many more functions are available in
+** the following file:
+**
+** $ATSHOME/libats/smlbas/SATS/list.sats
+**
+** that are implemented for the same purpose.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#include</span> <span class="neuexp">"prelude/params.hats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#if</span> <span class="neuexp">VERBOSE_PRELUDE</span> <span class="keyword">#then</span>
+<span class="keyword">#print</span> <span class="neuexp">"Loading [list0.sats] starts!\n"</span>
+<span class="keyword">#endif</span> <span class="comment">// end of [VERBOSE_PRELUDE]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// for forming singleton lists
+</span><span class="comment">// macdef list0_sing (x) = list0_cons (,(x), list0_nil ())
+</span>
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: a casting function implemented in [prelude/CATS/list.cats]
+</span><span class="comment">//
+</span><span class="keyword">castfn</span> <a name="2152"><span class="dyncstdec">list0_of_list1
+  <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>t@ype<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list0 a</span></span></a> <span class="keyword">=</span> "atspre_list0_of_list1"
+<span class="comment">// end of [castfn list0_of_list1]
+</span>
+<span class="comment">//
+</span><span class="comment">// HX: a casting function implemented in [prelude/CATS/list.cats]
+</span><span class="comment">//
+</span><span class="keyword">castfn</span> <a name="2343"><span class="dyncstdec">list0_of_list_vt
+  <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>t@ype<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">List_vt a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list0 a</span></span></a> <span class="keyword">=</span> "atspre_list0_of_list_vt"
+<span class="comment">// end of [castfn list0_of_list_vt]
+</span>
+<span class="comment">//
+</span><span class="comment">// HX: a casting function implemented in [prelude/DATS/list.cats]
+</span><span class="comment">//
+</span><span class="keyword">castfn</span> <a name="2543"><span class="dyncstdec">list1_of_list0
+  <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>t@ype<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">List a</span></span></a> <span class="keyword">=</span> "atspre_list1_of_list0"
+<span class="comment">// end of [list1_of_list0]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="2682"><span class="dyncstdec">list0_of_arraysize
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>arrsz<span class="keyword">:</span> <span class="staexp">arraysize <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list0 a</span></span></a>
+<span class="comment">// end of [list0_of_arraysize]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="2814"><span class="dyncstdec">list0_append <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list0 a</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> + <span class="keyword">with</span> list0_append</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="2931"><span class="dyncstdec">list0_assoc_fun
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 <span class="keyword">@(</span>a<span class="keyword">,</span> b<span class="keyword">)</span></span><span class="keyword">,</span> eq<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>fun1<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 <span class="keyword">(</span>b<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list0_assoc_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3057"><span class="dyncstdec">list0_assoc_cloref
+  <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 <span class="keyword">@(</span>a<span class="keyword">,</span> b<span class="keyword">)</span></span><span class="keyword">,</span> eq<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 <span class="keyword">(</span>b<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [list0_assoc_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3211"><span class="dyncstdec">list0_concat <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 <span class="keyword">(</span>list0 a<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list0 a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3292"><span class="dyncstdec">list0_exists_fun <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>fun1<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3362"><span class="dyncstdec">list0_exists_cloref <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3459"><span class="dyncstdec">list0_filter_fun <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> pred<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>fun1<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 a</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3535"><span class="dyncstdec">list0_filter_cloref <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> pred<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3638"><span class="dyncstdec">list0_find_fun <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> pred<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>fun1<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 a</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3714"><span class="dyncstdec">list0_find_cloref <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> pred<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">init<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3829"><span class="dyncstdec">list0_fold_left
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>init<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> init</span><span class="keyword">,</span> ini<span class="keyword">:</span> <span class="staexp">init</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">init</span></span></a>
+<span class="comment">// end of [list0_fold_left]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">sink<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3962"><span class="dyncstdec">list0_fold_right
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">,</span> sink<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> sink</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> snk<span class="keyword">:</span> <span class="staexp">sink</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">sink</span></span></a>
+<span class="comment">// end of [list0_fold_right]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4106"><span class="dyncstdec">list0_forall_fun <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>fun1<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4176"><span class="dyncstdec">list0_forall_cloref <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4273"><span class="dyncstdec">list0_foreach_fun <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>fun1<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4344"><span class="dyncstdec">list0_foreach_cloref <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4442"><span class="dyncstdec">list0_iforeach_fun <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>int<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>fun1<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4521"><span class="dyncstdec">list0_iforeach_cloref <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>int<span class="keyword">,</span> a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="4627"><span class="dyncstdec">list0_head_exn <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="4694"><span class="dyncstdec">list0_length <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4772"><span class="dyncstdec">list0_map_fun <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>fun1<span class="keyword">&gt;</span> b</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 b</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4848"><span class="dyncstdec">list0_map_cloref <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> b</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 b</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4955"><span class="dyncstdec">list0_map2_fun
+  <span class="keyword">(</span>xs1<span class="keyword">:</span> <span class="staexp">list0 a1</span><span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list0 a2</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>fun1<span class="keyword">&gt;</span> b</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 b</span></span></a>
+<span class="comment">// end of [list0_map2_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5089"><span class="dyncstdec">list0_map2_cloref
+  <span class="keyword">(</span>xs1<span class="keyword">:</span> <span class="staexp">list0 a1</span><span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list0 a2</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> b</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 b</span></span></a>
+<span class="comment">// end of [list0_map2_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="5240"><span class="dyncstdec">list0_nth_exn <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">a</span></span></a>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="5292"><span class="dyncstdec">list0_nth_opt <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5374"><span class="dyncstdec">list0_reverse <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 a</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5425"><span class="dyncstdec">list0_reverse_append <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 a</span></span></a>
+<span class="comment">//
+</span><span class="comment">// HX: this one is the same as [list0_reverse_append]
+</span><span class="comment">//
+</span><span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5555"><span class="dyncstdec">list0_revapp <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 a</span></span></a>
+
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="5640"><span class="dyncstdec">list0_tail_exn <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5713"><span class="dyncstdec">list0_take_exn <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 a</span></span></a>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5773"><span class="dyncstdec">list0_drop_exn <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 a</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#if</span> <span class="neuexp">VERBOSE_PRELUDE</span> <span class="keyword">#then</span>
+<span class="keyword">#print</span> <span class="neuexp">"Loading [list0.sats] finishes!\n"</span>
+<span class="keyword">#endif</span> <span class="comment">// end of [VERBOSE_PRELUDE]
+</span>
+<span class="comment">(* end of [list0.sats] *)</span>
+</pre>
+</body>
+</html>

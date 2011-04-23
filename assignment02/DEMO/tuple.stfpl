@@ -1,0 +1,15 @@
+let
+  val sum = lam (x) => x.0 + x.1
+
+  val ret1 = sum (1, 2)
+  val ret2 = sum (2, 3, 4)
+
+  val _ = print_int ret1
+  val _ = print "\n"
+  val _ = print_int ret2
+  val _ = print "\n"
+in
+  ()
+end
+
+

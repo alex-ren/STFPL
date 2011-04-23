@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+
+<span class="comment">(*
+** CAS CS525, Spring 2011
+** Instructor: Hongwei Xi
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">Trans2 <span class="keyword">=</span> "trans2.sats"</span>
+<span class="comment">// staload
+</span><span class="comment">// Posloc = "contrib/parcomb/SATS/posloc.sats"
+</span><span class="comment">// 
+</span><span class="comment">// (* ****** ****** *)
+</span><span class="comment">// 
+</span><span class="comment">// staload Absyn = "absyn.sats"
+</span><span class="comment">// 
+</span><span class="comment">// (* ****** ****** *)
+</span><span class="comment">// 
+</span><span class="comment">// staload
+</span><span class="comment">// Trans1 = "trans1.sats"
+</span><span class="comment">// typedef e1xp = $Trans1.e1xp
+</span><span class="comment">// 
+</span><span class="comment">// (* ****** ****** *)
+</span><span class="comment">// 
+</span><span class="comment">// (* desc: type for temporary variable *)
+</span><span class="comment">// abstype tmpvar_t
+</span><span class="comment">// typedef tmpvar = tmpvar_t
+</span><span class="comment">// 
+</span><span class="comment">// fun fprint_tmpvar (out: FILEref, x: tmpvar): void
+</span><span class="comment">// overload fprint with fprint_tmpvar
+</span><span class="comment">// fun print_tmpvar (x: tmpvar): void
+</span><span class="comment">// overload print with print_tmpvar
+</span>
+<span class="comment">(*
+abstype cppvar_t
+typedef cppvar cppvar_t
+
+datatype stat_cpp =
+  | CPPopr (cppvar, j
+*)</span>
+
+<span class="keyword">abstype</span> <span class="staexp"><a name="724"><span class="stacstdec">ostream_t</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="742"><span class="stacstdec">ostream <span class="keyword">=</span> ostream_t</span></a></span>
+
+<span class="keyword">fun</span> <a name="767"><span class="dyncstdec">ostream_new <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">ostream</span></span></a>
+
+<span class="keyword">fun</span> <a name="796"><span class="dyncstdec">ostream_in <span class="keyword">(</span>os<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>ostream</span><span class="keyword">,</span> s<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+
+<span class="keyword">fun</span> <a name="844"><span class="dyncstdec">print_ostream <span class="keyword">(</span>os<span class="keyword">:</span> <span class="staexp">ostream</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+
+<span class="keyword">fun</span> <a name="883"><span class="dyncstdec">trans_cpp <span class="keyword">(</span>instrs<span class="keyword">:</span> <span class="staexp">$Trans2<span class="keyword">.</span>instrlst</span><span class="keyword">,</span> fns<span class="keyword">:</span> <span class="staexp">list0 $Trans2<span class="keyword">.</span>funent_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">ostream</span></span></a>
+
+
+
+</pre>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2008 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published by the
+** Free Software Foundation; either version 2.1, or (at your option)  any
+** later version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see the  file COPYING.  If not, please write to the
+** Free Software Foundation,  51 Franklin Street, Fifth Floor, Boston, MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+** For recording location information for concrete syntax
+*)</span>
+
+<span class="comment">// Author: Hongwei Xi (hwxi AT cs DOT bu DOT edu)
+</span><span class="comment">// Start Time: December 2008
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abstype</span> <span class="staexp"><a name="1587"><span class="stacstdec">filename_t</span></a></span> <span class="comment">// boxed type
+</span>
+<span class="keyword">fun</span> <a name="1617"><span class="dyncstdec">filename_make_string <span class="keyword">(</span>name<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">filename_t</span></span></a>
+
+<span class="keyword">fun</span> <a name="1670"><span class="dyncstdec">fprint_filename
+  <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> fil<span class="keyword">:</span> <span class="staexp">filename_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_filename</span>
+<span class="keyword">fun</span> <a name="1767"><span class="dyncstdec">print_filename <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">filename_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> print <span class="keyword">with</span> print_filename</span>
+<span class="keyword">fun</span> <a name="1845"><span class="dyncstdec">prerr_filename <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">filename_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> prerr <span class="keyword">with</span> prerr_filename</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">val</span> <a name="1945"><span class="dyncstdec">filename_none<span class="keyword">:</span> <span class="staexp">filename_t</span></span></a>
+<span class="keyword">val</span> <a name="1975"><span class="dyncstdec">filename_stdin<span class="keyword">:</span> <span class="staexp">filename_t</span></span></a>
+
+<span class="keyword">fun</span> <a name="2007"><span class="dyncstdec">filename_pop <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="2033"><span class="dyncstdec">filename_push <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">filename_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+
+<span class="keyword">fun</span> <a name="2074"><span class="dyncstdec">filename_get_current <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">filename_t</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abstype</span> <span class="staexp"><a name="2142"><span class="stacstdec">position_t</span></a></span> <span class="comment">// boxed type
+</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="2176"><span class="stacstdec">lint <span class="keyword">=</span> int_long_t0ype</span></a></span>
+<span class="keyword">fun</span> <a name="2202"><span class="dyncstdec">position_line <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a>
+<span class="keyword">fun</span> <a name="2243"><span class="dyncstdec">position_loff <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a>
+<span class="keyword">fun</span> <a name="2284"><span class="dyncstdec">position_toff <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="2348"><span class="dyncstdec">fprint_position
+  <span class="keyword">(</span>fil<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> pos<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_position</span>
+<span class="keyword">fun</span> <a name="2445"><span class="dyncstdec">print_position <span class="keyword">(</span>pos<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "lexing_print_position"
+<span class="neuexp"><span class="keyword">overload</span> print <span class="keyword">with</span> print_position</span>
+<span class="keyword">fun</span> <a name="2549"><span class="dyncstdec">prerr_position <span class="keyword">(</span>pos<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "lexing_prerr_position"
+<span class="neuexp"><span class="keyword">overload</span> prerr <span class="keyword">with</span> prerr_position</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">val</span> <a name="2675"><span class="dyncstdec">position_origin<span class="keyword">:</span> <span class="staexp">position_t</span></span></a>
+<span class="keyword">fun</span> <a name="2707"><span class="dyncstdec">position_next <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">,</span> c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">position_t</span></span></a>
+
+<span class="keyword">fun</span> <a name="2765"><span class="dyncstdec">lt_position_position <span class="keyword">(</span>p1<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> <span class="keyword">&lt;</span> <span class="keyword">with</span> lt_position_position</span>
+<span class="keyword">fun</span> <a name="2868"><span class="dyncstdec">lte_position_position <span class="keyword">(</span>p1<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> &lt;= <span class="keyword">with</span> lte_position_position</span>
+
+<span class="keyword">fun</span> <a name="2975"><span class="dyncstdec">eq_position_position <span class="keyword">(</span>p1<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> <span class="keyword">=</span> <span class="keyword">with</span> eq_position_position</span>
+<span class="keyword">fun</span> <a name="3078"><span class="dyncstdec">neq_position_position <span class="keyword">(</span>p1<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> &lt;&gt; <span class="keyword">with</span> neq_position_position</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abstype</span> <span class="staexp"><a name="3210"><span class="stacstdec">location_t</span></a></span> <span class="comment">// boxed type
+</span>
+<span class="keyword">val</span> <a name="3240"><span class="dyncstdec">location_none<span class="keyword">:</span> <span class="staexp">location_t</span></span></a>
+<span class="keyword">fun</span> <a name="3270"><span class="dyncstdec">location_make <span class="keyword">(</span>_1<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">,</span> _2<span class="keyword">:</span> <span class="staexp">position_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">location_t</span></span></a>
+<span class="keyword">fun</span> <a name="3335"><span class="dyncstdec">location_combine <span class="keyword">(</span>_1<span class="keyword">:</span> <span class="staexp">location_t</span><span class="keyword">,</span> _2<span class="keyword">:</span> <span class="staexp">location_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">location_t</span></span></a>
+
+<span class="keyword">fun</span> <a name="3404"><span class="dyncstdec">fprint_location
+  <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">location_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_location</span>
+<span class="keyword">fun</span> <a name="3501"><span class="dyncstdec">print_location <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">location_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> print <span class="keyword">with</span> print_location</span>
+<span class="keyword">fun</span> <a name="3579"><span class="dyncstdec">prerr_location <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">location_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> prerr <span class="keyword">with</span> prerr_location</span>
+
+<span class="keyword">fun</span> <a name="3658"><span class="dyncstdec">tostrptr_location <span class="keyword">(</span>loc<span class="keyword">:</span> <span class="staexp">location_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">strptr0</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [posloc.sats] *)</span>
+</pre>
+</body>
+</html>

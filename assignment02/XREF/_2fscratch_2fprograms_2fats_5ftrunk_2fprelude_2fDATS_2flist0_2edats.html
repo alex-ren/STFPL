@@ -1,0 +1,420 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2011 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published by the
+** Free Software Foundation; either version 2.1, or (at your option)  any
+** later version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see the  file COPYING.  If not, please write to the
+** Free Software Foundation,  51 Franklin Street, Fifth Floor, Boston, MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* author: Hongwei Xi (hwxi AT cs DOT bu DOT edu) *)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#define</span> <span class="neuexp">ATS_DYNLOADFLAG 0</span> <span class="comment">// loaded by [ats_main_prelude]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// list0 implementation
+</span>
+<span class="keyword">#define</span> <span class="neuexp">nil list0_nil</span>
+<span class="keyword">#define</span> <span class="neuexp">cons list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">:: list0_cons</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_of_arraysize <span class="keyword">(</span>arrsz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list_vt_of_arraysize&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>arrsz<span class="keyword">)</span>
+<span class="keyword">in</span>
+  list0_of_list_vt <span class="keyword">(</span>xs<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_make_arraysize]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_append <span class="keyword">(</span>xs<span class="keyword">,</span> ys<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list1_of_list0 xs <span class="keyword">and</span> ys <span class="keyword">=</span> list1_of_list0 ys
+<span class="keyword">in</span>
+  list0_of_list1 <span class="keyword">(</span>list_append <span class="keyword">(</span>xs<span class="keyword">,</span> ys<span class="keyword">)</span><span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_append]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">,</span><span class="staexp">b</span><span class="keyword">}</span>
+list0_assoc_fun
+  <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list1_of_list0 <span class="keyword">(</span>xs<span class="keyword">)</span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> list_assoc_fun&lt;<span class="staexp">a</span><span class="keyword">,</span><span class="staexp">b</span><span class="keyword">&gt;</span> <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">,</span> x<span class="keyword">)</span>
+<span class="keyword">in</span>
+  option0_of_option_vt <span class="keyword">(</span>ans<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_assoc_fun]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">,</span><span class="staexp">b</span><span class="keyword">}</span>
+list0_assoc_cloref
+  <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list1_of_list0 <span class="keyword">(</span>xs<span class="keyword">)</span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> list_assoc_cloref&lt;<span class="staexp">a</span><span class="keyword">,</span><span class="staexp">b</span><span class="keyword">&gt;</span> <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">,</span> x<span class="keyword">)</span>
+<span class="keyword">in</span>
+  option0_of_option_vt <span class="keyword">(</span>ans<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_assoc_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_concat <span class="keyword">(</span>xss<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">castfn</span> __cast <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> 
+    <span class="keyword">(</span>xss<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>list0 a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">List <span class="keyword">(</span>List a<span class="keyword">)</span></span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> xss <span class="keyword">of</span>
+    <span class="keyword">|</span> list_cons <span class="keyword">(</span>xs<span class="keyword">,</span> xss<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> xs <span class="keyword">=</span> list1_of_list0 <span class="keyword">(</span>xs<span class="keyword">)</span> <span class="keyword">in</span> list_cons <span class="keyword">(</span>xs<span class="keyword">,</span> __cast xss<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [list0_cons]
+</span>    <span class="keyword">|</span> list_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> list_nil <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [castfn]
+</span>  <span class="keyword">val</span> xss <span class="keyword">=</span> list1_of_list0 <span class="staexp"><span class="keyword">{</span>list0 a<span class="keyword">}</span></span> <span class="keyword">(</span>xss<span class="keyword">)</span>
+<span class="keyword">in</span>
+  list0_of_list_vt <span class="keyword">(</span>list_concat <span class="keyword">(</span>__cast xss<span class="keyword">)</span><span class="keyword">)</span> 
+<span class="keyword">end</span> <span class="comment">// end of [list0_concat]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_exists_fun <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span>
+  list_exists_fun <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">,</span> f<span class="keyword">)</span>
+<span class="comment">// end of [list0_exists_fun]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_exists_cloref <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span>
+  list_exists_cloref <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">,</span> f<span class="keyword">)</span>
+<span class="comment">// end of [list0_exists_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: this implementation
+</span><span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span> <span class="comment">// of [list0_filter] is tail-recursive
+</span>list0_filter_fun <span class="keyword">(</span>xs<span class="keyword">,</span> pred<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list1_of_list0 <span class="keyword">(</span>xs<span class="keyword">)</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list_filter_fun <span class="keyword">(</span>xs<span class="keyword">,</span> pred<span class="keyword">)</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list_of_list_vt <span class="keyword">(</span>xs<span class="keyword">)</span>
+<span class="keyword">in</span>
+  list0_of_list1 <span class="keyword">(</span>xs<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_filter]
+</span>
+<span class="comment">// HX: this implementation
+</span><span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span> <span class="comment">// of [list0_filter] is tail-recursive
+</span>list0_filter_cloref <span class="keyword">(</span>xs<span class="keyword">,</span> pred<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list1_of_list0 <span class="keyword">(</span>xs<span class="keyword">)</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list_filter_cloref <span class="keyword">(</span>xs<span class="keyword">,</span> pred<span class="keyword">)</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list_of_list_vt <span class="keyword">(</span>xs<span class="keyword">)</span>
+<span class="keyword">in</span>
+  list0_of_list1 <span class="keyword">(</span>xs<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_filter]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_find_fun <span class="keyword">(</span>xs<span class="keyword">,</span> pred<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> list_find_fun <span class="keyword">(</span>list1_of_list0 <span class="keyword">(</span>xs<span class="keyword">)</span><span class="keyword">,</span> pred<span class="keyword">)</span>
+<span class="keyword">in</span>
+  option0_of_option_vt <span class="keyword">(</span>ans<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_find_fun]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_find_cloref <span class="keyword">(</span>xs<span class="keyword">,</span> pred<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> list_find_cloref <span class="keyword">(</span>list1_of_list0 <span class="keyword">(</span>xs<span class="keyword">)</span><span class="keyword">,</span> pred<span class="keyword">)</span>
+<span class="keyword">in</span>
+  option0_of_option_vt <span class="keyword">(</span>ans<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_find_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">init</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_fold_left <span class="keyword">(</span>f<span class="keyword">,</span> init<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=</span>
+  list_fold_left_cloref&lt;<span class="staexp">init</span><span class="keyword">&gt;&lt;</span><span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>f<span class="keyword">,</span> init<span class="keyword">,</span> list1_of_list0 xs<span class="keyword">)</span>
+<span class="comment">// end of [list0_fold_left]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">sink</span><span class="keyword">}</span>
+list0_fold_right <span class="keyword">(</span>f<span class="keyword">,</span> xs<span class="keyword">,</span> sink<span class="keyword">)</span> <span class="keyword">=</span>
+  list_fold_right_cloref&lt;<span class="staexp">a</span><span class="keyword">&gt;&lt;</span><span class="staexp">sink</span><span class="keyword">&gt;</span> <span class="keyword">(</span>f<span class="keyword">,</span> list1_of_list0 xs<span class="keyword">,</span> sink<span class="keyword">)</span>
+<span class="comment">// end of [list0_fold_right]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_forall_fun <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span>
+  list_forall_fun <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">,</span> f<span class="keyword">)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_forall_cloref <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span>
+  list_forall_cloref <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">,</span> f<span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_foreach_fun <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span>
+  list_foreach_fun&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">,</span> f<span class="keyword">)</span>
+<span class="comment">// end of [list0_foreach_fun]
+</span>  
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_foreach_cloref <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> list_foreach_cloref&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">,</span> f<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [list0_foreach_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_iforeach_fun <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span>
+  list_iforeach_fun&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">,</span> f<span class="keyword">)</span>
+<span class="comment">// end of [list0_iforeach_fun]
+</span>  
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_iforeach_cloref <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> list_iforeach_cloref&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">,</span> f<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [list0_iforeach_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_head_exn <span class="keyword">(</span>xs<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">begin</span> <span class="keyword">case+</span> xs <span class="keyword">of</span>
+  <span class="keyword">|</span> list0_cons <span class="keyword">(</span>x<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> x <span class="keyword">|</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">$raise</span> ListSubscriptException
+<span class="keyword">end</span> <span class="comment">// end of [list0_head_exn]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_length <span class="keyword">(</span>xs<span class="keyword">)</span> <span class="keyword">=</span> list_length <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b</span><span class="keyword">}</span>
+list0_map_fun <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span>
+  list0_of_list_vt <span class="keyword">(</span>list_map_fun <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">,</span> f<span class="keyword">)</span><span class="keyword">)</span>
+<span class="comment">// end of [list0_map_fun]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b</span><span class="keyword">}</span>
+list0_map_cloref <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span>
+  list0_of_list_vt <span class="keyword">(</span>list_map_cloref <span class="keyword">(</span>list1_of_list0 xs<span class="keyword">,</span> f<span class="keyword">)</span><span class="keyword">)</span>
+<span class="comment">// end of [list0_map_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a1</span><span class="keyword">,</span><span class="staexp">a2</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b</span><span class="keyword">}</span>
+list0_map2_fun <span class="keyword">(</span>xs1<span class="keyword">,</span> xs2<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>n1<span class="keyword">,</span>n2<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n1<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span>xs1<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n1<span class="keyword">)</span></span><span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n2<span class="keyword">)</span></span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>list0 b? &gt;&gt; list0 b</span><span class="keyword">)</span>
+    <span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> <span class="keyword">(</span>xs1<span class="keyword">,</span> xs2<span class="keyword">)</span> <span class="keyword">of</span>
+    <span class="keyword">|</span> <span class="keyword">(</span>list_cons <span class="keyword">(</span>x1<span class="keyword">,</span> xs1<span class="keyword">)</span><span class="keyword">,</span> list_cons <span class="keyword">(</span>x2<span class="keyword">,</span> xs2<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> y <span class="keyword">=</span> f <span class="keyword">(</span>x1<span class="keyword">,</span> x2<span class="keyword">)</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> res := cons <span class="keyword">(</span>y<span class="keyword">,</span> ?<span class="keyword">)</span>
+        <span class="keyword">val+</span> cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>p_ys<span class="keyword">)</span> <span class="keyword">=</span> res
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>xs1<span class="keyword">,</span> xs2<span class="keyword">,</span> <span class="keyword">!</span>p_ys<span class="keyword">)</span>
+      <span class="keyword">in</span>
+        fold@ <span class="keyword">(</span>res<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [list_cons _, list_cons _]
+</span>    <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> res := nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">in</span> <span class="keyword">(</span><span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_, _]
+</span>  <span class="comment">// end of [loop]
+</span>  <span class="keyword">var</span> res<span class="keyword">:</span> <span class="staexp">list0 b</span> <span class="comment">// uninitialized
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>xs1<span class="keyword">,</span> xs2<span class="keyword">,</span> res<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">val</span> xs1 <span class="keyword">=</span> list1_of_list0 <span class="keyword">(</span>xs1<span class="keyword">)</span> <span class="keyword">and</span> xs2 <span class="keyword">=</span> list1_of_list0 <span class="keyword">(</span>xs2<span class="keyword">)</span>
+  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span><span class="keyword">in</span>
+  res
+<span class="keyword">end</span> <span class="comment">// end of [list0_map2_fun]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a1</span><span class="keyword">,</span><span class="staexp">a2</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">b</span><span class="keyword">}</span>
+list0_map2_cloref <span class="keyword">(</span>xs1<span class="keyword">,</span> xs2<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>n1<span class="keyword">,</span>n2<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n1<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span>xs1<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n1<span class="keyword">)</span></span><span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a2<span class="keyword">,</span> n2<span class="keyword">)</span></span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>list0 b? &gt;&gt; list0 b</span><span class="keyword">)</span>
+    <span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> <span class="keyword">(</span>xs1<span class="keyword">,</span> xs2<span class="keyword">)</span> <span class="keyword">of</span>
+    <span class="keyword">|</span> <span class="keyword">(</span>list_cons <span class="keyword">(</span>x1<span class="keyword">,</span> xs1<span class="keyword">)</span><span class="keyword">,</span> list_cons <span class="keyword">(</span>x2<span class="keyword">,</span> xs2<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> y <span class="keyword">=</span> f <span class="keyword">(</span>x1<span class="keyword">,</span> x2<span class="keyword">)</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> res := cons <span class="keyword">(</span>y<span class="keyword">,</span> ?<span class="keyword">)</span>
+        <span class="keyword">val+</span> cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>p_ys<span class="keyword">)</span> <span class="keyword">=</span> res
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>xs1<span class="keyword">,</span> xs2<span class="keyword">,</span> <span class="keyword">!</span>p_ys<span class="keyword">)</span>
+      <span class="keyword">in</span>
+        fold@ <span class="keyword">(</span>res<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [list_cons _, list_cons _]
+</span>    <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> res := nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">in</span> <span class="keyword">(</span><span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_, _]
+</span>  <span class="comment">// end of [loop]
+</span>  <span class="keyword">var</span> res<span class="keyword">:</span> <span class="staexp">list0 b</span> <span class="comment">// uninitialized
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>xs1<span class="keyword">,</span> xs2<span class="keyword">,</span> res<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">val</span> xs1 <span class="keyword">=</span> list1_of_list0 <span class="keyword">(</span>xs1<span class="keyword">)</span> <span class="keyword">and</span> xs2 <span class="keyword">=</span> list1_of_list0 <span class="keyword">(</span>xs2<span class="keyword">)</span>
+  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span><span class="keyword">in</span>
+  res
+<span class="keyword">end</span> <span class="comment">// end of [list0_map2_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_nth_exn
+  <span class="keyword">(</span>xs<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>i<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">a</span> <span class="keyword">=</span> <span class="keyword">case+</span> xs <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>x<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> loop <span class="keyword">(</span>xs<span class="keyword">,</span> i-1<span class="keyword">)</span> <span class="keyword">else</span> x
+    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">$raise</span> ListSubscriptException
+  <span class="comment">// end of [loop]
+</span>  <span class="keyword">val</span> i <span class="keyword">=</span> int1_of_int i
+<span class="keyword">in</span>
+  <span class="keyword">if</span> i &gt;= 0 <span class="keyword">then</span> loop <span class="keyword">(</span>xs<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">else</span> <span class="keyword">$raise</span> ListSubscriptException <span class="keyword">(</span><span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_nth_exn]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_nth_opt
+  <span class="keyword">(</span>xs<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>i<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+    xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">option0 <span class="keyword">(</span>a<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">case+</span> xs <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>x<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span>
+        <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> loop <span class="keyword">(</span>xs<span class="keyword">,</span> i-1<span class="keyword">)</span> <span class="keyword">else</span> option0_some <span class="keyword">(</span>x<span class="keyword">)</span>
+    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> option0_none <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [loop]
+</span>  <span class="keyword">val</span> i <span class="keyword">=</span> int1_of_int i
+<span class="keyword">in</span>
+  <span class="keyword">if</span> i &gt;= 0 <span class="keyword">then</span> loop <span class="keyword">(</span>xs<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">else</span> option0_none <span class="keyword">(</span><span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_nth_opt]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_reverse <span class="keyword">(</span>xs<span class="keyword">)</span> <span class="keyword">=</span>
+  list0_reverse_append <span class="keyword">(</span>xs<span class="keyword">,</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+<span class="comment">// end of [list0_reverse]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_reverse_append <span class="keyword">(</span>xs<span class="keyword">,</span> ys<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list1_of_list0 xs <span class="keyword">and</span> ys <span class="keyword">=</span> list1_of_list0 ys
+<span class="keyword">in</span>
+  list0_of_list1 <span class="keyword">(</span>list_reverse_append <span class="keyword">(</span>xs<span class="keyword">,</span> ys<span class="keyword">)</span><span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_reverse_append]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_revapp <span class="keyword">(</span>xs<span class="keyword">,</span> ys<span class="keyword">)</span> <span class="keyword">=</span> list0_reverse_append&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>xs<span class="keyword">,</span> ys<span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_tail_exn <span class="keyword">(</span>xs<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">begin</span> <span class="keyword">case+</span> xs <span class="keyword">of</span>
+  <span class="keyword">|</span> list0_cons <span class="keyword">(</span>x<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> xs <span class="keyword">|</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">$raise</span> ListSubscriptException
+<span class="keyword">end</span> <span class="comment">// end of [list0_tail_exn]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_take_exn <span class="keyword">(</span>xs<span class="keyword">,</span> n<span class="keyword">)</span> <span class="keyword">=</span> res <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>i<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>list0 a? &gt;&gt; list0 a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span> <span class="keyword">=</span>
+    <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">begin</span> <span class="keyword">case+</span> xs <span class="keyword">of</span>
+      <span class="keyword">|</span> list0_cons <span class="keyword">(</span>x<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>fold@ res<span class="keyword">;</span> err<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> res := list0_cons <span class="keyword">(</span>x<span class="keyword">,</span> ?<span class="keyword">)</span>
+          <span class="keyword">val+</span> list0_cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>p_res1<span class="keyword">)</span> <span class="keyword">=</span> res
+          <span class="keyword">val</span> err <span class="keyword">=</span> loop <span class="keyword">(</span>xs<span class="keyword">,</span> i-1<span class="keyword">,</span> <span class="keyword">!</span>p_res1<span class="keyword">)</span>
+        <span class="keyword">}</span> <span class="comment">// end of [list0_cons]
+</span>      <span class="keyword">|</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>res := list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">;</span> 1<span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">(</span>res := list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">;</span> 0<span class="keyword">)</span>
+  <span class="comment">// end of [loop]    
+</span>  <span class="keyword">val</span> n <span class="keyword">=</span> int1_of_int n
+  <span class="keyword">var</span> res<span class="keyword">:</span> <span class="staexp">list0 a</span> <span class="comment">// uninitialized
+</span>  <span class="keyword">val</span> err <span class="keyword">=</span> <span class="keyword">if</span> <span class="keyword">:</span><span class="keyword">(</span>res<span class="keyword">:</span> list0 a<span class="keyword">)</span> <span class="keyword">=&gt;</span>
+    <span class="keyword">(</span>n &gt;= 0<span class="keyword">)</span> <span class="keyword">then</span> loop <span class="keyword">(</span>xs<span class="keyword">,</span> n<span class="keyword">,</span> res<span class="keyword">)</span> <span class="keyword">else</span> <span class="keyword">(</span>res := list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">;</span> 1<span class="keyword">)</span>
+  <span class="comment">// end of [if]
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> err <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> list_vt_free <span class="keyword">(</span>__cast res<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+      <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="9433"><span class="dyncstdec">__cast <span class="keyword">(</span>_<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">List_vt a</span></span></a>
+    <span class="keyword">}</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">in</span>
+    <span class="keyword">$raise</span> ListSubscriptException <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">end</span> <span class="comment">// end of [val]
+</span><span class="keyword">}</span> <span class="comment">// end of [list0_take_exn]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_drop_exn <span class="keyword">(</span>xs<span class="keyword">,</span> n<span class="keyword">)</span> <span class="keyword">=</span> res <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>i<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">,</span> err<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 a</span> <span class="keyword">=</span>
+    <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">begin</span> <span class="keyword">case+</span> xs <span class="keyword">of</span>
+      <span class="keyword">|</span> list0_cons <span class="keyword">(</span>_<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> loop <span class="keyword">(</span>xs<span class="keyword">,</span> i - 1<span class="keyword">,</span> err<span class="keyword">)</span>
+      <span class="keyword">|</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>err := 1<span class="keyword">;</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="keyword">else</span> xs
+  <span class="comment">// end of [loop]
+</span>  <span class="keyword">var</span> err<span class="keyword">:</span> <span class="staexp">int</span> <span class="keyword">=</span> 0
+  <span class="keyword">val</span> n <span class="keyword">=</span> int1_of_int n
+  <span class="keyword">val</span> res <span class="keyword">=</span> <span class="keyword">(</span>
+    <span class="keyword">if</span> n &gt;= 0 <span class="keyword">then</span> loop <span class="keyword">(</span>xs<span class="keyword">,</span> n<span class="keyword">,</span> err<span class="keyword">)</span> <span class="keyword">else</span> <span class="keyword">(</span>err := 1<span class="keyword">;</span> list0_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">list0 a</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> err <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">$raise</span> ListSubscriptException <span class="keyword">(</span><span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [list0_drop_exn]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// [list0.sats] is already loaded by a call to [pervasive_load]
+</span><span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anonymous*)</span> <span class="keyword">=</span> "prelude/SATS/list0.sats"</span> <span class="comment">// this forces that the static
+</span><span class="comment">// loading function for [list0.sats] is to be called at run-time
+</span><span class="comment">// this is really needed only if some datatypes are declared in [list0.sats]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [list0.dats] *)</span>
+</pre>
+</body>
+</html>

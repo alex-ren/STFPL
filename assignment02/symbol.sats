@@ -61,12 +61,6 @@ val symbol_NEQ : symbol_t // "<>"
 val symbol_PRINT : symbol_t // "print"
 val symbol_PRINT_INT : symbol_t // "print_int"
 
-val symbol_LIST_NIL : symbol_t // "list_nil"
-val symbol_LIST_CONS : symbol_t // "list_cons"
-val symbol_LIST_IS_EMPTY : symbol_t // "list_is_empty"
-val symbol_LIST_HEAD : symbol_t // "list_head"
-val symbol_LIST_TAIL : symbol_t // "list_tail"
-
 (* ****** ****** *)
 
 abstype symenv_t (a: t@ype)

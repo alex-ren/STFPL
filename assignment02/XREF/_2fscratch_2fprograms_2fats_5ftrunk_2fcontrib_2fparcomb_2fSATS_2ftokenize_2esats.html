@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2008 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published by the
+** Free Software Foundation; either version 2.1, or (at your option)  any
+** later version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see the  file COPYING.  If not, please write to the
+** Free Software Foundation,  51 Franklin Street, Fifth Floor, Boston, MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+** Tokenization: using PCs to turn a character stream into a token stream
+*)</span>
+
+<span class="comment">// Author: Hongwei Xi (hwxi AT cs DOT bu DOT edu)
+</span><span class="comment">// Start Time: December 2008
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">"contrib/parcomb/SATS/posloc.sats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">typedef</span> <span class="staexp"><a name="1668"><span class="stacstdec">loc_t <span class="keyword">=</span> location_t</span></a></span>
+
+<span class="keyword">datatype</span> <span class="staexp"><a name="1697"><span class="stacstdec">token_node</span></a></span> <span class="keyword">=</span>
+  <span class="keyword">|</span> TOKchr <span class="keyword">of</span> <span class="staexp">char</span>
+  <span class="keyword">|</span> TOKide <span class="keyword">of</span> <span class="staexp">string</span>
+  <span class="keyword">|</span> TOKint <span class="keyword">of</span> <span class="staexp">int</span>
+  <span class="keyword">|</span> TOKsingleton <span class="keyword">of</span> <span class="staexp">char</span>
+  <span class="keyword">|</span> TOKstr <span class="keyword">of</span> <span class="staexp">string</span>
+<span class="comment">// end of [token_node]
+</span>
+<span class="keyword">where</span> <span class="staexp"><a name="1844"><span class="stacstdec">token <span class="keyword">=</span> <span class="keyword">'{</span>
+  token_loc<span class="keyword">=</span> loc_t<span class="keyword">,</span> token_node<span class="keyword">=</span> token_node
+<span class="keyword">}</span></span></a></span> <span class="comment">// end of [token]
+</span>
+<span class="keyword">and</span> <span class="staexp"><a name="1923"><span class="stacstdec">tokenlst <span class="keyword">=</span> List token</span></a></span>
+<span class="keyword">and</span> <span class="staexp"><a name="1949"><span class="stacstdec">tokenopt <span class="keyword">=</span> Option token</span></a></span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="1999"><span class="dyncstdec">fprint_token <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> tok<span class="keyword">:</span> <span class="staexp">token</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_token</span>
+
+<span class="keyword">fun</span> <a name="2084"><span class="dyncstdec">print_token <span class="keyword">(</span>tok<span class="keyword">:</span> <span class="staexp">token</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="2119"><span class="dyncstdec">prerr_token <span class="keyword">(</span>tok<span class="keyword">:</span> <span class="staexp">token</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+
+<span class="neuexp"><span class="keyword">overload</span> print <span class="keyword">with</span> print_token</span>
+<span class="neuexp"><span class="keyword">overload</span> prerr <span class="keyword">with</span> prerr_token</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="2241"><span class="dyncstdec">tokenstream_make_charstream
+  <span class="keyword">(</span>cps<span class="keyword">:</span> <span class="staexp">stream char</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">laz</span><span class="keyword">&gt;</span> <span class="staexp">stream token</span></span></a>
+<span class="comment">// end of [tokenstream_make_charstream]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [tokenize.sats] *)</span>
+</pre>
+</body>
+</html>

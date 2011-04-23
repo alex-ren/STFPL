@@ -73,5 +73,3 @@ g++ -o TEST/funargs TEST/funargs.cpp
 # g++ -o TEST/list_opr TEST/list_opr.cpp
 # ./TEST/list_opr
 
-
-

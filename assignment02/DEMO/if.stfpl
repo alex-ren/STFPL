@@ -1,0 +1,10 @@
+let
+  val ifval = if 1 > 2 then "then branch" 
+              else "else branch"
+
+  val _ = print ifval
+in
+  print "\n"
+end
+
+

@@ -43,6 +43,7 @@
 <span class="keyword">dynload</span> "interp0.dats"
 <span class="keyword">dynload</span> "interp1.dats"
 <span class="keyword">dynload</span> "trans1.dats"
+<span class="keyword">dynload</span> "libfunctions.dats"
 <span class="keyword">dynload</span> "trans2.dats"
 <span class="keyword">dynload</span> "trans_cpp.dats"
 
@@ -66,16 +67,16 @@ main <span class="keyword">(</span><span class="keyword">)</span> <span class="k
 </span>  <span class="comment">//   print "Please input a program written in STFPL:"; print_newline ()
 </span>  <span class="comment">// end // end of [val]
 </span>  <span class="keyword">val</span> prog <span class="keyword">=</span> parse_from_stdin <span class="keyword">(</span><span class="keyword">)</span>
-  <span class="comment">// val () = print "\n\nbefore type checking ==================================\n\n"
-</span>  <span class="comment">// val () = print "prog =\n"
-</span>  <span class="comment">// val () = fprint_e0xp (stdout_ref, prog)
-</span>  <span class="comment">// val () = print_newline ()
-</span>
-  <span class="comment">// val () = print "\n\nafter type inference ==================================\n\n"
-</span>  <span class="keyword">val</span> prog1 <span class="keyword">=</span> trans1_exp <span class="keyword">(</span>prog<span class="keyword">)</span>
-  <span class="comment">// val () = fprint_e1xp (stdout_ref, prog1)
-</span>  <span class="comment">// val () = print_newline ()
-</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print "\n\nbefore type checking ==================================\n\n"
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print "prog =\n"
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_e0xp <span class="keyword">(</span>stdout_ref<span class="keyword">,</span> prog<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print_newline <span class="keyword">(</span><span class="keyword">)</span>
+
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print "\n\nafter type inference ==================================\n\n"
+  <span class="keyword">val</span> prog1 <span class="keyword">=</span> trans1_exp <span class="keyword">(</span>prog<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_e1xp <span class="keyword">(</span>stdout_ref<span class="keyword">,</span> prog1<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print_newline <span class="keyword">(</span><span class="keyword">)</span>
+
   <span class="comment">// val () = print "\n\ninterp0 ==================================\n\n"
 </span>  <span class="comment">// val v = interp0_exp(prog)
 </span>  <span class="comment">// val () = print_newline ()
@@ -89,12 +90,12 @@ main <span class="keyword">(</span><span class="keyword">)</span> <span class="k
 </span>  <span class="comment">// val () = print_newline ()
 </span>
   <span class="comment">// val () = print "\n\ntransform to IR ==================================\n\n"
-</span>  <span class="keyword">val</span> <span class="keyword">(</span>irs<span class="keyword">,</span> fns<span class="keyword">)</span> <span class="keyword">=</span> trans2_exp <span class="keyword">(</span>prog1<span class="keyword">)</span>
-
-  <span class="keyword">val</span> os <span class="keyword">=</span> trans_cpp <span class="keyword">(</span>irs<span class="keyword">,</span> fns<span class="keyword">)</span>
-  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print_ostream <span class="keyword">(</span>os<span class="keyword">)</span>
-  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print_newline <span class="keyword">(</span><span class="keyword">)</span>
-<span class="keyword">}</span> <span class="comment">// end of [main]
+</span>  <span class="comment">// val (irs, fns) = trans2_exp (prog1)
+</span>
+  <span class="comment">// val os = trans_cpp (irs, fns)
+</span>  <span class="comment">// val () = print_ostream (os)
+</span>  <span class="comment">// val () = print_newline ()
+</span><span class="keyword">}</span> <span class="comment">// end of [main]
 </span>
 <span class="comment">(* ****** ****** *)</span>
 

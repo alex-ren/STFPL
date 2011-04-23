@@ -23,13 +23,24 @@ datatype t1yp =
   | T1YPfun of (ref int(*args*), t1yp, t1yp)
   | T1YPtup of t1yplst
   | T1YPtup_vl of ref t1yplst
-  | T1YPVar of t1Var
+  | T1YPvar of t1Var
   | T1YPdummy of ()
+  | T1YPlist of (t1Var)
 // end of [t1yp]
 
 where t1yplst = list0 (t1yp)
   and t1ypopt = option0 (t1yp)
   and t1ypref = ref (t1yp)
+
+fun t1Var_new (): t1Var
+fun t1Var_get_nam (X: t1Var): int
+fun t1Var_get_typ (X: t1Var): t1yp
+fun t1Var_set_typ (X: t1Var, t: t1yp): void
+
+val t1yp_bool: t1yp
+val t1yp_int: t1yp
+val t1yp_string: t1yp
+val t1yp_unit: t1yp
 
 fun fprint_t1yp (out: FILEref, t: t1yp): void 
 fun fprint_t1yplst (out: FILEref, t: t1yplst): void 

@@ -1,0 +1,592 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2008 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published by the
+** Free Software Foundation; either version 2.1, or (at your option)  any
+** later version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see the  file COPYING.  If not, please write to the
+** Free Software Foundation,  51 Franklin Street, Fifth Floor, Boston, MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* author: Hongwei Xi (hwxi AT cs DOT bu DOT edu) *)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// some built-in static constants for linear list operations
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+#define ATS_STALOADFLAG 0 // ...
+*)</span>
+<span class="keyword">#define</span> <span class="neuexp">ATS_DYNLOADFLAG 0</span> <span class="comment">// loaded by [ats_main_prelude]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span> list_vt_length_is_nonnegative <span class="keyword">(</span>xs<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">begin</span>
+  <span class="keyword">case+</span> xs <span class="keyword">of</span> list_vt_cons _ <span class="keyword">=&gt;</span> fold@ xs <span class="keyword">|</span> list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> fold@ xs
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_length_is_nonnegative]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fn</span> list_vt_is_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>viewt@ype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool <span class="keyword">(</span>n<span class="keyword">&gt;</span>0<span class="keyword">)</span></span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> xs <span class="keyword">of</span> list_vt_cons _ <span class="keyword">=&gt;</span> <span class="keyword">(</span>fold@ xs<span class="keyword">;</span> true<span class="keyword">)</span> <span class="keyword">|</span> list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>fold@ xs<span class="keyword">;</span> false<span class="keyword">)</span>
+<span class="comment">// end of [list_vt_is_cons]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_make_array <span class="keyword">(</span>A<span class="keyword">,</span> n<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="comment">//
+</span>  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="2157"><span class="stacstdec">list_vt <span class="keyword">=</span> <span class="keyword">[</span>a<span class="keyword">:</span>viewt@ype<span class="keyword">;</span>n<span class="keyword">:</span>nat<span class="keyword">]</span> list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span></a></span>
+<span class="comment">//
+</span>  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l1<span class="keyword">,</span>l2<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+      <span class="prfexp">pf1<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>array_v <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">,</span> l1<span class="keyword">)</span> &gt;&gt; array_v <span class="keyword">(</span>a?!<span class="keyword">,</span> n<span class="keyword">,</span> l1<span class="keyword">)</span></span></span>
+    <span class="keyword">,</span> <span class="prfexp">pf2<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>list_vt? @ l2 &gt;&gt; list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span> @ l2</span></span>
+    <span class="keyword">|</span> p_arr<span class="keyword">:</span> <span class="staexp">ptr l1</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp">ptr l2</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span>
+    <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">if</span> n <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf11<span class="keyword">,</span> pf12<span class="keyword">)</span> <span class="keyword">=</span> array_v_uncons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf1<span class="keyword">)</span></span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>res := list_vt_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>0<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">!</span>p_arr<span class="keyword">,</span> ?<span class="keyword">)</span>
+      <span class="keyword">val</span> list_vt_cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>res_next<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>res
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop 
+        <span class="keyword">(</span><span class="prfexp">pf12</span><span class="keyword">,</span> <span class="prfexp">view@ <span class="keyword">(</span><span class="keyword">!</span>res_next<span class="keyword">)</span></span> <span class="keyword">|</span> p_arr+sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> res_next<span class="keyword">,</span> n-1<span class="keyword">)</span>
+      <span class="comment">// end of [val]
+</span>      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf1 := array_v_cons <span class="staexp"><span class="keyword">{</span>a?!<span class="keyword">}</span></span> <span class="keyword">(</span>pf11<span class="keyword">,</span> pf12<span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      fold@ <span class="keyword">(</span><span class="keyword">!</span>res<span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_v_unnil <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf1<span class="keyword">)</span></span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf1 := array_v_nil <span class="staexp"><span class="keyword">{</span>a?!<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="keyword">!</span>res := list_vt_nil <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="comment">// end of [if]
+</span>  <span class="comment">// end of [loop]
+</span>  <span class="keyword">var</span> res<span class="keyword">:</span> <span class="staexp">list_vt?</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">view@ A</span><span class="keyword">,</span> <span class="prfexp">view@ res</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>A<span class="keyword">,</span> <span class="keyword">&amp;</span>res<span class="keyword">,</span> n<span class="keyword">)</span>
+<span class="keyword">in</span>
+  res
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_make_arrsz]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+//
+// HX: this is a different style: looping backward
+//
+implement{a}
+list_vt_make_array (A, n) = let
+// the loop goes from the end of an array to its beginning
+fun loop {i,j:nat} {l:addr} {ofs:int} .&lt;i&gt;.
+  (pf_mul: MUL (i, sizeof a, ofs), pf_arr: array_v (a, i, l) |
+   i: size_t i, p: ptr (l+ofs), res: list_vt (a, j))
+  :&lt;&gt; (array_v (a?!, i, l) | list_vt (a, i+j)) =
+  if i &gt; 0 then let
+    prval pf1_mul = mul_add_const {~1} (pf_mul)
+    prval (pf1_arr, pf_lst) = array_v_unextend {a} (pf_mul, pf_arr)
+    val p1 = p - sizeof&lt;a&gt;
+    val x = ptr_get_vt&lt;a&gt; (pf_lst | p1)
+    val (pf1_arr | res) = loop (pf1_mul, pf1_arr | i-1, p1, list_vt_cons (x, res))
+    prval pf_arr = array_v_extend {a?!} (pf1_mul, pf1_arr, pf_lst)
+  in
+    (pf_arr | res)    
+  end else let
+    prval () = array_v_unnil {a} (pf_arr)
+  in
+    (array_v_nil {a?!} () | res)
+  end // end of [if]
+// end of [loop]
+val (pf_mul | ofs) = mul2_size1_size1 (n, sizeof&lt;a&gt;)
+val (pf_arr | res) = loop (pf_mul, view@ A | n, &amp;A+ofs, list_vt_nil ())
+//
+prval () = view@ A := pf_arr
+//
+in
+  res
+end // end of [list_vt_of_arraysize]
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_of_arraysize <span class="keyword">(</span>arrsz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf_gc</span><span class="keyword">,</span> <span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> arrsz
+  <span class="keyword">val</span> res <span class="keyword">=</span> list_vt_make_array <span class="keyword">(</span><span class="keyword">!</span>p_arr<span class="keyword">,</span> asz<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_free <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf_gc</span><span class="keyword">,</span> <span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">)</span>
+<span class="keyword">in</span>
+  res
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_of_arraysize]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_copy
+  <span class="keyword">(</span>xs0<span class="keyword">)</span> <span class="keyword">=</span> res <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>List_vt a? &gt;&gt; list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span>
+    <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">case+</span> xs <span class="keyword">of</span>
+    <span class="keyword">|</span> list_vt_cons <span class="keyword">(</span>x<span class="keyword">,</span> <span class="keyword">!</span>p_xs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> res := list_vt_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>0<span class="keyword">}</span></span> <span class="keyword">(</span>x<span class="keyword">,</span> ?<span class="keyword">)</span>
+        <span class="keyword">val+</span> list_vt_cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>p_res1<span class="keyword">)</span> <span class="keyword">=</span> res<span class="keyword">;</span> <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="keyword">!</span>p_xs1<span class="keyword">,</span> <span class="keyword">!</span>p_res1<span class="keyword">)</span>
+      <span class="keyword">in</span>
+        fold@ xs<span class="keyword">;</span> fold@ res
+      <span class="keyword">end</span> <span class="comment">// end of [cons]
+</span>    <span class="keyword">|</span> list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>fold@ xs<span class="keyword">;</span> res := list_vt_nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">var</span> res<span class="keyword">:</span> <span class="staexp">List_vt a</span> <span class="comment">// uninitialized
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>xs0<span class="keyword">,</span> res<span class="keyword">)</span>
+<span class="keyword">}</span> <span class="comment">// end of [list_vt_copy]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_free <span class="keyword">(</span>xs0<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> xs <span class="keyword">of</span> <span class="keyword">~</span>list_vt_cons <span class="keyword">(</span>_<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> loop xs <span class="keyword">|</span> <span class="keyword">~</span>list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [loop]
+</span><span class="keyword">in</span>
+  loop <span class="keyword">(</span>xs0<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_free]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_free_fun <span class="keyword">(</span>xs0<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> xs <span class="keyword">of</span>
+    <span class="keyword">|</span> list_vt_cons <span class="keyword">(</span><span class="keyword">!</span>p_x<span class="keyword">,</span> xs1<span class="keyword">)</span> <span class="keyword">=&gt;</span>
+        <span class="keyword">(</span>f <span class="keyword">(</span><span class="keyword">!</span>p_x<span class="keyword">)</span><span class="keyword">;</span> free@ <span class="keyword">{</span>a<span class="keyword">}</span> <span class="keyword">{</span>0<span class="keyword">}</span> <span class="keyword">(</span>xs<span class="keyword">)</span><span class="keyword">;</span> loop <span class="keyword">(</span>xs1<span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">|</span> <span class="keyword">~</span>list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [loop]
+</span><span class="keyword">in</span>
+  loop <span class="keyword">(</span>xs0<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_free_fun]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_length <span class="keyword">(</span>xs0<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>xs0<span class="keyword">,</span> 0<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">,</span>j<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>i<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>list_vt <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span></span><span class="keyword">,</span> j<span class="keyword">:</span> <span class="staexp">int j</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int <span class="keyword">(</span>i+j<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">begin</span>
+    <span class="keyword">case+</span> xs <span class="keyword">of</span>
+    <span class="keyword">|</span> list_vt_cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>p_xs1<span class="keyword">)</span> <span class="keyword">=&gt;</span>
+        <span class="keyword">let</span> <span class="keyword">val</span> n <span class="keyword">=</span> loop <span class="keyword">(</span><span class="keyword">!</span>p_xs1<span class="keyword">,</span> j+1<span class="keyword">)</span> <span class="keyword">in</span> fold@ xs<span class="keyword">;</span> n <span class="keyword">end</span>
+    <span class="keyword">|</span> list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>fold@ xs<span class="keyword">;</span> j<span class="keyword">)</span>
+  <span class="keyword">end</span> <span class="comment">// end of [loop]
+</span><span class="keyword">}</span> <span class="comment">// end of [list_vt_length]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_make_elt <span class="keyword">(</span>x0<span class="keyword">,</span> n<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">,</span>j<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>i<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span>x0<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> j<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> i+j<span class="keyword">)</span></span> <span class="keyword">=</span>
+    <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> loop <span class="keyword">(</span>x0<span class="keyword">,</span> i-1<span class="keyword">,</span> list_vt_cons <span class="keyword">(</span>x0<span class="keyword">,</span> res<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">else</span> res
+<span class="keyword">in</span>
+  loop <span class="keyword">(</span>x0<span class="keyword">,</span> n<span class="keyword">,</span> list_vt_nil<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list_make_elt]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_append <span class="keyword">(</span>xs0<span class="keyword">,</span> ys0<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">var</span> xs0 <span class="keyword">=</span> xs0
+  <span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span> loop <span class="staexp"><span class="keyword">{</span>m<span class="keyword">,</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>m<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span>xs0<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>list_vt <span class="keyword">(</span>a<span class="keyword">,</span> m<span class="keyword">)</span> &gt;&gt; list_vt <span class="keyword">(</span>a<span class="keyword">,</span> m+n<span class="keyword">)</span></span><span class="keyword">,</span> ys0<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span>
+    <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">begin</span> <span class="keyword">case+</span> xs0 <span class="keyword">of</span>
+    <span class="keyword">|</span> list_vt_cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>p_xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>loop <span class="keyword">(</span><span class="keyword">!</span>p_xs<span class="keyword">,</span> ys0<span class="keyword">)</span><span class="keyword">;</span> fold@ xs0<span class="keyword">)</span>
+    <span class="keyword">|</span> <span class="keyword">~</span>list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>xs0 := ys0<span class="keyword">)</span>
+  <span class="keyword">end</span> <span class="comment">// end of [loop]
+</span><span class="keyword">in</span>
+  loop <span class="keyword">(</span>xs0<span class="keyword">,</span> ys0<span class="keyword">)</span><span class="keyword">;</span> xs0
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_append]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_reverse <span class="keyword">(</span>xs<span class="keyword">)</span> <span class="keyword">=</span>
+  list_vt_reverse_append&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>xs<span class="keyword">,</span> list_vt_nil<span class="keyword">)</span>
+<span class="comment">// end of [list_vt_reverse]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_reverse_append <span class="keyword">(</span>xs<span class="keyword">,</span> ys<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> revapp <span class="staexp"><span class="keyword">{</span>m<span class="keyword">,</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>m<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+    xs<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> m<span class="keyword">)</span></span><span class="keyword">,</span> ys<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> m+n<span class="keyword">)</span></span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> xs <span class="keyword">of</span>
+    <span class="keyword">|</span> list_vt_cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>p_xs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> xs1 <span class="keyword">=</span> <span class="keyword">!</span>p_xs1
+      <span class="keyword">in</span>
+        <span class="keyword">!</span>p_xs1 := ys<span class="keyword">;</span> fold@ xs<span class="keyword">;</span> revapp <span class="keyword">(</span>xs1<span class="keyword">,</span> xs<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [val]
+</span>    <span class="keyword">|</span> <span class="keyword">~</span>list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> ys
+  <span class="comment">// end of [revapp]
+</span><span class="keyword">in</span>
+  revapp <span class="keyword">(</span>xs<span class="keyword">,</span> ys<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_reverse_append]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_concat <span class="keyword">(</span>xss<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> aux <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+    xs0<span class="keyword">:</span> <span class="staexp">List_vt a</span><span class="keyword">,</span> xss<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>List_vt a<span class="keyword">,</span> n<span class="keyword">)</span></span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">List_vt a</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> xss <span class="keyword">of</span>
+    <span class="keyword">|</span> <span class="keyword">~</span>list_vt_cons <span class="keyword">(</span>xs<span class="keyword">,</span> xss<span class="keyword">)</span> <span class="keyword">=&gt;</span> list_vt_append <span class="keyword">(</span>xs0<span class="keyword">,</span> aux <span class="keyword">(</span>xs<span class="keyword">,</span> xss<span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">|</span> <span class="keyword">~</span>list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> xs0
+  <span class="comment">// end of [aux]
+</span><span class="keyword">in</span>
+  <span class="keyword">case+</span> xss <span class="keyword">of</span>
+  <span class="keyword">|</span> <span class="keyword">~</span>list_vt_cons <span class="keyword">(</span>xs0<span class="keyword">,</span> xss<span class="keyword">)</span> <span class="keyword">=&gt;</span> aux <span class="keyword">(</span>xs0<span class="keyword">,</span> xss<span class="keyword">)</span>
+  <span class="keyword">|</span> <span class="keyword">~</span>list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> list_vt_nil <span class="keyword">(</span><span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_concat]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_tabulate_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> f<span class="keyword">,</span> n<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">var</span> res<span class="keyword">:</span> <span class="staexp">List_vt a</span> <span class="comment">// uninitialized
+</span>  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat <span class="keyword">|</span> i &lt;= n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n-i<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+      <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+    <span class="keyword">|</span> n<span class="keyword">:</span> <span class="staexp">int n</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> natLt n<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span>f<span class="keyword">&gt;</span> a</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+    <span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span>List_vt a<span class="keyword">)</span>? &gt;&gt; list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n-i<span class="keyword">)</span></span>
+    <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">if</span> i <span class="keyword">&lt;</span> n <span class="keyword">then</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>res := list_vt_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>0<span class="keyword">}</span></span> <span class="keyword">(</span>f <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> i<span class="keyword">,</span> env<span class="keyword">)</span><span class="keyword">,</span> ?<span class="keyword">)</span><span class="keyword">)</span>
+      <span class="keyword">val+</span> list_vt_cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>p<span class="keyword">)</span> <span class="keyword">=</span> res
+    <span class="keyword">in</span>
+      loop <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> n<span class="keyword">,</span> i+1<span class="keyword">,</span> f<span class="keyword">,</span> env<span class="keyword">,</span> <span class="keyword">!</span>p<span class="keyword">)</span><span class="keyword">;</span> fold@ res
+    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">begin</span>
+      res := list_vt_nil <span class="keyword">(</span><span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="comment">// end of [if]
+</span>  <span class="comment">// end of [loop]
+</span><span class="keyword">in</span>
+  loop <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> n<span class="keyword">,</span> 0<span class="keyword">,</span> f<span class="keyword">,</span> env<span class="keyword">,</span> res<span class="keyword">)</span><span class="keyword">;</span> res
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_tabulate_funenv]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_tabulate_fun <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>f<span class="keyword">,</span> n<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> f <span class="keyword">=</span> coerce <span class="keyword">(</span>f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span> <span class="keyword">extern</span> <span class="keyword">castfn</span>
+    <a name="8393"><span class="dyncstdec">coerce <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">natLt n <span class="keyword">-&lt;</span>f<span class="keyword">&gt;</span> a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>unit_v <span class="keyword">|</span> natLt n<span class="keyword">,</span> <span class="keyword">!</span>ptr<span class="keyword">)</span> <span class="keyword">-&lt;</span>f<span class="keyword">&gt;</span> a</span></span></a>
+  <span class="keyword">}</span> <span class="comment">// end of [where]
+</span>  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> list_vt_tabulate_funenv&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span><span class="keyword">..</span><span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> f<span class="keyword">,</span> n<span class="keyword">,</span> null<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+<span class="keyword">in</span>
+  ans
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_tabulate_fun]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_tabulate_clo
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf1</span> <span class="keyword">|</span> f<span class="keyword">,</span> n<span class="keyword">)</span> <span class="keyword">=</span> ans <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="8730"><span class="stacstdec">clo_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> natLt n<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> a</span></a></span>
+  <span class="keyword">stavar</span> <span class="staexp">l_f<span class="keyword">:</span> addr</span><span class="keyword">;</span> <span class="keyword">val</span> p_f<span class="keyword">:</span> <span class="staexp">ptr l_f</span> <span class="keyword">=</span> <span class="keyword">&amp;</span>f
+  <span class="keyword">viewdef</span> <span class="staexp"><a name="8816"><span class="stacstdec">V <span class="keyword">=</span> <span class="keyword">(</span>v<span class="keyword">,</span> clo_t @ l_f<span class="keyword">)</span></span></a></span>
+  <span class="keyword">fn</span> app <span class="keyword">(</span>
+    <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>V</span></span> <span class="keyword">|</span> i<span class="keyword">:</span> <span class="staexp">natLt n</span><span class="keyword">,</span> p_f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>ptr l_f</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">a</span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp">pfclo <span class="keyword">=</span> pf<span class="keyword">.</span>1</span>
+    <span class="keyword">val</span> x <span class="keyword">=</span> <span class="keyword">!</span>p_f <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">.</span>0</span> <span class="keyword">|</span> i<span class="keyword">)</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf<span class="keyword">.</span>1 := pfclo</span>
+  <span class="keyword">in</span>
+    x
+  <span class="keyword">end</span> <span class="comment">// end of [app]
+</span>  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> <span class="keyword">(</span>pf1<span class="keyword">,</span> view@ f<span class="keyword">)</span></span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> list_vt_tabulate_funenv&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>V<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr l_f<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> app<span class="keyword">,</span> n<span class="keyword">,</span> p_f<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf1 := pf<span class="keyword">.</span>0</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> view@ f := pf<span class="keyword">.</span>1</span>
+<span class="keyword">}</span> <span class="comment">// end of [list_vt_tabulate_clo]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_foreach_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> xs0<span class="keyword">,</span> f<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="9322"><span class="stacstdec">fun_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> <span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>i<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> xs0<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>list_vt <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>fun_t</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> xs0 <span class="keyword">of</span>
+    <span class="keyword">|</span> list_vt_cons <span class="keyword">(</span><span class="keyword">!</span>p_x<span class="keyword">,</span> <span class="keyword">!</span>p_xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+        f <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> <span class="keyword">!</span>p_x<span class="keyword">,</span> env<span class="keyword">)</span><span class="keyword">;</span> loop <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> <span class="keyword">!</span>p_xs<span class="keyword">,</span> f<span class="keyword">,</span> env<span class="keyword">)</span><span class="keyword">;</span> fold@ xs0
+      <span class="keyword">end</span> <span class="comment">// end of [val]
+</span>    <span class="keyword">|</span> list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>fold@ xs0<span class="keyword">)</span>
+  <span class="comment">// end of [loop]
+</span><span class="keyword">in</span>
+  loop <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> xs0<span class="keyword">,</span> f<span class="keyword">,</span> env<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_foreach_funenv]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_foreach_fun
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="9793"><span class="stacstdec">fun0_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="9831"><span class="stacstdec">fun1_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>unit_v <span class="keyword">|</span> <span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">!</span>ptr<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">val</span> f <span class="keyword">=</span> __cast <span class="keyword">(</span>f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span> <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="9918"><span class="dyncstdec">__cast <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">fun0_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">fun1_t</span></span></a> <span class="keyword">}</span>
+  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> list_vt_foreach_funenv&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> xs<span class="keyword">,</span> f<span class="keyword">,</span> null<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+<span class="keyword">in</span>
+  <span class="comment">// nothing
+</span><span class="keyword">end</span> <span class="comment">// end of [list_vt_foreach_fun]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_foreach_clo
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf1</span> <span class="keyword">|</span> xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="10209"><span class="stacstdec">clo_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">stavar</span> <span class="staexp">l_f<span class="keyword">:</span> addr</span><span class="keyword">;</span> <span class="keyword">val</span> p_f<span class="keyword">:</span> <span class="staexp">ptr l_f</span> <span class="keyword">=</span> <span class="keyword">&amp;</span>f
+  <span class="keyword">viewdef</span> <span class="staexp"><a name="10293"><span class="stacstdec">V <span class="keyword">=</span> <span class="keyword">(</span>v<span class="keyword">,</span> clo_t @ l_f<span class="keyword">)</span></span></a></span>
+  <span class="keyword">fn</span> app <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>V</span></span> <span class="keyword">|</span> x<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>a</span><span class="keyword">,</span> p_f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>ptr l_f</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>p_f <span class="keyword">(</span><span class="prfexp">pf1</span> <span class="keyword">|</span> x<span class="keyword">)</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf := <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span></span>
+  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> <span class="keyword">(</span>pf1<span class="keyword">,</span> view@ f<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> list_vt_foreach_funenv&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>V<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr l_f<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> xs<span class="keyword">,</span> app<span class="keyword">,</span> p_f<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf1 := pf<span class="keyword">.</span>0 <span class="keyword">and</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> view@ f := pf<span class="keyword">.</span>1</span>
+<span class="keyword">}</span> <span class="comment">// end of [list_vt_foreach_clo]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_iforeach_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> xs0<span class="keyword">,</span> f<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="10783"><span class="stacstdec">fun_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> natLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat <span class="keyword">|</span> i &lt;= n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n-i<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> i<span class="keyword">:</span> <span class="staexp">int i</span><span class="keyword">,</span> xs0<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n-i<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>fun_t</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> xs0 <span class="keyword">of</span>
+    <span class="keyword">|</span> list_vt_cons <span class="keyword">(</span><span class="keyword">!</span>p_x<span class="keyword">,</span> <span class="keyword">!</span>p_xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+        f <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> i<span class="keyword">,</span> <span class="keyword">!</span>p_x<span class="keyword">,</span> env<span class="keyword">)</span><span class="keyword">;</span> loop <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> i+1<span class="keyword">,</span> <span class="keyword">!</span>p_xs<span class="keyword">,</span> f<span class="keyword">,</span> env<span class="keyword">)</span><span class="keyword">;</span> fold@ xs0
+      <span class="keyword">end</span> <span class="comment">// end of [val]
+</span>    <span class="keyword">|</span> list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>fold@ xs0<span class="keyword">)</span>
+  <span class="comment">// end of [loop]
+</span><span class="keyword">in</span>
+  loop <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> 0<span class="keyword">,</span> xs0<span class="keyword">,</span> f<span class="keyword">,</span> env<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list_vt_iforeach_funenv]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_iforeach_fun
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="11299"><span class="stacstdec">fun0_t <span class="keyword">=</span> <span class="keyword">(</span>natLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="11346"><span class="stacstdec">fun1_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>unit_v <span class="keyword">|</span> natLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">!</span>ptr<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">val</span> f <span class="keyword">=</span> __cast <span class="keyword">(</span>f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span> <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="11442"><span class="dyncstdec">__cast <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">fun0_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">fun1_t</span></span></a> <span class="keyword">}</span>
+  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> list_vt_iforeach_funenv&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> xs<span class="keyword">,</span> f<span class="keyword">,</span> null<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+<span class="keyword">in</span>
+  <span class="comment">// nothing
+</span><span class="keyword">end</span> <span class="comment">// end of [list_vt_iforeach_fun]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_iforeach_clo
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf1</span> <span class="keyword">|</span> xs<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="11727"><span class="stacstdec">clo_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> natLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">stavar</span> <span class="staexp">l_f<span class="keyword">:</span> addr</span><span class="keyword">;</span> <span class="keyword">val</span> p_f<span class="keyword">:</span> <span class="staexp">ptr l_f</span> <span class="keyword">=</span> <span class="keyword">&amp;</span>f
+  <span class="keyword">viewdef</span> <span class="staexp"><a name="11820"><span class="stacstdec">V <span class="keyword">=</span> <span class="keyword">(</span>v<span class="keyword">,</span> clo_t @ l_f<span class="keyword">)</span></span></a></span>
+  <span class="keyword">fn</span> app <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>V</span></span> <span class="keyword">|</span> i<span class="keyword">:</span> <span class="staexp">natLt n</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>a</span><span class="keyword">,</span> p_f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>ptr l_f</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>p_f <span class="keyword">(</span><span class="prfexp">pf1</span> <span class="keyword">|</span> i<span class="keyword">,</span> x<span class="keyword">)</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf := <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span></span>
+  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> <span class="keyword">(</span>pf1<span class="keyword">,</span> view@ f<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> list_vt_iforeach_funenv&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>V<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr l_f<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> xs<span class="keyword">,</span> app<span class="keyword">,</span> p_f<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf1 := pf<span class="keyword">.</span>0 <span class="keyword">and</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> view@ f := pf<span class="keyword">.</span>1</span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [list_vt_iforeach_clo]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">local</span>
+
+<span class="keyword">staload</span> <span class="staexp">STDLIB <span class="keyword">=</span> "libc/SATS/stdlib.sats"</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="12304"><span class="stacstdec">cmp <span class="keyword">(</span>a<span class="keyword">:</span>viewt@ype<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">&gt;</span> Sgn</span></a></span>
+
+<span class="keyword">in</span> <span class="comment">// in of [local]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_mergesort
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">,</span> cmp<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="comment">//
+</span><span class="keyword">fun</span> split <span class="staexp"><span class="keyword">{</span>n<span class="keyword">,</span>n1<span class="keyword">:</span>nat <span class="keyword">|</span> n &gt;= n1<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n1<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+    xs<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span> &gt;&gt; list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n1<span class="keyword">)</span></span>
+  <span class="keyword">,</span> n1<span class="keyword">:</span> <span class="staexp">int n1</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>List_vt a? &gt;&gt; list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n-n1<span class="keyword">)</span></span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+  <span class="keyword">if</span> n1 <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">let</span>
+    <span class="keyword">val+</span> list_vt_cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>p_xs1<span class="keyword">)</span> <span class="keyword">=</span> xs
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> split <span class="keyword">(</span><span class="keyword">!</span>p_xs1<span class="keyword">,</span> n1-1<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    fold@ <span class="keyword">(</span>xs<span class="keyword">)</span>
+  <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> res := xs
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> xs := list_vt_nil <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="comment">// nothing
+</span>  <span class="keyword">end</span> <span class="comment">// end of [if]
+</span><span class="comment">// end of [split]
+</span><span class="keyword">fun</span> merge <span class="staexp"><span class="keyword">{</span>n1<span class="keyword">,</span>n2<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n1+n2<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+    xs1<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n1<span class="keyword">)</span></span>
+  <span class="keyword">,</span> xs2<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n2<span class="keyword">)</span></span>
+  <span class="keyword">,</span> cmp<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>cmp a</span>
+  <span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>List_vt a? &gt;&gt; list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n1+n2<span class="keyword">)</span></span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> xs1 <span class="keyword">of</span>
+  <span class="keyword">|</span> list_vt_cons <span class="keyword">(</span><span class="keyword">!</span>p_x1<span class="keyword">,</span> <span class="keyword">!</span>p_xs11<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>
+    <span class="keyword">case+</span> xs2 <span class="keyword">of</span>
+    <span class="keyword">|</span> list_vt_cons <span class="keyword">(</span><span class="keyword">!</span>p_x2<span class="keyword">,</span> <span class="keyword">!</span>p_xs21<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> sgn <span class="keyword">=</span> cmp <span class="keyword">(</span><span class="keyword">!</span>p_x1<span class="keyword">,</span> <span class="keyword">!</span>p_x2<span class="keyword">)</span>
+      <span class="keyword">in</span>
+        <span class="keyword">if</span> sgn &lt;= 0 <span class="keyword">then</span> <span class="keyword">let</span>
+          <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fold@ xs2</span>
+          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> merge <span class="keyword">(</span><span class="keyword">!</span>p_xs11<span class="keyword">,</span> xs2<span class="keyword">,</span> cmp<span class="keyword">,</span> <span class="keyword">!</span>p_xs11<span class="keyword">)</span>
+        <span class="keyword">in</span>
+          fold@ <span class="keyword">(</span>xs1<span class="keyword">)</span><span class="keyword">;</span> res := xs1
+        <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+          <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fold@ xs1</span>
+          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> merge <span class="keyword">(</span>xs1<span class="keyword">,</span> <span class="keyword">!</span>p_xs21<span class="keyword">,</span> cmp<span class="keyword">,</span> <span class="keyword">!</span>p_xs21<span class="keyword">)</span>
+        <span class="keyword">in</span>
+          fold@ <span class="keyword">(</span>xs2<span class="keyword">)</span><span class="keyword">;</span> res := xs2
+        <span class="keyword">end</span> <span class="comment">// end of [if]
+</span>      <span class="keyword">end</span> <span class="comment">// end of [list_vt_cons]
+</span>    <span class="keyword">|</span> <span class="keyword">~</span>list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>fold@ <span class="keyword">(</span>xs1<span class="keyword">)</span><span class="keyword">;</span> res := xs1<span class="keyword">)</span>
+    <span class="keyword">)</span> <span class="comment">// end of [list_vt_cons]
+</span>  <span class="keyword">|</span> <span class="keyword">~</span>list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>res := xs2<span class="keyword">)</span>
+<span class="comment">// end of [merge]
+</span><span class="comment">//
+</span><span class="keyword">val</span> n <span class="keyword">=</span> list_vt_length&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>xs<span class="keyword">)</span>
+<span class="comment">//
+</span><span class="keyword">in</span>
+<span class="comment">//
+</span><span class="keyword">if</span> n &gt;= 2 <span class="keyword">then</span> <span class="keyword">let</span>
+  <span class="keyword">val+</span> list_vt_cons <span class="keyword">(</span>_<span class="keyword">,</span> <span class="keyword">!</span>p_xs1<span class="keyword">)</span> <span class="keyword">=</span> xs
+  <span class="keyword">var</span> res<span class="keyword">:</span> <span class="staexp">List_vt a?</span> <span class="comment">// uninitialized
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> split <span class="keyword">(</span><span class="keyword">!</span>p_xs1<span class="keyword">,</span> <span class="keyword">(</span>n-1<span class="keyword">)</span>/2<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fold@ <span class="keyword">(</span>xs<span class="keyword">)</span></span>
+  <span class="keyword">val</span> xs1 <span class="keyword">=</span> list_vt_mergesort&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>xs<span class="keyword">,</span> cmp<span class="keyword">)</span>
+  <span class="keyword">val</span> xs2 <span class="keyword">=</span> list_vt_mergesort&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>res<span class="keyword">,</span> cmp<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> merge <span class="keyword">(</span>xs1<span class="keyword">,</span> xs2<span class="keyword">,</span> cmp<span class="keyword">,</span> res<span class="keyword">)</span>
+<span class="keyword">in</span>
+  res
+<span class="keyword">end</span> <span class="keyword">else</span> xs <span class="comment">// end of [if]
+</span><span class="comment">//
+</span><span class="keyword">end</span> <span class="comment">// end of [list_vt_mergesort]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list_vt_quicksort <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">,</span> cmp<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="comment">//
+</span><span class="comment">// HX-2010:
+</span><span class="comment">// I use an array to do quicksorting and then copy the sorted
+</span><span class="comment">// array back in to the list. Note that this style of hacking
+</span><span class="comment">// should probably not imitated :)
+</span><span class="comment">//
+</span>  <span class="keyword">abst@ype</span> <span class="staexp"><a name="14290"><span class="stacstdec">a1 <span class="keyword">=</span> a?</span></a></span>
+  <span class="keyword">val</span> _ <span class="keyword">=</span> __cast <span class="keyword">(</span>xs<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="14346"><span class="dyncstdec">__cast
+      <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span> &gt;&gt; list_vt <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">ptr</span></span></a>
+  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">val</span> cmp <span class="keyword">=</span> __cast <span class="keyword">(</span>cmp<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">extern</span> <span class="keyword">castfn</span>
+      <a name="14484"><span class="dyncstdec">__cast <span class="keyword">(</span>cmp<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> Sgn</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">&amp;</span>a1<span class="keyword">,</span> <span class="keyword">&amp;</span>a1<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> Sgn</span></span></a>
+  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">val</span> asz <span class="keyword">=</span> size1_of_int1 <span class="keyword">(</span>list_vt_length xs<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>
+    <span class="prfexp">pf_gc</span><span class="keyword">,</span> <span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr
+  <span class="keyword">)</span> <span class="keyword">=</span> array_ptr_alloc_tsz <span class="staexp"><span class="keyword">{</span>a1<span class="keyword">}</span></span> <span class="keyword">(</span>asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a1</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_initialize_lst&lt;<span class="staexp">a1</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="keyword">!</span>p_arr<span class="keyword">,</span> __cast xs<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="14778"><span class="dyncstdec">__cast
+      <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>list_vt <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span> &gt;&gt; list_vt <span class="keyword">(</span>a1?<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">list <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span></span></a> <span class="comment">// good hacking :)  
+</span>  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">$effmask_all</span> <span class="keyword">(</span>$STDLIB<span class="keyword">.</span>qsort <span class="keyword">(</span><span class="keyword">!</span>p_arr<span class="keyword">,</span> asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a1</span><span class="keyword">&gt;</span><span class="keyword">,</span> cmp<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+        <span class="prfexp">pf_arr<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>array_v <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span> &gt;&gt; array_v <span class="keyword">(</span>a1?<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span></span></span>
+      <span class="keyword">|</span> p_arr<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>list_vt <span class="keyword">(</span>a1?<span class="keyword">,</span> n<span class="keyword">)</span> &gt;&gt; list_vt <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span></span>
+      <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+      <span class="keyword">case+</span> xs <span class="keyword">of</span>
+      <span class="keyword">|</span> list_vt_cons <span class="keyword">(</span><span class="keyword">!</span>p_x1<span class="keyword">,</span> <span class="keyword">!</span>p_xs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+          <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1_elt<span class="keyword">,</span> pf2_arr<span class="keyword">)</span> <span class="keyword">=</span> array_v_uncons <span class="staexp"><span class="keyword">{</span>a1<span class="keyword">}</span></span> <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>p_x1 := <span class="keyword">!</span>p_arr
+          <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">pf2_arr</span> <span class="keyword">|</span> p_arr + sizeof&lt;<span class="staexp">a1</span><span class="keyword">&gt;</span><span class="keyword">,</span> <span class="keyword">!</span>p_xs1<span class="keyword">)</span>
+          <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_arr := array_v_cons <span class="staexp"><span class="keyword">{</span>a1?<span class="keyword">}</span></span> <span class="keyword">(</span>pf1_elt<span class="keyword">,</span> pf2_arr<span class="keyword">)</span></span>
+        <span class="keyword">in</span>
+          fold@ <span class="keyword">(</span>xs<span class="keyword">)</span>
+        <span class="keyword">end</span> <span class="comment">// end of [list_vt_cons]
+</span>      <span class="keyword">|</span> list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+          <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_v_unnil <span class="staexp"><span class="keyword">{</span>a1<span class="keyword">}</span></span> <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+          <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_arr := array_v_nil <span class="staexp"><span class="keyword">{</span>a1?<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span></span>
+        <span class="keyword">in</span>
+          fold@ <span class="keyword">(</span>xs<span class="keyword">)</span>
+        <span class="keyword">end</span> <span class="comment">// end of [list_vt_nil]
+</span>    <span class="comment">// end of [loop]
+</span>  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_free <span class="staexp"><span class="keyword">{</span>a1<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf_gc</span><span class="keyword">,</span> <span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">)</span>
+  <span class="keyword">val</span> _ <span class="keyword">=</span> __cast <span class="keyword">(</span>xs<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="15893"><span class="dyncstdec">__cast <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>list_vt <span class="keyword">(</span>a1<span class="keyword">,</span> n<span class="keyword">)</span> &gt;&gt; list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">ptr</span></span></a>
+  <span class="keyword">}</span> <span class="comment">// end of val]
+</span><span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [list_vt_quicksort]
+</span>
+<span class="keyword">end</span> <span class="comment">// end of [local]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// [list_vt.sats] is already loaded by a call to [pervasive_load]
+</span><span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anonymous*)</span> <span class="keyword">=</span> "prelude/SATS/list_vt.sats"</span> <span class="comment">// this forces that the static
+</span><span class="comment">// loading function for [list_vt.sats] is to be called at run-time
+</span><span class="comment">// this is really needed only if some datatypes are declared in [list_vt.sats]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [list_vt.dats] *)</span>
+</pre>
+</body>
+</html>

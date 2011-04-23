@@ -1,0 +1,863 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2008 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published by the
+** Free Software Foundation; either version 2.1, or (at your option)  any
+** later version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see the  file COPYING.  If not, please write to the
+** Free Software Foundation,  51 Franklin Street, Fifth Floor, Boston, MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* author: Hongwei Xi (hwxi AT cs DOT bu DOT edu) *)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="extern">%{^
+#include "prelude/CATS/array.cats"
+%}</span> <span class="comment">// end of [%{^]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#define</span> <span class="neuexp">ATS_STALOADFLAG 0</span> <span class="comment">// no dynamic staloading
+</span><span class="keyword">#define</span> <span class="neuexp">ATS_DYNLOADFLAG 0</span> <span class="comment">// loaded by [ats_main_prelude]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#define</span> <span class="neuexp">i2sz size1_of_int1</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* array pointers *)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span> array_ptr_get_elt_at <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span> A<span class="keyword">.</span><span class="keyword">[</span><span class="prfexp">i</span><span class="keyword">]</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span> array_ptr_set_elt_at <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>A<span class="keyword">.</span><span class="keyword">[</span><span class="prfexp">i</span><span class="keyword">]</span> := x<span class="keyword">)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_xch_elt_at <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">var</span> tmp<span class="keyword">:</span> <span class="staexp">a</span> <span class="comment">// uninitialized
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> array_ptr_takeout_tsz <span class="keyword">(</span><span class="prfexp">view@ A</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>A<span class="keyword">,</span> i<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>tmp := <span class="keyword">!</span>p<span class="keyword">;</span> <span class="keyword">!</span>p := x<span class="keyword">)</span><span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> view@ A := fpf pf</span>
+<span class="keyword">in</span>
+  x := tmp
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_xch_elt_at]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_exch <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">,</span> j<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">var</span> tmp<span class="keyword">:</span> <span class="staexp">a</span> <span class="comment">// uninitialized
+</span>  <span class="keyword">extern</span> <span class="keyword">prfun</span> <a name="2256"><span class="dyncstdec"><span class="prfexp">__copy <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>a @ l</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">a @ l</span></span></span></a>  
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> pi<span class="keyword">)</span> <span class="keyword">=</span> array_ptr_takeout_tsz <span class="keyword">(</span><span class="prfexp">view@ A</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>A<span class="keyword">,</span> i<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">pfi <span class="keyword">=</span> __copy <span class="keyword">(</span>pf<span class="keyword">)</span></span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> view@ A := fpf <span class="keyword">(</span>pf<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> pj<span class="keyword">)</span> <span class="keyword">=</span> array_ptr_takeout_tsz <span class="keyword">(</span><span class="prfexp">view@ A</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>A<span class="keyword">,</span> j<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">pfj <span class="keyword">=</span> __copy <span class="keyword">(</span>pf<span class="keyword">)</span></span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> view@ A := fpf <span class="keyword">(</span>pf<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>tmp := <span class="keyword">!</span>pi<span class="keyword">;</span> <span class="keyword">!</span>pi := <span class="keyword">!</span>pj<span class="keyword">;</span> <span class="keyword">!</span>pj := tmp<span class="keyword">)</span>
+  <span class="keyword">extern</span> <span class="keyword">prfun</span> <a name="2623"><span class="dyncstdec"><span class="prfexp">__free <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>pf<span class="keyword">:</span> <span class="staexp">a @ l</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></span></a>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> __free <span class="keyword">(</span>pfi<span class="keyword">)</span></span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> __free <span class="keyword">(</span>pfj<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="comment">// nothing
+</span><span class="keyword">end</span> <span class="comment">// end of [array_ptr_exch]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">//
+</span><span class="comment">// These functions are present solely for notational convenience:
+</span><span class="comment">//
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_get_elt_at__intsz <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span> <span class="keyword">val</span> i <span class="keyword">=</span> i2sz i <span class="keyword">in</span> A<span class="keyword">.</span><span class="keyword">[</span><span class="prfexp">i</span><span class="keyword">]</span> <span class="keyword">end</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_set_elt_at__intsz <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span> <span class="keyword">val</span> i <span class="keyword">=</span> i2sz i <span class="keyword">in</span> A<span class="keyword">.</span><span class="keyword">[</span><span class="prfexp">i</span><span class="keyword">]</span> := x <span class="keyword">end</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_xch_elt_at__intsz <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> i <span class="keyword">=</span> i2sz i <span class="keyword">in</span> array_ptr_xch_elt_at&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_xch_elt_at__intsz]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_alloc <span class="keyword">(</span>asz<span class="keyword">)</span> <span class="keyword">=</span> array_ptr_alloc_tsz <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_allocfree <span class="keyword">(</span>asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">[</span><span class="staexp">l<span class="keyword">:</span>addr</span><span class="keyword">]</span> <span class="keyword">(</span><span class="prfexp">pf_gc</span><span class="keyword">,</span> <span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">)</span> <span class="keyword">=</span> array_ptr_alloc&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>asz<span class="keyword">)</span>
+<span class="keyword">in</span> <span class="staexp"><span class="keyword">#[</span>l <span class="keyword">|</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf_arr</span>
+<span class="keyword">|</span> p_arr<span class="keyword">,</span> <span class="keyword">lam</span> <span class="keyword">(</span><span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">)</span> <span class="keyword">=&lt;</span><span class="staexp">lin</span><span class="keyword">&gt;</span> array_ptr_free <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf_gc</span><span class="keyword">,</span> <span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">)</span>
+<span class="keyword">)</span> <span class="keyword">]</span> <span class="keyword">end</span> <span class="comment">// end of [array_ptr_allocfree]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_initialize_elt <span class="keyword">(</span>A0<span class="keyword">,</span> n0<span class="keyword">,</span> x0<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span>
+    <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">array_v <span class="keyword">(</span>a?<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span></span></span> <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span><span class="keyword">,</span> x0<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">)</span>
+    <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span>array_v <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span> <span class="keyword">|</span> void<span class="keyword">)</span></span> <span class="keyword">=</span>
+    <span class="keyword">if</span> n <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> array_v_uncons <span class="staexp"><span class="keyword">{</span>a?<span class="keyword">}</span></span> <span class="keyword">(</span>pf<span class="keyword">)</span></span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>p := x0
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf2</span> <span class="keyword">|</span> ans<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">pf2</span> <span class="keyword">|</span> p+sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> n-1<span class="keyword">,</span> x0<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      <span class="keyword">(</span><span class="prfexp">array_v_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span></span> <span class="keyword">|</span> ans<span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_v_unnil <span class="staexp"><span class="keyword">{</span>a?<span class="keyword">}</span></span> <span class="keyword">(</span>pf<span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="keyword">(</span><span class="prfexp">array_v_nil <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span></span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="comment">// end of [if]
+</span>  <span class="comment">// end of [loop]
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">view@ A0</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>A0<span class="keyword">,</span> n0<span class="keyword">,</span> x0<span class="keyword">)</span>
+<span class="keyword">in</span>
+  view@ A0 := pf
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_initialize_elt]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_initialize_lst <span class="keyword">(</span>A0<span class="keyword">,</span> xs0<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+      <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">array_v <span class="keyword">(</span>a?<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span></span></span> <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span>
+    <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span>
+      array_v <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span> <span class="keyword">|</span> void
+    <span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">case+</span> xs <span class="keyword">of</span>
+    <span class="keyword">|</span> list_cons <span class="keyword">(</span>x<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> array_v_uncons <span class="staexp"><span class="keyword">{</span>a?<span class="keyword">}</span></span> <span class="keyword">(</span>pf<span class="keyword">)</span></span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>p := x
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf2</span> <span class="keyword">|</span> ans<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">pf2</span> <span class="keyword">|</span> p+sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> xs<span class="keyword">)</span>
+      <span class="keyword">in</span>
+        <span class="keyword">(</span><span class="prfexp">array_v_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span></span> <span class="keyword">|</span> ans<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [list_cons]
+</span>    <span class="keyword">|</span> list_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_v_unnil <span class="staexp"><span class="keyword">{</span>a?<span class="keyword">}</span></span> <span class="keyword">(</span>pf<span class="keyword">)</span></span> <span class="keyword">in</span> <span class="keyword">(</span><span class="prfexp">array_v_nil <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span></span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [list_nil]  
+</span>  <span class="comment">// end of [loop]
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">view@ A0</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>A0<span class="keyword">,</span> xs0<span class="keyword">)</span>
+<span class="keyword">in</span>
+  view@ A0 := pf
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_initialize_lst]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_initialize_lst_vt <span class="keyword">(</span>A0<span class="keyword">,</span> xs0<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+      <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">array_v <span class="keyword">(</span>a?<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span></span></span> <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">list_vt <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span>
+    <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span>
+      array_v <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span> <span class="keyword">|</span> void
+    <span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">case+</span> xs <span class="keyword">of</span>
+    <span class="keyword">|</span> <span class="keyword">~</span>list_vt_cons <span class="keyword">(</span>x<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> array_v_uncons <span class="staexp"><span class="keyword">{</span>a?<span class="keyword">}</span></span> <span class="keyword">(</span>pf<span class="keyword">)</span></span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>p := x
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf2</span> <span class="keyword">|</span> ans<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">pf2</span> <span class="keyword">|</span> p+sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> xs<span class="keyword">)</span>
+      <span class="keyword">in</span>
+        <span class="keyword">(</span><span class="prfexp">array_v_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span></span> <span class="keyword">|</span> ans<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">(* end of [lsit_vt_cons] *)</span>
+    <span class="keyword">|</span> <span class="keyword">~</span>list_vt_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_v_unnil <span class="staexp"><span class="keyword">{</span>a?<span class="keyword">}</span></span> <span class="keyword">(</span>pf<span class="keyword">)</span></span> <span class="keyword">in</span> <span class="keyword">(</span><span class="prfexp">array_v_nil <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span></span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">(* end of [list_vt_nil] *)</span>
+  <span class="comment">// end of [loop]
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">view@ A0</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>A0<span class="keyword">,</span> xs0<span class="keyword">)</span>
+<span class="keyword">in</span>
+  view@ A0 := pf
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_initialize_lst_vt]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span>
+array_ptr_initialize_funenv_tsz
+  <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> base<span class="keyword">,</span> asz<span class="keyword">,</span> f<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat <span class="keyword">|</span> i &lt;= n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n-i<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+    <span class="prfexp">pfv<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span><span class="keyword">,</span> <span class="prfexp">pf_arr<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>array_v <span class="keyword">(</span>a?<span class="keyword">,</span> n-i<span class="keyword">,</span> l<span class="keyword">)</span> &gt;&gt; array_v <span class="keyword">(</span>a<span class="keyword">,</span> n-i<span class="keyword">,</span> l<span class="keyword">)</span></span></span>
+  <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">size_t i</span>
+  <span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span><span class="keyword">(</span>a?<span class="keyword">)</span> &gt;&gt; a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">,</span> tsz<span class="keyword">:</span> <span class="staexp">sizeof_t a</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">if</span> i <span class="keyword">&lt;</span> n <span class="keyword">then</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1_at<span class="keyword">,</span> pf2_arr<span class="keyword">)</span> <span class="keyword">=</span> array_v_uncons <span class="staexp"><span class="keyword">{</span>a?<span class="keyword">}</span></span> <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> f <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> i<span class="keyword">,</span> <span class="keyword">!</span>p<span class="keyword">,</span> env<span class="keyword">)</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">pfv</span><span class="keyword">,</span> <span class="prfexp">pf2_arr</span> <span class="keyword">|</span> p + tsz<span class="keyword">,</span> n<span class="keyword">,</span> i+1<span class="keyword">,</span> f<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_arr := array_v_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf1_at<span class="keyword">,</span> pf2_arr<span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="comment">// nothing
+</span>    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_v_unnil <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_arr := array_v_nil <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="comment">// nothing
+</span>    <span class="keyword">end</span> <span class="comment">// end of [if]
+</span>  <span class="comment">// end of [loop]
+</span><span class="keyword">in</span>
+  loop <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">view@ base</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>base<span class="keyword">,</span> asz<span class="keyword">,</span> 0<span class="keyword">,</span> f<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_initialize_funenv_tsz]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_initialize_fun
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>base<span class="keyword">,</span> asz<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="comment">//
+</span>  <span class="keyword">typedef</span> <span class="staexp"><a name="6716"><span class="stacstdec">fun_t <span class="keyword">=</span> <span class="keyword">(</span>sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span><span class="keyword">(</span>a?<span class="keyword">)</span> &gt;&gt; a<span class="keyword">)</span> <span class="keyword">-&lt;</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="6767"><span class="stacstdec">fun1_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>unit_v <span class="keyword">|</span> sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span><span class="keyword">(</span>a?<span class="keyword">)</span> &gt;&gt; a<span class="keyword">,</span> <span class="keyword">!</span>ptr<span class="keyword">)</span> <span class="keyword">-&lt;</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">val</span> f1 <span class="keyword">=</span> coerce <span class="keyword">(</span>f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="6873"><span class="dyncstdec">coerce <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">fun_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">fun1_t</span></span></a>
+  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span><span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp">pfu <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_initialize_funenv_tsz
+    <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfu</span> <span class="keyword">|</span> base<span class="keyword">,</span> asz<span class="keyword">,</span> f1<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> null<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pfu</span>
+<span class="comment">//
+</span><span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [array_ptr_initialize_fun_tsz]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span>
+array_ptr_initialize_cloenv_tsz
+  <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> base<span class="keyword">,</span> asz<span class="keyword">,</span> f<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat <span class="keyword">|</span> i &lt;= n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n-i<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+      <span class="prfexp">pfv<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span><span class="keyword">,</span> <span class="prfexp">pf_arr<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>array_v <span class="keyword">(</span>a?<span class="keyword">,</span> n-i<span class="keyword">,</span> l<span class="keyword">)</span> &gt;&gt; array_v <span class="keyword">(</span>a<span class="keyword">,</span> n-i<span class="keyword">,</span> l<span class="keyword">)</span></span></span>
+    <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">size_t i</span>
+    <span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span><span class="keyword">(</span>a?<span class="keyword">)</span> &gt;&gt; a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">,</span> tsz<span class="keyword">:</span> <span class="staexp">sizeof_t a</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+    <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">if</span> i <span class="keyword">&lt;</span> n <span class="keyword">then</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1_at<span class="keyword">,</span> pf2_arr<span class="keyword">)</span> <span class="keyword">=</span> array_v_uncons <span class="staexp"><span class="keyword">{</span>a?<span class="keyword">}</span></span> <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> f <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> i<span class="keyword">,</span> <span class="keyword">!</span>p<span class="keyword">,</span> env<span class="keyword">)</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">pfv</span><span class="keyword">,</span> <span class="prfexp">pf2_arr</span> <span class="keyword">|</span> p + tsz<span class="keyword">,</span> n<span class="keyword">,</span> i+1<span class="keyword">,</span> f<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_arr := array_v_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf1_at<span class="keyword">,</span> pf2_arr<span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="comment">// nothing
+</span>    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_v_unnil <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_arr := array_v_nil <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="comment">// nothing
+</span>    <span class="keyword">end</span> <span class="comment">// end of [if]
+</span>  <span class="comment">// end of [loop]
+</span><span class="keyword">in</span>
+  loop <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">view@ base</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>base<span class="keyword">,</span> asz<span class="keyword">,</span> 0<span class="keyword">,</span> f<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_initialize_cloenv_tsz]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_initialize_clo
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> base<span class="keyword">,</span> asz<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> p_f <span class="keyword">=</span> <span class="keyword">&amp;</span>f<span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp">pf_f <span class="keyword">=</span> view@ f</span>
+  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="8206"><span class="stacstdec">clo_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span><span class="keyword">(</span>a?<span class="keyword">)</span> &gt;&gt; a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="8270"><span class="stacstdec">clo1_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span><span class="keyword">(</span>a?<span class="keyword">)</span> &gt;&gt; a<span class="keyword">,</span> <span class="keyword">!</span>ptr<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">prval</span> <span class="prfexp">pf1_f <span class="keyword">=</span> coerce <span class="keyword">(</span>pf_f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">extern</span> <span class="keyword">praxi</span> <a name="8382"><span class="dyncstdec"><span class="prfexp">coerce <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>pf<span class="keyword">:</span> <span class="staexp">clo_t @ l</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">clo1_t @ l</span></span></span></a>
+  <span class="keyword">}</span></span> <span class="comment">// end of [prval]
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_initialize_cloenv_tsz
+    <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> base<span class="keyword">,</span> asz<span class="keyword">,</span> <span class="keyword">!</span>p_f<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> null<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">pf_f <span class="keyword">=</span> coerce <span class="keyword">(</span>pf1_f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">extern</span> <span class="keyword">praxi</span> <a name="8604"><span class="dyncstdec"><span class="prfexp">coerce <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>pf<span class="keyword">:</span> <span class="staexp">clo1_t @ l</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">clo_t @ l</span></span></span></a>
+  <span class="keyword">}</span></span> <span class="comment">// end of [prval]
+</span>  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> view@ f := pf_f</span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [array_ptr_initialize_clo_tsz]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_clear_fun
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>base<span class="keyword">,</span> asz<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> clear <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+      <span class="prfexp">pf_arr<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>array_v <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span> &gt;&gt; array_v <span class="keyword">(</span>a?<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span></span></span>
+    <span class="keyword">|</span> p_arr<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span>
+    <span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">&amp;</span>a &gt;&gt; a?<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">,</span> tsz<span class="keyword">:</span> <span class="staexp">sizeof_t a</span>
+    <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">if</span> n <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1_at<span class="keyword">,</span> pf2_arr<span class="keyword">)</span> <span class="keyword">=</span> array_v_uncons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> f <span class="keyword">(</span><span class="keyword">!</span>p_arr<span class="keyword">)</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> clear <span class="keyword">(</span><span class="prfexp">pf2_arr</span> <span class="keyword">|</span> p_arr + tsz<span class="keyword">,</span> n-1<span class="keyword">,</span> f<span class="keyword">,</span> tsz<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      pf_arr := array_v_cons <span class="staexp"><span class="keyword">{</span>a?<span class="keyword">}</span></span> <span class="keyword">(</span>pf1_at<span class="keyword">,</span> pf2_arr<span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_v_unnil <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      pf_arr := array_v_nil <span class="staexp"><span class="keyword">{</span>a?<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span>
+    <span class="keyword">end</span> <span class="comment">// end of [if]
+</span>  <span class="comment">// end of [clear]
+</span><span class="keyword">in</span>
+  clear <span class="keyword">(</span><span class="prfexp">view@ base</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>base<span class="keyword">,</span> asz<span class="keyword">,</span> f<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_clear_fun]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_split <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span>
+  array_ptr_split_tsz <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> i<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+<span class="comment">// end of [array_ptr_split]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_takeout <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span>
+  array_ptr_takeout_tsz <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> i<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+<span class="comment">// end of [array_ptr_takeout]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="neuexp"><span class="keyword">infixl</span> <span class="keyword">(</span> * <span class="keyword">)</span> szmul2</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_takeout2 <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> i1<span class="keyword">,</span> i2<span class="keyword">)</span> <span class="keyword">=</span>
+  array_ptr_takeout2_tsz <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> i1<span class="keyword">,</span> i2<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">)</span>
+<span class="comment">// end of [array_ptr_takeout2]
+</span>
+<span class="keyword">implement</span>
+array_ptr_takeout2_tsz
+  <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>i1<span class="keyword">,</span>i2<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l0<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> i1<span class="keyword">,</span> i2<span class="keyword">,</span> tsz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">[</span><span class="staexp">off1<span class="keyword">:</span>int</span><span class="keyword">]</span> <span class="keyword">(</span><span class="prfexp">pf1_mul</span> <span class="keyword">|</span> off1<span class="keyword">)</span> <span class="keyword">=</span> i1 szmul2 tsz
+  <span class="keyword">val</span> <span class="keyword">[</span><span class="staexp">off2<span class="keyword">:</span>int</span><span class="keyword">]</span> <span class="keyword">(</span><span class="prfexp">pf2_mul</span> <span class="keyword">|</span> off2<span class="keyword">)</span> <span class="keyword">=</span> i2 szmul2 tsz
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">,</span> fpf<span class="keyword">)</span> <span class="keyword">=</span> array_v_takeout2 <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf1_mul<span class="keyword">,</span> pf2_mul<span class="keyword">,</span> pf<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="staexp"><span class="keyword">#[</span> l0+off1<span class="keyword">,</span> l0+off2 <span class="keyword">|</span></span> <span class="keyword">(</span><span class="prfexp">pf1</span><span class="keyword">,</span> <span class="prfexp">pf2</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> A+off1<span class="keyword">,</span> A+off2<span class="keyword">)</span> <span class="keyword">]</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_takeout2_tsz]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: array of arrays: this may just be a curiosity
+</span><span class="comment">//
+</span><span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array2_ptr_takeout <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> i<span class="keyword">,</span> n<span class="keyword">)</span> <span class="keyword">=</span>
+  array2_ptr_takeout_tsz <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> i<span class="keyword">,</span> n<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+<span class="comment">// end of [array2_ptr_takeout]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: persistent arrays that can only be reclaimed by GC
+</span><span class="comment">//
+</span><span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">assume</span> <span class="staexp">array_viewt0ype_int_type
+  <span class="keyword">(</span>a<span class="keyword">:</span>viewt@ype<span class="keyword">,</span> n<span class="keyword">:</span>int<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">[</span>l<span class="keyword">:</span>addr<span class="keyword">]</span> <span class="keyword">@{</span>
+  data<span class="keyword">=</span> ptr l<span class="keyword">,</span> view<span class="keyword">=</span> vbox <span class="keyword">(</span>array_v <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">,</span> l<span class="keyword">)</span><span class="keyword">)</span>
+<span class="keyword">}</span></span> <span class="comment">// end of [array_viewt0ype_int_type]
+</span>
+<span class="comment">(*
+viewtypedef
+arraysize_viewt0ype_int_viewt0ype
+  (a: viewt@ype, n:int) = [l:addr] (free_gc_v l, @[a][n] @ l | ptr l, int n)
+// end of [arraysize_viewt0ype_int_viewt0ype]
+*)</span>
+
+<span class="keyword">implement</span>
+array_make_arrsz <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="keyword">(</span>arrsz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> free_gc_elim <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>arrsz<span class="keyword">.</span>0<span class="keyword">)</span></span> <span class="comment">// return the certificate
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pfbox</span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=</span> vbox_make_view_ptr <span class="keyword">(</span><span class="prfexp">arrsz<span class="keyword">.</span>1</span> <span class="keyword">|</span> arrsz<span class="keyword">.</span>2<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">@{</span> data<span class="keyword">=</span> arrsz<span class="keyword">.</span>2<span class="keyword">,</span> view<span class="keyword">=</span> pfbox <span class="keyword">}</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_make_arrsz]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_make_elt <span class="keyword">(</span>asz<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>
+    <span class="prfexp">pf_gc</span><span class="keyword">,</span> <span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr
+  <span class="keyword">)</span> <span class="keyword">=</span> array_ptr_alloc_tsz <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> free_gc_elim <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf_gc<span class="keyword">)</span></span> <span class="comment">// return the certificate to GC
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_initialize_elt&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="keyword">!</span>p_arr<span class="keyword">,</span> asz<span class="keyword">,</span> x<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pfbox</span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=</span> vbox_make_view_ptr <span class="keyword">(</span><span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">@{</span> data<span class="keyword">=</span> p_arr<span class="keyword">,</span> view<span class="keyword">=</span> pfbox <span class="keyword">}</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_make_elt]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_make_lst <span class="keyword">(</span>asz<span class="keyword">,</span> xs<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>
+    <span class="prfexp">pf_gc</span><span class="keyword">,</span> <span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr
+  <span class="keyword">)</span> <span class="keyword">=</span> array_ptr_alloc_tsz <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> free_gc_elim <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf_gc<span class="keyword">)</span></span> <span class="comment">// return the certificate to GC
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_initialize_lst&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="keyword">!</span>p_arr<span class="keyword">,</span> xs<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pfbox</span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=</span> vbox_make_view_ptr <span class="keyword">(</span><span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">@{</span> data<span class="keyword">=</span> p_arr<span class="keyword">,</span> view<span class="keyword">=</span> pfbox <span class="keyword">}</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_make_lst]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_make_clo
+  <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> asz<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>
+    <span class="prfexp">pf_gc</span><span class="keyword">,</span> <span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr
+  <span class="keyword">)</span> <span class="keyword">=</span> array_ptr_alloc_tsz <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> free_gc_elim <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span>
+    <span class="keyword">(</span>pf_gc<span class="keyword">)</span></span> <span class="comment">// return the certificate to GC
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_initialize_clo&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> <span class="keyword">!</span>p_arr<span class="keyword">,</span> asz<span class="keyword">,</span> f<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pfbox</span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=</span> vbox_make_view_ptr <span class="keyword">(</span><span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">@{</span> data<span class="keyword">=</span> p_arr<span class="keyword">,</span> view<span class="keyword">=</span> pfbox <span class="keyword">}</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_make_clo_tsz]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_make_cloref
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>asz<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="comment">//
+</span>  <span class="keyword">typedef</span> <span class="staexp"><a name="12503"><span class="stacstdec">cloref_t <span class="keyword">=</span> <span class="keyword">(</span>sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span><span class="keyword">(</span>a?<span class="keyword">)</span> &gt;&gt; a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+<span class="comment">//
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf_gc</span><span class="keyword">,</span> <span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">)</span> <span class="keyword">=</span> array_ptr_alloc&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span>asz<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> free_gc_elim <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf_gc<span class="keyword">)</span></span> <span class="comment">// return the certificate to GC
+</span><span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp">pfu <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> app <span class="keyword">=</span> <span class="keyword">lam</span> <span class="keyword">(</span>
+      <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>unit_v</span></span> <span class="keyword">|</span> i<span class="keyword">:</span> <span class="staexp">sizeLt n</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span>a?<span class="keyword">)</span> &gt;&gt; a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>cloref_t</span>
+    <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=&lt;</span><span class="staexp"><span class="keyword">fun</span></span><span class="keyword">,</span><span class="staexp">f</span><span class="keyword">&gt;</span> f <span class="keyword">(</span>i<span class="keyword">,</span> x<span class="keyword">)</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">in</span>
+    array_ptr_initialize_funenv_tsz
+      <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>cloref_t<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfu</span> <span class="keyword">|</span> <span class="keyword">!</span>p_arr<span class="keyword">,</span> asz<span class="keyword">,</span> app<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> f<span class="keyword">)</span>
+    <span class="comment">// end of ...
+</span>  <span class="keyword">end</span> <span class="comment">// end of [val]  
+</span>  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pfu</span>
+<span class="comment">//
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pfbox</span> <span class="keyword">|</span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=</span> vbox_make_view_ptr <span class="keyword">(</span><span class="prfexp">pf_arr</span> <span class="keyword">|</span> p_arr<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">@{</span> data<span class="keyword">=</span> p_arr<span class="keyword">,</span> view<span class="keyword">=</span> pfbox <span class="keyword">}</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_make_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+//
+// HX: these are now casting funtions:
+//
+implement array_make_view_ptr (pf | p) = @(pf | p)
+implement array_get_view_ptr (A) = @(A.view | A.data)
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_get_elt_at <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> A_data <span class="keyword">=</span> A<span class="keyword">.</span>data<span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp">vbox pf <span class="keyword">=</span> A<span class="keyword">.</span>view</span> <span class="keyword">in</span> <span class="keyword">!</span>A_data<span class="keyword">.</span><span class="keyword">[</span><span class="prfexp">i</span><span class="keyword">]</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_get_elt]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_set_elt_at <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> A_data <span class="keyword">=</span> A<span class="keyword">.</span>data<span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp">vbox pf <span class="keyword">=</span> A<span class="keyword">.</span>view</span> <span class="keyword">in</span> <span class="keyword">!</span>A_data<span class="keyword">.</span><span class="keyword">[</span><span class="prfexp">i</span><span class="keyword">]</span> := x
+<span class="keyword">end</span> <span class="comment">// end of [array_set_elt_at]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_xch_elt_at <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> A_data <span class="keyword">=</span> A<span class="keyword">.</span>data<span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp">vbox pf <span class="keyword">=</span> A<span class="keyword">.</span>view</span>
+<span class="keyword">in</span>
+  array_ptr_xch_elt_at&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="keyword">!</span>A_data<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_xch_elt_at]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_get_elt_at__intsz <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> i <span class="keyword">=</span> i2sz i<span class="keyword">;</span> <span class="keyword">val</span> A_data <span class="keyword">=</span> A<span class="keyword">.</span>data<span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp">vbox pf <span class="keyword">=</span> A<span class="keyword">.</span>view</span>
+<span class="keyword">in</span>
+  <span class="keyword">!</span>A_data<span class="keyword">.</span><span class="keyword">[</span><span class="prfexp">i</span><span class="keyword">]</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_get_elt]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_set_elt_at__intsz <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> i <span class="keyword">=</span> i2sz i<span class="keyword">;</span> <span class="keyword">val</span> A_data <span class="keyword">=</span> A<span class="keyword">.</span>data<span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp">vbox pf <span class="keyword">=</span> A<span class="keyword">.</span>view</span>
+<span class="keyword">in</span>
+  <span class="keyword">!</span>A_data<span class="keyword">.</span><span class="keyword">[</span><span class="prfexp">i</span><span class="keyword">]</span> := x
+<span class="keyword">end</span> <span class="comment">// end of [array_set_elt_at]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_xch_elt_at__intsz <span class="keyword">(</span>A<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> i <span class="keyword">=</span> i2sz i<span class="keyword">;</span> <span class="keyword">val</span> A_data <span class="keyword">=</span> A<span class="keyword">.</span>data<span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp">vbox pf <span class="keyword">=</span> A<span class="keyword">.</span>view</span>
+<span class="keyword">in</span>
+  array_ptr_xch_elt_at&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="keyword">!</span>A_data<span class="keyword">,</span> i<span class="keyword">,</span> x<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_xch_elt_at]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_exch <span class="keyword">(</span>A<span class="keyword">,</span> i1<span class="keyword">,</span> i2<span class="keyword">)</span> <span class="keyword">=</span>
+  <span class="keyword">if</span> i1 &lt;&gt; i2 <span class="keyword">then</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> A_data <span class="keyword">=</span> A<span class="keyword">.</span>data<span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp">vbox pf <span class="keyword">=</span> A<span class="keyword">.</span>view</span>
+  <span class="keyword">in</span>
+    array_ptr_exch&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="keyword">!</span>A_data<span class="keyword">,</span> i1<span class="keyword">,</span> i2<span class="keyword">)</span>
+  <span class="keyword">end</span> <span class="comment">// end of [if]
+</span><span class="comment">// end of [array_exch]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// various [foreach] functions on linear arrays
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span>
+array_ptr_foreach_funenv_tsz
+  <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> base<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat <span class="keyword">|</span> i &lt;= n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>i<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+      <span class="prfexp">pfv<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span><span class="keyword">,</span> <span class="prfexp">pf_arr<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>array_v <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">,</span> l<span class="keyword">)</span> &gt;&gt; array_v <span class="keyword">(</span>a<span class="keyword">,</span> i<span class="keyword">,</span> l<span class="keyword">)</span></span></span>
+    <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l</span>
+    <span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> <span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">size_t i</span><span class="keyword">,</span> tsz<span class="keyword">:</span> <span class="staexp">sizeof_t a</span>
+    <span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+    <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1_at<span class="keyword">,</span> pf2_arr<span class="keyword">)</span> <span class="keyword">=</span> array_v_uncons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> f <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> <span class="keyword">!</span>p<span class="keyword">,</span> env<span class="keyword">)</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">pfv</span><span class="keyword">,</span> <span class="prfexp">pf2_arr</span> <span class="keyword">|</span> p + tsz<span class="keyword">,</span> f<span class="keyword">,</span> i-1<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_arr := array_v_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf1_at<span class="keyword">,</span> pf2_arr<span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="comment">// nothing
+</span>    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_v_unnil <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_arr := array_v_nil <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="comment">// nothing
+</span>    <span class="keyword">end</span> <span class="comment">// end of [if]
+</span><span class="keyword">in</span>
+  loop <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">view@ base</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>base<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_foreach_funenv_tsz]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_foreach_fun
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="comment">//
+</span>  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="15610"><span class="stacstdec">fun0_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="15652"><span class="stacstdec">fun1_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>unit_v <span class="keyword">|</span> <span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">!</span>ptr<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+<span class="comment">//
+</span>  <span class="keyword">val</span> f <span class="keyword">=</span> __cast <span class="keyword">(</span>f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span> <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="15742"><span class="dyncstdec">__cast <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">fun0_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">fun1_t</span></span></a> <span class="keyword">}</span>
+<span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp">pfu <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_foreach_funenv_tsz
+    <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfu</span> <span class="keyword">|</span> A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> null<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pfu</span>
+<span class="comment">//
+</span><span class="keyword">in</span>
+  <span class="comment">// nothing
+</span><span class="keyword">end</span> <span class="comment">// end of [array_ptr_foreach_fun]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_foreach_clo
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="comment">//
+</span>  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="16095"><span class="stacstdec">clo_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">stavar</span> <span class="staexp">l_f<span class="keyword">:</span> addr</span>
+  <span class="keyword">val</span> p_f<span class="keyword">:</span> <span class="staexp">ptr l_f</span> <span class="keyword">=</span> <span class="keyword">&amp;</span>f
+  <span class="keyword">viewdef</span> <span class="staexp"><a name="16180"><span class="stacstdec">V <span class="keyword">=</span> <span class="keyword">@(</span>v<span class="keyword">,</span> clo_t @ l_f<span class="keyword">)</span></span></a></span>
+<span class="comment">//
+</span>  <span class="keyword">fn</span> app <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>V</span></span> <span class="keyword">|</span> x<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>a</span><span class="keyword">,</span> p_f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>ptr l_f</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span><span class="keyword">;</span> <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>p_f <span class="keyword">(</span><span class="prfexp">pf1</span> <span class="keyword">|</span> x<span class="keyword">)</span> <span class="keyword">in</span> pf := <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span>
+  <span class="keyword">end</span> <span class="comment">// end of [app]
+</span><span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> <span class="keyword">(</span>pfv<span class="keyword">,</span> view@ f<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_foreach_funenv_tsz
+    <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>V<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr l_f<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> app<span class="keyword">,</span> asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> p_f<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>pfv := pf1<span class="keyword">;</span> view@ f := pf2<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [array_ptr_foreach_clo]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span>
+array_ptr_iforeach_funenv_tsz
+  <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> base<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="staexp"><span class="keyword">{</span>i<span class="keyword">:</span>nat <span class="keyword">|</span> i &lt;= n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n-i<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+      <span class="prfexp">pfv<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span><span class="keyword">,</span> <span class="prfexp">pf_arr<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>array_v <span class="keyword">(</span>a<span class="keyword">,</span> n-i<span class="keyword">,</span> l<span class="keyword">)</span> &gt;&gt; array_v <span class="keyword">(</span>a<span class="keyword">,</span> n-i<span class="keyword">,</span> l<span class="keyword">)</span></span></span>
+    <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l</span>
+    <span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">!</span>vt<span class="keyword">)</span> <span class="keyword">-&lt;</span>f<span class="keyword">&gt;</span> void</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">size_t i</span>
+    <span class="keyword">,</span> tsz<span class="keyword">:</span> <span class="staexp">sizeof_t a</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>vt</span>
+    <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+    <span class="keyword">if</span> i <span class="keyword">&lt;</span> n <span class="keyword">then</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1_at<span class="keyword">,</span> pf2_arr<span class="keyword">)</span> <span class="keyword">=</span> array_v_uncons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> f <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> i<span class="keyword">,</span> <span class="keyword">!</span>p<span class="keyword">,</span> env<span class="keyword">)</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span><span class="prfexp">pfv</span><span class="keyword">,</span> <span class="prfexp">pf2_arr</span> <span class="keyword">|</span> p + tsz<span class="keyword">,</span> f<span class="keyword">,</span> n<span class="keyword">,</span> i+1<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_arr := array_v_cons <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>pf1_at<span class="keyword">,</span> pf2_arr<span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="comment">// nothing
+</span>    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_v_unnil <span class="keyword">(</span>pf_arr<span class="keyword">)</span></span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_arr := array_v_nil <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="comment">// nothing
+</span>    <span class="keyword">end</span> <span class="comment">// end of [if]
+</span><span class="keyword">in</span>
+  loop <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">view@ base</span> <span class="keyword">|</span> <span class="keyword">&amp;</span>base<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> 0<span class="keyword">,</span> tsz<span class="keyword">,</span> env<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_ptr_iforeach_funenv_tsz]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_iforeach_fun
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span>A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="comment">//
+</span>  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="17605"><span class="stacstdec">fun0_t <span class="keyword">=</span> <span class="keyword">(</span>sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="17657"><span class="stacstdec">fun1_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>unit_v <span class="keyword">|</span> sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">!</span>ptr<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">val</span> f <span class="keyword">=</span> __cast <span class="keyword">(</span>f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span> <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="17754"><span class="dyncstdec">__cast <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">fun0_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">fun1_t</span></span></a> <span class="keyword">}</span>
+<span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp">pfu <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_iforeach_funenv_tsz
+    <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfu</span> <span class="keyword">|</span> A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> null<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pfu</span>
+<span class="comment">//
+</span><span class="keyword">in</span>
+  <span class="comment">// nothing
+</span><span class="keyword">end</span> <span class="comment">// end of [array_ptr_foreach_fun]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_iforeach_clo
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="comment">//
+</span>  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="18109"><span class="stacstdec">clo_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">stavar</span> <span class="staexp">l_f<span class="keyword">:</span> addr</span>
+  <span class="keyword">val</span> p_f<span class="keyword">:</span> <span class="staexp">ptr l_f</span> <span class="keyword">=</span> <span class="keyword">&amp;</span>f
+  <span class="keyword">viewdef</span> <span class="staexp"><a name="18204"><span class="stacstdec">V <span class="keyword">=</span> <span class="keyword">@(</span>v<span class="keyword">,</span> clo_t @ l_f<span class="keyword">)</span></span></a></span>
+<span class="comment">//
+</span>  <span class="keyword">fn</span> app <span class="keyword">(</span>
+    <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>V</span></span> <span class="keyword">|</span> i<span class="keyword">:</span> <span class="staexp">sizeLt n</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>a</span><span class="keyword">,</span> p_f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>ptr l_f</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span><span class="keyword">;</span> <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>p_f <span class="keyword">(</span><span class="prfexp">pf1</span> <span class="keyword">|</span> i<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">in</span> pf := <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span>
+  <span class="keyword">end</span> <span class="comment">// end of [app]
+</span><span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> <span class="keyword">(</span>pfv<span class="keyword">,</span> view@ f<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_ptr_iforeach_funenv_tsz
+    <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>V<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr l_f<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> app<span class="keyword">,</span> asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> p_f<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+<span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>pfv := pf1<span class="keyword">;</span> view@ f := pf2<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [array_ptr_iforeach_clo]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: various [foreach] functions on persistent arrays
+</span><span class="comment">//
+</span><span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_foreach_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">vbox pfarr</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> array_get_view_ptr <span class="keyword">(</span>A<span class="keyword">)</span>
+<span class="keyword">in</span>
+  array_ptr_foreach_funenv_tsz <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> <span class="keyword">!</span>p<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> env<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_foreach_funenv]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_foreach_fun
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="keyword">(</span>A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> f <span class="keyword">=</span> coerce <span class="keyword">(</span>f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span> <span class="keyword">extern</span> <span class="keyword">castfn</span>
+    <a name="19095"><span class="dyncstdec">coerce <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>unit_v <span class="keyword">|</span> <span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">!</span>ptr<span class="keyword">)</span> <span class="keyword">-&lt;&gt;</span> void</span></span></a>
+  <span class="keyword">}</span> <span class="comment">// end of [where]
+</span><span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp">pfu <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_foreach_funenv <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfu</span> <span class="keyword">|</span> A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> null<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pfu</span>
+<span class="keyword">in</span>
+  <span class="comment">// nothing
+</span><span class="keyword">end</span> <span class="comment">// end of [array_foreach_fun]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_foreach_clo
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">stavar</span> <span class="staexp">l_f<span class="keyword">:</span> addr</span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="19443"><span class="stacstdec">clo_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">val</span> p_f<span class="keyword">:</span> <span class="staexp">ptr l_f</span> <span class="keyword">=</span> <span class="keyword">&amp;</span>f
+  <span class="keyword">viewdef</span> <span class="staexp"><a name="19507"><span class="stacstdec">V <span class="keyword">=</span> <span class="keyword">(</span>v<span class="keyword">,</span> clo_t @ l_f<span class="keyword">)</span></span></a></span>
+  <span class="keyword">fn</span> app <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>V</span></span> <span class="keyword">|</span> x<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>a</span><span class="keyword">,</span> p_f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>ptr l_f</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span> <span class="keyword">in</span> <span class="keyword">!</span>p_f <span class="keyword">(</span><span class="prfexp">pf1</span> <span class="keyword">|</span> x<span class="keyword">)</span><span class="keyword">;</span> pf := <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span>
+  <span class="keyword">end</span> <span class="comment">// end of [app]
+</span>  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> <span class="keyword">(</span>pfv<span class="keyword">,</span> view@ f<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_foreach_funenv&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>V<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr l_f<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> app<span class="keyword">,</span> asz<span class="keyword">,</span> p_f<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>pfv := pf1<span class="keyword">;</span> view@ f := pf2<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [array_foreach_clo]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_foreach_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="keyword">(</span>A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="19953"><span class="stacstdec">cloref_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">fn</span> app <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>unit_v</span></span> <span class="keyword">|</span> x<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>cloref_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">$effmask_all</span> <span class="keyword">(</span>f x<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_foreach_funenv&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>cloref_t<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> app<span class="keyword">,</span> asz<span class="keyword">,</span> f<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [array_foreach_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_iforeach_funenv
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>vt<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">vbox pfarr</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> array_get_view_ptr <span class="keyword">(</span>A<span class="keyword">)</span>
+<span class="keyword">in</span>
+  array_ptr_iforeach_funenv_tsz <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> <span class="keyword">!</span>p<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">,</span> env<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [array_iforeach_funenv]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_iforeach_fun
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="keyword">(</span>A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> f <span class="keyword">=</span> coerce <span class="keyword">(</span>f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span> <span class="keyword">extern</span> <span class="keyword">castfn</span>
+    <a name="20593"><span class="dyncstdec">coerce <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>unit_v <span class="keyword">|</span> sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">,</span> <span class="keyword">!</span>ptr<span class="keyword">)</span> <span class="keyword">-&lt;&gt;</span> void</span></span></a>
+  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span><span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp">pfu <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_iforeach_funenv <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfu</span> <span class="keyword">|</span> A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">,</span> null<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pfu</span>
+<span class="comment">//  
+</span><span class="keyword">in</span>
+  <span class="comment">// nothing
+</span><span class="keyword">end</span> <span class="comment">// end of [array_foreach_fun]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_iforeach_clo
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">stavar</span> <span class="staexp">l_f<span class="keyword">:</span> addr</span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="20966"><span class="stacstdec">clo_t <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">val</span> p_f<span class="keyword">:</span> <span class="staexp">ptr l_f</span> <span class="keyword">=</span> <span class="keyword">&amp;</span>f
+  <span class="keyword">viewdef</span> <span class="staexp"><a name="21040"><span class="stacstdec">V <span class="keyword">=</span> <span class="keyword">(</span>v<span class="keyword">,</span> clo_t @ l_f<span class="keyword">)</span></span></a></span>
+  <span class="keyword">fn</span> app
+    <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>V</span></span> <span class="keyword">|</span> i<span class="keyword">:</span> <span class="staexp">sizeLt n</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>a</span><span class="keyword">,</span> p_f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>ptr l_f</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span> <span class="keyword">in</span> <span class="keyword">!</span>p_f <span class="keyword">(</span><span class="prfexp">pf1</span> <span class="keyword">|</span> i<span class="keyword">,</span> x<span class="keyword">)</span><span class="keyword">;</span> pf := <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span>
+  <span class="keyword">end</span> <span class="comment">// end of [app]
+</span><span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> <span class="keyword">(</span>pfv<span class="keyword">,</span> view@ f<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_iforeach_funenv&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>V<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ptr l_f<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> app<span class="keyword">,</span> asz<span class="keyword">,</span> p_f<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+<span class="comment">//
+</span>  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>pfv := pf1<span class="keyword">;</span> view@ f := pf2<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [array_iforeach_clo]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_iforeach_cloref <span class="staexp"><span class="keyword">{</span>n<span class="keyword">}</span></span> <span class="keyword">(</span>A<span class="keyword">,</span> f<span class="keyword">,</span> asz<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">viewtypedef</span> <span class="staexp"><a name="21515"><span class="stacstdec">cloref_t <span class="keyword">=</span> <span class="keyword">(</span>sizeLt n<span class="keyword">,</span> <span class="keyword">&amp;</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">fn</span> app <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>unit_v</span></span> <span class="keyword">|</span> i<span class="keyword">:</span> <span class="staexp">sizeLt n</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>a</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>cloref_t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> f <span class="keyword">(</span>i<span class="keyword">,</span> x<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">pf <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> array_iforeach_funenv&lt;<span class="staexp">a</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>cloref_t<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> A<span class="keyword">,</span> app<span class="keyword">,</span> asz<span class="keyword">,</span> f<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [array_iforeach_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+array_ptr_alloc <span class="keyword">(</span>n<span class="keyword">)</span> <span class="keyword">=</span> array_ptr_alloc_tsz <span class="staexp"><span class="keyword">{</span>a<span class="keyword">}</span></span> <span class="keyword">(</span>n<span class="keyword">,</span> sizeof&lt;<span class="staexp">a</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+<span class="comment">// end of [array_ptr_alloc]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="extern">%{$
+
+typedef unsigned char byte ;
+
+//
+// HX-2010-05-24
+// In case 'memcpy' is already defined as a macro ...
+//
+#ifndef memcpy
+extern void *memcpy (void *dst, const void* src, size_t n) ;
+#endif // end of [memcpy]
+
+ats_void_type
+atspre_array_ptr_initialize_elt_tsz (
+  ats_ptr_type A
+, ats_size_type asz
+, ats_ptr_type ini
+, ats_size_type tsz
+)  {
+  int i, itsz ; int left ; ats_ptr_type p ;
+  if (asz == 0) return ;
+  memcpy (A, ini, tsz) ;
+  i = 1 ; itsz = tsz ; left = asz - i ;
+  while (left &gt; 0) {
+    p = (ats_ptr_type)(((byte*)A) + itsz) ;
+    if (left &lt;= i) { memcpy (p, A, left * tsz) ; return ; }
+    memcpy (p, A, itsz);
+    i = i + i ; itsz = itsz + itsz ; left = asz - i ;
+  } /* end of [while] */
+  return ;
+} /* end of [atspre_array_ptr_initialize_elt_tsz] */
+
+%}</span> <span class="comment">// end of [%{$]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// [array.sats] is already loaded by a call to [pervasive_load]
+</span><span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anonymous*)</span> <span class="keyword">=</span> "prelude/SATS/array.sats"</span> <span class="comment">// this forces that the static
+</span><span class="comment">// loading function for [array.sats] is to be called at run-time
+</span><span class="comment">// this is really needed only if some datatypes are declared in [array.sats]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [array.dats] *)</span>
+</pre>
+</body>
+</html>

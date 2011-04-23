@@ -34,7 +34,7 @@ in
   case+ t of
   | T1YPbase sym => symbol_get_name (sym)
   | T1YPfun (nargs_ref, t1, t2) => let
-      val t1 = t1yp_normalize (t1)  // t1 can be T1YPVar
+      val t1 = t1yp_normalize (t1)  // t1 can be T1YPvar
       val isatm = (case+ t1 of
         | T1YPbase _ => true | T1YPtup _ => true | _ => false
       ) : bool
@@ -51,8 +51,13 @@ in
   | T1YPtup_vl rfts => begin
       "(" + tostring_t1yplst (!rfts) + ")"
     end // end of [T1YPtup_vl] 
-  | T1YPVar _ => "T1YPVar(...)"
+  | T1YPvar _ => "T1YPvar(...)"
   | T1YPdummy () => "T1YPdummy()"
+  | T1YPlist (X) => let
+    val t = t1Var_get_typ (X)
+  in
+    "list (" + tostring_t1yp (t) + ")"
+  end  // end of [T1YPlist (X)]
 end // end of [toString_t1yp]
 
 implement
@@ -75,7 +80,7 @@ in
   case+ t of
   | T1YPbase sym => fprint_symbol (out, sym)
   | T1YPfun (nargs_ref, t1, t2) => let
-      val t1 = t1yp_normalize (t1)  // t1 can be T1YPVar
+      val t1 = t1yp_normalize (t1)  // t1 can be T1YPvar
       val isatm = (case+ t1 of
         | T1YPbase _ => true | T1YPtup _ => true | _ => false
       ) : bool
@@ -95,8 +100,15 @@ in
   | T1YPtup_vl rfts => begin
       prstr "("; fprint_t1yplst (out, !rfts); prstr ")"
     end // end of [T1YPtup_vl] 
-  | T1YPVar _ => prstr "T1YPVar(...)"
+  | T1YPvar _ => prstr "T1YPvar(...)"
   | T1YPdummy () => prstr "T1YPdummy()"
+  | T1YPlist (X) => let
+    val t = t1Var_get_typ (X)
+  in
+    prstr "list (";
+    fprint_t1yp (out, t);
+    prstr ")"
+  end  // end of [T1YPlist (X)]
 end // end of [fprint_t1yp]
 implement print_t1yp (t) = fprint_t1yp (stdout_ref, t)
 implement prerr_t1yp (t) = fprint_t1yp (stderr_ref, t)

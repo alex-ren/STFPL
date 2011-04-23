@@ -7,6 +7,7 @@
 
 staload "trans1.sats"
 typedef loc = $Posloc.location_t
+macdef location_none = $Posloc.location_none
 macdef prerr_loc = $Posloc.prerr_location
 macdef fprint_location = $Posloc.fprint_location
 
@@ -21,6 +22,8 @@ staload "absyn.sats"
 
 (* ****** ****** *)
 
+(* library functions *)
+staload "libfunctions.sats"
 
 (* ****** ****** *)
 staload _(*anon*) = "symbol.dats"
@@ -39,11 +42,12 @@ staload _(*anon*) = "libats/DATS/funmap_avltree.dats"
 
 (* ****** ****** *)
 
-val t1yp_bool = T1YPbase symbol_BOOL
-val t1yp_int = T1YPbase symbol_INT
-val t1yp_string = T1YPbase symbol_STRING
-val t1yp_unit = T1YPtup (list0_nil)
+implement t1yp_bool = T1YPbase symbol_BOOL
+implement t1yp_int = T1YPbase symbol_INT
+implement t1yp_string = T1YPbase symbol_STRING
+implement t1yp_unit = T1YPtup (list0_nil)
 
+(* ****** ****** *)
 
 (* fun trans1_build_err (t_act: t1yp, t_expect: t1yp): String *)
 implement trans1_build_err (t_act, t_expect) = let
@@ -64,11 +68,11 @@ val count = ref<int> (0)
 
 in
 
-fun t1Var_get_nam (X: t1Var): int = X.nam
-fun t1Var_get_typ (X: t1Var): t1yp = !(X.lnk)
-fun t1Var_set_typ (X: t1Var, t: t1yp): void = !(X.lnk) := t
+implement t1Var_get_nam (X) = X.nam
+implement t1Var_get_typ (X) = !(X.lnk)
+implement t1Var_set_typ (X, t) = !(X.lnk) := t
 
-fun t1Var_new (): t1Var = let
+implement t1Var_new (): t1Var = let
   val n = !count; val () = !count := n+1
 in '{
   nam= n, lnk= ref (T1YPdummy)
@@ -86,88 +90,90 @@ fun neq_t1Var_t1Var
 overload <> with neq_t1Var_t1Var
 (* ****** ****** *)
 
+abstype tyerr
+typedef tyerr_pool = list0 tyerr
+(* record all the error for future output *)
+extern fun tyerr_pool_add (pool: tyerr_pool, loc: loc, msg: string): tyerr_pool
+symintr tyerr_pool_add_tail
+extern fun tyerr_pool_add_tail_loc (pool: tyerr_pool, loc: loc, msg: string): tyerr_pool
+extern fun tyerr_pool_add_tail_noloc (pool: tyerr_pool, msg: string): tyerr_pool
+overload tyerr_pool_add_tail with tyerr_pool_add_tail_loc
+overload tyerr_pool_add_tail with tyerr_pool_add_tail_noloc
+extern fun tyerr_pool_append (p1: tyerr_pool, p2: tyerr_pool): tyerr_pool
+extern fun tyerr_pool_make (): tyerr_pool
+extern fun tyerr_pool_size (pool: tyerr_pool): int
+
+extern fun fprint_tyerr_pool (out: FILEref, pool: tyerr_pool): void
+extern fun print_tyerr_pool (pool: tyerr_pool): void
+extern fun prerr_tyerr_pool (pool: tyerr_pool): void
+
+extern fun fprint_tyerr (out: FILEref, tyerr: tyerr): void
+extern fun print_tyerr (tyerr: tyerr): void
+extern fun prerr_tyerr (tyerr: tyerr): void
+
+local
+assume tyerr = '{loc = loc, msg = string}
+in
+implement tyerr_pool_add (pool, loc, msg) = 
+  '{loc = loc, msg = msg} :: pool
+
+implement tyerr_pool_add_tail_loc (pool, loc, msg) = 
+  tyerr_pool_append (pool, '{loc = loc, msg = msg} :: nil)
+
+implement tyerr_pool_add_tail_noloc (pool, msg) = 
+  tyerr_pool_append (pool, '{loc = location_none, msg = msg} :: nil)
+
+implement tyerr_pool_size (pool) =
+  list0_length (pool)
+
+implement tyerr_pool_append (p1, p2) = list0_append (p1, p2)
+
+implement tyerr_pool_make () = nil
+
+implement fprint_tyerr_pool (out, pool) = aux (out, pool, 0) where {
+  fun aux (out: FILEref, pool: tyerr_pool, i: int): void = 
+    case+ pool of
+    | cons (tyerr, pool1) => (
+      fprint_tyerr (out, tyerr);
+      (*if (i > 0) then*) fprint (out, "\n");
+      aux (out, pool1, i + 1))
+    | nil () => ()
+}
+
+implement print_tyerr_pool (pool) = fprint_tyerr_pool (stdout_ref, pool)
+implement prerr_tyerr_pool (pool) = fprint_tyerr_pool (stderr_ref, pool)
+
+implement fprint_tyerr (out, tyerr) = () where {
+  val () = fprint_location (out, tyerr.loc)
+  val _ = fprint (out, "@" + tyerr.msg)
+} 
+
+implement print_tyerr (tyerr: tyerr) = fprint_tyerr (stdout_ref, tyerr)
+implement prerr_tyerr (tyerr: tyerr) = fprint_tyerr (stderr_ref, tyerr)
+
+end  // end of [local]
+
+val tyerr_pool_nil = tyerr_pool_make ()  // empty error pool
+(* ******** ********* *)
+
 implement
 trans1_typ (t) = aux (t) where {
   fun aux (t: t0yp): t1yp = case+ t.t0yp_node of
     | T0YPbase sym => begin case+ 0 of
-        | _ when sym = symbol_UNIT => t1yp_unit | _ => T1YPbase sym
+        | _ when sym = symbol_UNIT => t1yp_unit 
+        | _ when sym = symbol_LIST => let
+          val t1var = t1Var_new ()
+          val () = t1Var_set_typ (t1var, T1YPvar (t1Var_new ()))
+        in
+          T1YPlist (t1var) // list X
+        end
+        | _ => T1YPbase sym
       end // end of [T0YPbase]  
     | T0YPfun (t1, t2) => T1YPfun (ref ~1(*don't know the no. of args yet*), 
                                    aux t1, aux t2)
     | T0YPtup (ts) => T1YPtup (list0_map_fun (ts, aux))
   // end of [aux]
 } // end of [trans1_typ]   
-
-(* ****** ****** *)
-
-abstype theConstTypMap_t
-extern fun theConstTypFind (opr: opr): t1yp
-
-local
-
-assume theConstTypMap_t = symenv_t (t1yp)
-
-#define :: list0_cons; #define nil list0_nil
-macdef list0_sing (x) = list0_cons (,(x), list0_nil ())
-
-val theConstTypMap =
-  res where {
-  val t1yp_int1 = T1YPtup (t1yp_int :: nil)
-  val t1yp_int2 = T1YPtup (t1yp_int :: t1yp_int :: nil)
-  val t1yp_str1 = T1YPtup (t1yp_string :: nil)
-  val t1yp_aop = T1YPfun (ref_make_elt<int> (2), t1yp_int2, t1yp_int)
-  val t1yp_bop = T1YPfun (ref_make_elt<int> (2), t1yp_int2, t1yp_bool)
-  typedef T = @(sym, t1yp)
-  val cts = (
-    (symbol_PLUS, t1yp_aop) ::
-    (symbol_MINUS, t1yp_aop) ::
-    (symbol_TIMES, t1yp_aop) ::
-    (symbol_SLASH, t1yp_aop) ::
-    (symbol_UMINUS, T1YPfun (ref_make_elt<int> (1), t1yp_int1, t1yp_int)) ::
-    (symbol_GT, t1yp_bop) ::
-    (symbol_GTE, t1yp_bop) ::
-    (symbol_LT, t1yp_bop) ::
-    (symbol_LTE, t1yp_bop) ::
-    (symbol_EQ, t1yp_bop) ::
-    (symbol_NEQ, t1yp_bop) ::
-    (symbol_PRINT_INT, T1YPfun (ref_make_elt<int> (1), t1yp_int1, t1yp_unit)) ::
-    (symbol_PRINT, T1YPfun (ref_make_elt<int> (1), t1yp_str1, t1yp_unit)) ::
-    nil ()
-  ) : list0 (T) // end of [val]
-  val res: theConstTypMap_t = symenv_make ()
-  fun loop (
-    cts: list0 (T), res: theConstTypMap_t
-  ) : theConstTypMap_t =
-    case+ cts of
-    | ct :: cts => let
-        val res(*_already*) = symenv_insert (res, ct.0, ct.1) in loop (cts, res)
-      end // end of [::]
-    | nil () => res
-  // end of [loop]  
-  val res = loop (cts, res)
-} // end of [val]
-
-in // in of [local]
-
-implement
-theConstTypFind (opr) = let
-  val+ OPR sym = opr
-  val ans = symenv_lookup<t1yp> (theConstTypMap, sym)
-in
-  case+ ans of
-  | option0_some tp => tp
-  | option0_none () => let
-      val () = begin
-        prerr "exit(STFPL)";
-        prerr ": unrecognized constant ["; prerr sym; prerr "]";
-        prerr_newline ()
-      end (* end of [val] *)
-    in
-      abort {t1yp} (1)
-    end // end of [option_none]    
-end // end of [theConstTypFind]
-
-end // end of [local]
 
 (* ****** ****** *)
 (*
@@ -193,7 +199,7 @@ and lte_t1yplst_t1yplst (ts1: t1yplst, ts2: t1yplst): bool =
 
 (* ****** ****** *)
 (* The result can be
-1. T1YPVar with dummy inside (one level)
+1. T1YPvar with dummy inside (one level)
 2. commond type
 // -------------
 We have three boxes: x, y, z
@@ -206,7 +212,7 @@ returen value is (z, dummy)
 *)
 implement t1yp_normalize (t) = 
   case+ t of
-  | T1YPVar (X) => let
+  | T1YPvar (X) => let
       val t1 = t1Var_get_typ (X)
     in
       case+ t1 of
@@ -215,13 +221,24 @@ implement t1yp_normalize (t) =
           val t1 = t1yp_normalize (t1)
           val () = t1Var_set_typ (X, t1)
           // we return t1, but modify t as well
-          // In effect, suppose we have a box (T1YPVar), if it 
+          // In effect, suppose we have a box (T1YPvar), if it 
           // contains dummy, then we do nothing and return the box.
           // If the box contains something else, we normalize this
           // content, put the new content back to the box, and return
           // the new content as the result of normalization of the box.
         } // [_]
-    end // end of [T1YPVar]
+    end // end of [T1YPvar]
+  | T1YPlist (X) => let
+    val t1 = t1Var_get_typ (X)
+  in
+      case+ t1 of
+      | T1YPdummy () => t
+      | _ => t where {
+          val t1 = t1yp_normalize (t1)
+          val () = t1Var_set_typ (X, t1)
+        } // [_]
+  end  // end of [T1YPlist]
+    
   | _ => t // end of [_]
 // end of [t1yp_normalize]
 
@@ -231,37 +248,44 @@ fun t1yp_lst_normalize (ts: t1yplst): t1yplst =
 
 fun make_t1ypvar_lst (n: int): list0 t1yp =
   if n = 0 then nil ()
-  else cons (T1YPVar (t1Var_new ()), make_t1ypvar_lst (n - 1))
+  else cons (T1YPvar (t1Var_new ()), make_t1ypvar_lst (n - 1))
 
 (* ****** ****** *)
 (* if we only use this match, then there would be
-no indented T1YPVar
+no indented T1YPvar
 *)
 (* t1: the actual type of the exp
    t2: the type it should be
 *)
 fun match_t1yp_t1yp
-  (t1: t1yp, t2: t1yp): bool = let
+  (t1: t1yp, t2: t1yp, tyerrs: tyerr_pool): (bool, tyerr_pool) = let
   val t1 = t1yp_normalize (t1)
   val t2 = t1yp_normalize (t2)
+  // val () = fprint (stderr_ref, "=============match_t1yp_t1yp\n")
 in
   case+ (t1, t2) of
-  | (T1YPVar X1, T1YPVar X2) => true where {
+  | (T1YPvar X1, T1YPvar X2) => (true, tyerrs) where {
       val () = if X1 <> X2 then t1Var_set_typ (X1, t2)
     } // end of [T1YPvar, T1YPvar]
-  | (T1YPVar X1, _) => (t1Var_set_typ (X1, t2); true)
-  | (_, T1YPVar X2) => (t1Var_set_typ (X2, t1); true)
+  | (T1YPvar X1, _) => (t1Var_set_typ (X1, t2); (true, tyerrs))
+  | (_, T1YPvar X2) => (t1Var_set_typ (X2, t1); (true, tyerrs))
 //
-  | (T1YPbase sym1, T1YPbase sym2) => sym1 = sym2
+  | (T1YPbase sym1, T1YPbase sym2) => 
+    if sym1 = sym2 then (true, tyerrs) else let
+      val errmsg = trans1_build_err (t1, t2)
+      val tyerrs1 = tyerr_pool_add_tail (tyerrs, errmsg)
+    in
+      (false, tyerrs1)
+    end
   | (T1YPfun (n1, t11, t12), T1YPfun (n2, t21, t22)) => let
       val () = if !n1 = ~1 then !n1 := !n2
       val () = if !n2 = ~1 then !n2 := !n1
-      val b1 = match_t1yp_t1yp (t11, t21)
-      val b2 = match_t1yp_t1yp (t12, t22)
+      val (b1, tyerrs1) = match_t1yp_t1yp (t11, t21, tyerrs)
+      val (b2, tyerrs2) = match_t1yp_t1yp (t12, t22, tyerrs1)
     in
-      (!n1 = !n2) && b1 && b2
+      ((!n1 = !n2) && b1 && b2, tyerrs2)
     end // end of [T1YPfun, T1YPfun]
-  | (T1YPtup ts1, T1YPtup ts2) => match_t1yplst_t1yplst (ts1, ts2, true)
+  | (T1YPtup ts1, T1YPtup ts2) => match_t1yplst_t1yplst (ts1, ts2, true, tyerrs)
   | (T1YPtup_vl rfts1, T1YPtup ts2) => let 
     val ts1 = !rfts1
     val len1 = list0_length (ts1)
@@ -269,7 +293,7 @@ in
     val ts1 = (if len1 >= len2 then ts1 else 
       list0_append<t1yp> (ts1, make_t1ypvar_lst (len2 - len1))
     )
-    val res = match_t1yplst_t1yplst_l (ts1, ts2, true)
+    val res = match_t1yplst_t1yplst_l (ts1, ts2, true, tyerrs)
     val ts1 = t1yp_lst_normalize (ts1)
     val () = !rfts1 := ts1
   in
@@ -282,7 +306,7 @@ in
     val ts2 = (if len1 <= len2 then ts2 else 
       list0_append<t1yp> (ts2, make_t1ypvar_lst (len1 - len2))
     )
-    val res = match_t1yplst_t1yplst (ts1, ts2, true)
+    val res = match_t1yplst_t1yplst (ts1, ts2, true, tyerrs)
     val ts2 = t1yp_lst_normalize (ts2)
     val () = !rfts2 := ts2
   in
@@ -298,7 +322,7 @@ in
     else
       (ts1, list0_append<t1yp> (ts2, make_t1ypvar_lst (len1 - len2)))
     )
-    val res = match_t1yplst_t1yplst (ts1, ts2, true)
+    val res = match_t1yplst_t1yplst (ts1, ts2, true, tyerrs)
     val ts1 = t1yp_lst_normalize (ts1)
     val ts2 = t1yp_lst_normalize (ts2)
     val () = !rfts1 := ts1
@@ -306,40 +330,69 @@ in
   in
     res
   end
-  | (_, _) => false
+  | (T1YPlist X1, T1YPlist X2) => let
+    val t1 = t1Var_get_typ (X1)
+    val t2 = t1Var_get_typ (X2)
+  in
+    match_t1yp_t1yp (t1, t2, tyerrs)
+  end
+  | (T1YPlist _, _) => let
+    val errmsg = trans1_build_err (t1, t2)
+    val tyerrs1 = tyerr_pool_add_tail (tyerrs, errmsg)
+  in (false, tyerrs1) end
+  | (_, T1YPlist _) => let
+    val errmsg = trans1_build_err (t1, t2)
+    val tyerrs1 = tyerr_pool_add_tail (tyerrs, errmsg)
+  in (false, tyerrs1) end
+  | (_, _) => let
+    val errmsg = trans1_build_err (t1, t2)
+    val tyerrs1 = tyerr_pool_add_tail (tyerrs, errmsg)
+  in (false, tyerrs1) end
 end // end of [match_t1yp_t1yp]
 
 and match_t1yplst_t1yplst (
-  ts1: t1yplst, ts2: t1yplst, res: bool
-) : bool =
+  ts1: t1yplst, ts2: t1yplst, res: bool, tyerrs: tyerr_pool
+) : (bool, tyerr_pool) =
   case+ (ts1, ts2) of
   | (list0_cons (t1, ts1),
      list0_cons (t2, ts2)) => let
+      val (res1, tyerrs1) = match_t1yp_t1yp (t1, t2, tyerrs)
       val res = (
-        if match_t1yp_t1yp (t1, t2) then res else false
+        if res1 then res else false
       ) : bool
     in
-      match_t1yplst_t1yplst (ts1, ts2, res)
+      match_t1yplst_t1yplst (ts1, ts2, res, tyerrs1)
     end // end of [list0_cons, list0_cons]
-  | (list0_nil (), list0_nil ()) => res
-  | (_, _) => false
+  | (list0_nil (), list0_nil ()) => (res, tyerrs)
+  | (_, _) => let
+    val errmsg = "two type lists are not of the size length"
+    val tyerrs1 = tyerr_pool_add_tail (tyerrs, errmsg)
+  in
+    (false, tyerrs1)
+  end
 // end of [lte_t1yplst_t1yplst]
 
 (* it's O.K. if the left is longer than the right *) 
 and match_t1yplst_t1yplst_l (
-  ts1: t1yplst, ts2: t1yplst, res: bool
-) : bool =
+  ts1: t1yplst, ts2: t1yplst, res: bool, tyerrs: tyerr_pool
+) : (bool, tyerr_pool) =
   case+ (ts1, ts2) of
   | (list0_cons (t1, ts1),
      list0_cons (t2, ts2)) => let
+      val (res1, tyerrs1) = match_t1yp_t1yp (t1, t2, tyerrs)
       val res = (
-        if match_t1yp_t1yp (t1, t2) then res else false
+        if res1 then res else false
       ) : bool
     in
-      match_t1yplst_t1yplst_l (ts1, ts2, res)
+      match_t1yplst_t1yplst_l (ts1, ts2, res, tyerrs1)
     end // end of [list0_cons, list0_cons]
-  | (_, list0_nil ()) => res
-  | (_, _) => false
+  | (_, list0_nil ()) => (res, tyerrs)
+  | (_, _) => let
+    val errmsg = "expecting longer list"
+    val tyerrs1 = tyerr_pool_add_tail (tyerrs, errmsg)
+  in
+    (false, tyerrs1)
+  end
 // end of [lte_t1yplst_t1yplst]
 
 (* ****** ****** *)
@@ -426,8 +479,10 @@ d1ec_make_val (loc, isrec, vds) = '{
 
 (* ****** ****** *)
 
+// v1ar is defined in trans1.sats
 extern typedef "v1ar_t" = v1ar
 
+(* can be deleted? *)
 %{$
 
 ats_bool_type
@@ -444,67 +499,12 @@ v1ar_set_def (
 } /* end of [v1ar_set_def] */
 
 %} // end of [%{$]
-
 (* ****** ****** *)
 
 typedef ctx = symenv_t (v1ar)
 val ctx_nil = symenv_make () // empty context
 
 (* ****** ****** *)
-abstype tyerr
-typedef tyerr_pool = list0 tyerr
-(* record all the error for future output *)
-extern fun tyerr_pool_add (pool: tyerr_pool, loc: loc, msg: string): tyerr_pool
-extern fun tyerr_pool_append (p1: tyerr_pool, p2: tyerr_pool): tyerr_pool
-extern fun tyerr_pool_make (): tyerr_pool
-extern fun tyerr_pool_size (pool: tyerr_pool): int
-
-extern fun fprint_tyerr_pool (out: FILEref, pool: tyerr_pool): void
-extern fun print_tyerr_pool (pool: tyerr_pool): void
-extern fun prerr_tyerr_pool (pool: tyerr_pool): void
-
-extern fun fprint_tyerr (out: FILEref, tyerr: tyerr): void
-extern fun print_tyerr (tyerr: tyerr): void
-extern fun prerr_tyerr (tyerr: tyerr): void
-
-local
-assume tyerr = '{loc = loc, msg = string}
-in
-implement tyerr_pool_add (pool, loc, msg) = 
-  '{loc = loc, msg = msg} :: pool
-
-implement tyerr_pool_size (pool) =
-  list0_length (pool)
-
-implement tyerr_pool_append (p1, p2) = list0_append (p1, p2)
-
-implement tyerr_pool_make () = nil
-
-implement fprint_tyerr_pool (out, pool) = aux (out, pool, 0) where {
-  fun aux (out: FILEref, pool: tyerr_pool, i: int): void = 
-    case+ pool of
-    | cons (tyerr, pool1) => (
-      fprint_tyerr (out, tyerr);
-      (*if (i > 0) then*) fprint (out, "\n");
-      aux (out, pool1, i + 1))
-    | nil () => ()
-}
-
-implement print_tyerr_pool (pool) = fprint_tyerr_pool (stdout_ref, pool)
-implement prerr_tyerr_pool (pool) = fprint_tyerr_pool (stderr_ref, pool)
-
-implement fprint_tyerr (out, tyerr) = () where {
-  val () = fprint_location (out, tyerr.loc)
-  val _ = fprint (out, "@" + tyerr.msg)
-} 
-
-implement print_tyerr (tyerr: tyerr) = fprint_tyerr (stdout_ref, tyerr)
-implement prerr_tyerr (tyerr: tyerr) = fprint_tyerr (stderr_ref, tyerr)
-
-end  // end of [local]
-
-val tyerr_pool_nil = tyerr_pool_make ()  // empty error pool
-
 // exception TypeError of (loc, String)
 
 
@@ -622,11 +622,11 @@ implement oftype_valdeclst_rec (Gamma, v0aldecs) = let
           (case+ valdec.v0aldec_ann of
           | Some0 t0yp => let
             val ann_t1yp = trans1_typ (t0yp)
-            val bmatch = match_t1yp_t1yp (fnt1yp, ann_t1yp)
+            val (bmatch, tyerrs1) = match_t1yp_t1yp (fnt1yp, ann_t1yp, tyerrs1)
             val tyerrs1 = if bmatch <> true then let
               val errmsg = trans1_build_err (fnt1yp, ann_t1yp)
             in 
-              tyerr_pool_add (tyerrs1, loc, errmsg)
+              tyerr_pool_add_tail (tyerrs1, loc, errmsg)
             end else tyerrs1
           in
             (fnt1yp, tyerrs1)
@@ -636,7 +636,7 @@ implement oftype_valdeclst_rec (Gamma, v0aldecs) = let
         | None0 () =>  // not a function
           (case+ valdec.v0aldec_ann of
           | Some0 t0yp => (trans1_typ (t0yp), tyerrs1)
-          | None0 () => (T1YPVar (t1Var_new ()), tyerrs1)
+          | None0 () => (T1YPvar (t1Var_new ()), tyerrs1)
           ): (t1yp, tyerr_pool)
 
       val Gamma1 = symenv_insert (Gamma, nam, v1ar_make (loc, nam, t1yp))
@@ -753,7 +753,7 @@ in
     (Gamma1, v1ar, tyerr_pool_nil)
   end
   | None0 () => let
-    val v1ar = v1ar_make (loc, nam, T1YPVar (t1Var_new ()))
+    val v1ar = v1ar_make (loc, nam, T1YPvar (t1Var_new ()))
     val Gamma1 = symenv_insert (Gamma, nam, v1ar)
   in
     (Gamma1, v1ar, tyerr_pool_nil)
@@ -802,24 +802,30 @@ in
 end
 
 fun oftype_opr (Gamma: ctx, loc: loc, opr: opr, e0xps: e0xplst): (e1xp, tyerr_pool) = let
-  val t1yp_opr = theConstTypFind (opr)
+  val t1yp_opt = libOprTypFind (opr)
 in
-  case+ t1yp_opr of
-  | T1YPfun (_, t1yp_args, t1yp_ret) => let
-    val e0xp_tup = '{e0xp_loc = loc, e0xp_node = E0XPtup (e0xps)}
-    val (e1xp_tup, tyerrs) = typcheck (Gamma, e0xp_tup, t1yp_args)
-  in
-    case+ e1xp_tup.e1xp_node of
-    | E1XPtup (e1xps) => let
-      val e1xp = e1xp_make_opr (loc, opr, e1xps, t1yp_ret)
+  case+ t1yp_opt of
+  | Some0 t1yp_opr => (
+    case+ t1yp_opr of
+    | T1YPfun (_, t1yp_args, t1yp_ret) => let
+      val e0xp_tup = '{e0xp_loc = loc, e0xp_node = E0XPtup (e0xps)}
+      val (e1xp_tup, tyerrs) = typcheck (Gamma, e0xp_tup, t1yp_args)
     in
-      (e1xp, tyerrs)
+      case+ e1xp_tup.e1xp_node of
+      | E1XPtup (e1xps) => let
+        val e1xp = e1xp_make_opr (loc, opr, e1xps, t1yp_ret)
+      in
+        (e1xp, tyerrs)
+      end
+      | _ => ETRACE_MSG_OPR ("oftype_opr: should not happen\n", ETRACE_LEVEL_ERROR,
+               abort (ERRORCODE_FORBIDDEN))
     end
-    | _ => ETRACE_MSG_OPR ("oftype_opr: should not happen\n", ETRACE_LEVEL_ERROR,
-             abort (ERRORCODE_FORBIDDEN))
-  end
-  | _ => ETRACE_MSG_OPR ("oftype_opr: opr should have function type\n", ETRACE_LEVEL_ERROR,
-             abort (ERRORCODE_FORBIDDEN))
+    | _ => ETRACE_MSG_OPR ("oftype_opr: opr should have function type\n", ETRACE_LEVEL_ERROR,
+               abort (ERRORCODE_FORBIDDEN))
+    )
+  | None0 () => ETRACE_MSG_OPR (
+      "oftype_opr: (no such operator should not happen\n", ETRACE_LEVEL_ERROR,
+      abort (ERRORCODE_FORBIDDEN))
 end
 
 fun oftype_proj (Gamma: ctx, loc: loc, e0xp: e0xp, i: int): (e1xp, tyerr_pool) = let
@@ -844,7 +850,7 @@ in
       (e1xp_proj, tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
     end
   end
-  | T1YPVar (t1var) => let
+  | T1YPvar (t1var) => let
     val t1varlst = make_t1ypvar_lst (i + 1)
     val- Some0 (t1ypitem) = list0_nth_opt (t1varlst, i)
     val () = t1Var_set_typ (t1var, T1YPtup_vl (ref<t1yplst> (t1varlst)))
@@ -899,19 +905,28 @@ in
 end
 
 fun oftype_var (Gamma: ctx, loc: loc, nam: symbol_t): (e1xp, tyerr_pool) = let
+  // current environment
   val v1aropt = symenv_lookup<v1ar> (Gamma, nam)
 in
   case+ v1aropt of
   | Some0 v1ar => (e1xp_make_var (loc, v1ar), tyerr_pool_nil)
   | None0 () => let
-    // val () = prerr_loc (loc)
-    // val () = prerr ": no such var"
-    // val () = prerr_newline ()
-    val errmsg = "oftype_var: no such var"
-    (* no such var, assume it is int *)
-    val v1ar = v1ar_make (loc, nam, t1yp_int)
+    // library function / operator
+    val t1yp_opt = libSymTypFind (nam)
   in
-    (e1xp_make_var (loc, v1ar), tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
+    case+ t1yp_opt of
+    | Some0 t1yp => (e1xp_make_var (loc, v1ar_make (loc, nam, t1yp)), 
+                     tyerr_pool_nil)
+    | None0 () => let
+      // val () = prerr_loc (loc)
+      // val () = prerr ": no such var"
+      // val () = prerr_newline ()
+      val errmsg = "oftype_var: no such var, assuming its type is int"
+      (* no such var, assume it is int *)
+      val v1ar = v1ar_make (loc, nam, t1yp_int)
+    in
+      (e1xp_make_var (loc, v1ar), tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
+    end
   end
 end
 
@@ -931,7 +946,7 @@ fun oftype_fix (Gamma: ctx, loc: loc,
       (T1YPfun (ref_make_elt<int> (nargs), t1yp_args, retty), retty)
     end
     | None0 () => let
-      val retty = T1YPVar (t1Var_new ())
+      val retty = T1YPvar (t1Var_new ())
     in
       (T1YPfun (ref_make_elt<int> (nargs), t1yp_args, retty), retty)
     end
@@ -959,22 +974,24 @@ in
 end
 
 fun oftype_app (Gamma: ctx, loc: loc, f: e0xp, args: e0xp): (e1xp, tyerr_pool) = let
-  val (f, tyerrs) = oftype (Gamma, f)
+  val (f, tyerrs_f) = oftype (Gamma, f)
   (* do the normalization first *)
   val e1xp_fun = t1yp_normalize (f.e1xp_typ)
 in
   case+ e1xp_fun of
   | T1YPfun (_, paras_typ, ret_typ) => let
-    val (args, tyerrs) = typcheck (Gamma, args, paras_typ)
+    val (args, tyerrs_args) = typcheck (Gamma, args, paras_typ)
+    val tyerrs = tyerr_pool_append (tyerrs_f, tyerrs_args)
     val e1xp = e1xp_make_app (loc, f, args, ret_typ)
   in
     (e1xp, tyerrs)
   end
-  | T1YPVar (t1var) => let
+  | T1YPvar (t1var) => let
     val () = prerr ": ============================\n"
     val () = prerr ": You should not see me.\n"
-    val (args, tyerrs) = oftype (Gamma, args)
-    val ret_typ = T1YPVar (t1Var_new ())
+    val (args, tyerrs_args) = oftype (Gamma, args)
+    val tyerrs = tyerr_pool_append (tyerrs_f, tyerrs_args)
+    val ret_typ = T1YPvar (t1Var_new ())
     val ty_fun = T1YPfun (ref_make_elt<int> (~1), args.e1xp_typ, ret_typ)
     val () = t1Var_set_typ (t1var, ty_fun)
     val e1xp = e1xp_make_app (loc, f, args, ret_typ)
@@ -992,7 +1009,7 @@ in
     val errmsg = errmsg + (tostring_t1yp e1xp_fun)
   in
     (* return f as the result as app *)
-    (f, tyerr_pool_add (tyerr_pool_nil, loc, errmsg))
+    (f, tyerr_pool_add_tail (tyerrs_f, loc, errmsg))
   end
 end
   
@@ -1036,7 +1053,7 @@ implement e0xp_node_is_fun (e_node) =
       
     val rett1yp = case+ t0ypopt of
     | Some0 t0yp => trans1_typ (t0yp)
-    | None0 () => T1YPVar (t1Var_new ())
+    | None0 () => T1YPvar (t1Var_new ())
     val fixt1yp = T1YPfun (ref_make_elt<int> (args), argst1yp, rett1yp)
   in
     Some0 fixt1yp
@@ -1052,7 +1069,7 @@ implement e0xp_node_is_fun (e_node) =
       
     val rett1yp = case+ t0ypopt of
     | Some0 t0yp => trans1_typ (t0yp)
-    | None0 () => T1YPVar (t1Var_new ())
+    | None0 () => T1YPvar (t1Var_new ())
     val lamt1yp = T1YPfun (ref_make_elt<int> (args), argst1yp, rett1yp)
   in
     Some0 lamt1yp
@@ -1069,7 +1086,16 @@ implement e1xp_node_is_fun (e_node) =
 
 implement typcheck (Gamma, e0, t1) = let
   val (e1, tyerrs) = oftype (Gamma, e0)
-  val ty_cmp = match_t1yp_t1yp (e1.e1xp_typ, t1)
+
+  // val () = fprint (stderr_ref, "=============typcheck@")
+  // val () = prerr_loc (e1.e1xp_loc)
+  // val () = prerr " ... expected: "
+  // val () = fprint_t1yp (stderr_ref, t1)
+  // val () = prerr " ... actual: "
+  // val () = fprint_t1yp (stderr_ref, e1.e1xp_typ)
+  // val () = prerr_newline ()
+  
+  val (ty_cmp, tyerrs) = match_t1yp_t1yp (e1.e1xp_typ, t1, tyerrs)
 in
   if ty_cmp = true then (e1, tyerrs)
   else let
@@ -1081,7 +1107,7 @@ in
     // val () = prerr_newline ()
     val errmsg = trans1_build_err (e1.e1xp_typ, t1)
   in
-    (e1, tyerr_pool_add (tyerr_pool_nil, e1.e1xp_loc, errmsg))
+    (e1, tyerr_pool_add_tail (tyerrs, e1.e1xp_loc, errmsg))
   end
 end
 

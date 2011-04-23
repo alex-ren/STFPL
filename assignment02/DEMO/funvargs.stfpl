@@ -1,0 +1,13 @@
+let
+  val plus = lam (x) => x + 1
+  val sum = lam (x, y) => x + y
+
+  val _ = print_int (plus 1)
+  val _ = print "\n"
+
+  val _ = print_int (sum (2, 3))
+  val _ = print "\n"
+in
+  ()
+end
+

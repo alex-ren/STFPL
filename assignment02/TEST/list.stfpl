@@ -1,0 +1,32 @@
+let
+  val foo = lam (x) => ()
+
+  val foos = lam (x) => ()
+  
+  val xs = list_cons (5, list_nil ())
+
+  val xss = list_cons (xs, list_nil ())
+
+  val r = foo (xs)
+
+  val rs = foos (xss)
+
+  // The following line will cause type error.
+  // stdin: 190(line=12, offs=17) -- 192(line=12, offs=19)@typematch failed ... 
+  // expected: list (int) ... actual: list (list (int))
+  // val rs = foo (xss)
+
+  val b = list_is_empty (xs)
+  val b = list_is_empty (xss)
+  val head = list_head (xss)
+  val tail = list_tail (xss)
+
+  // This is O.K. But then fn can only be applied to list of certain kind.
+  val fn = list_cons
+
+  val gg = list_cons ((list_cons (5, list_nil ()), 3, "ss"), list_nil ())
+in
+  ()
+end
+
+
