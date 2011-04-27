@@ -129,7 +129,7 @@
 </span>        <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">env</span> <span class="comment">// end of [val]
 </span>      <span class="keyword">}</span> <span class="comment">(* end of [E1XPapp] *)</span>
     <span class="keyword">|</span> E1XPbool <span class="keyword">(</span>b<span class="keyword">)</span> <span class="keyword">=&gt;</span> V1ALbool <span class="keyword">(</span>b<span class="keyword">)</span>
-    <span class="keyword">|</span> E1XPfix <span class="keyword">(</span>f<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=&gt;</span> V1ALclo <span class="keyword">(</span>env<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">)</span> 
+    <span class="keyword">|</span> E1XPfix <span class="keyword">(</span>f<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> V1ALclo <span class="keyword">(</span>env<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">)</span> 
     <span class="keyword">|</span> E1XPif <span class="keyword">(</span>e1<span class="keyword">,</span> e2<span class="keyword">,</span> oe3<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
         <span class="keyword">val-</span> V1ALbool b <span class="keyword">=</span> auxExp <span class="keyword">(</span>env<span class="keyword">,</span> e1<span class="keyword">)</span>
       <span class="keyword">in</span>
@@ -138,7 +138,7 @@
         <span class="keyword">end</span> <span class="comment">// end of [if]
 </span>      <span class="keyword">end</span> <span class="comment">// end of [E1XPif]
 </span>    <span class="keyword">|</span> E1XPint <span class="keyword">(</span>i<span class="keyword">)</span> <span class="keyword">=&gt;</span> V1ALint <span class="keyword">(</span>i<span class="keyword">)</span>
-    <span class="keyword">|</span> E1XPlam <span class="keyword">(</span>xs<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=&gt;</span> V1ALclo <span class="keyword">(</span>env<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">)</span>
+    <span class="keyword">|</span> E1XPlam <span class="keyword">(</span>xs<span class="keyword">,</span> body<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> V1ALclo <span class="keyword">(</span>env<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">)</span>
     <span class="keyword">|</span> E1XPlet <span class="keyword">(</span>decs<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
         <span class="keyword">val</span> env <span class="keyword">=</span> auxDeclst <span class="keyword">(</span>env<span class="keyword">,</span> decs<span class="keyword">)</span> <span class="keyword">in</span> auxExp <span class="keyword">(</span>env<span class="keyword">,</span> body<span class="keyword">)</span>
       <span class="keyword">end</span> <span class="comment">// end of [E1XPlet]
@@ -158,6 +158,10 @@
         <span class="keyword">val</span> vs <span class="keyword">=</span> auxExp_list <span class="keyword">(</span>env<span class="keyword">,</span> es<span class="keyword">)</span> <span class="keyword">in</span> V1ALtup <span class="keyword">(</span>vs<span class="keyword">)</span>
       <span class="keyword">end</span> <span class="comment">// end of [E1XPtup]
 </span>    <span class="keyword">|</span> E1XPvar <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=&gt;</span> auxVar <span class="keyword">(</span>env<span class="keyword">,</span> x<span class="keyword">)</span>
+    <span class="keyword">|</span> E1XPfixclo _ <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"interp1_exp E1XPfixclo is found\n"<span class="keyword">,</span> 
+          ETRACE_LEVEL_ERROR<span class="keyword">,</span> abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+    <span class="keyword">|</span> E1XPlamclo _ <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"interp1_exp E1XPlamclo is found\n"<span class="keyword">,</span> 
+          ETRACE_LEVEL_ERROR<span class="keyword">,</span> abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
 <span class="comment">(*
     | _ =&gt; begin
         prerr "auxExp: not implemented"; prerr_newline (); abort (1)
@@ -250,7 +254,7 @@
 </span><span class="comment">//
 </span>  <span class="keyword">and</span> auxVar <span class="keyword">(</span>
     env<span class="keyword">:</span> <span class="staexp">env</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">v1ar</span>
-  <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">v1al</span> <span class="keyword">=</span> <span class="keyword">case+</span> x<span class="keyword">.</span>v1ar_def <span class="keyword">of</span>
+  <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">v1al</span> <span class="keyword">=</span> <span class="keyword">case+</span> <span class="keyword">!</span><span class="keyword">(</span>x<span class="keyword">.</span>v1ar_def<span class="keyword">)</span> <span class="keyword">of</span>
     <span class="keyword">|</span> Some def <span class="keyword">=&gt;</span> auxExp <span class="keyword">(</span>env<span class="keyword">,</span> def<span class="keyword">)</span> <span class="keyword">|</span> None <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> auxVarNone <span class="keyword">(</span>env<span class="keyword">,</span> x<span class="keyword">)</span>
   <span class="comment">// end of [auxVar]
 </span>  

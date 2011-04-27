@@ -18,9 +18,10 @@ dynload "parser.dats"
 dynload "interp0.dats"
 dynload "interp1.dats"
 dynload "trans1.dats"
+dynload "trans_closure.dats"
 dynload "libfunctions.dats"
-dynload "trans2.dats"
-dynload "trans_cpp.dats"
+// dynload "trans2.dats"
+// dynload "trans_cpp.dats"
 
 (* ****** ****** *)
 
@@ -30,8 +31,9 @@ staload "interp0.sats"
 staload "interp1.sats"
 staload "error.sats"
 staload "trans1.sats"
-staload "trans2.sats"
-staload "trans_cpp.sats"
+staload "trans_closure.sats"
+// staload "trans2.sats"
+// staload "trans_cpp.sats"
 
 
 (* ****** ****** *)
@@ -48,28 +50,40 @@ main () = () where {
   val () = print_newline ()
 
   val () = print "\n\nafter type inference ==================================\n\n"
-  val prog1 = trans1_exp (prog)
+  val (prog1, err) = trans1_exp (prog)
   val () = fprint_e1xp (stdout_ref, prog1)
   val () = print_newline ()
+  
+  val () = if err <> 0 then let
+    val () = print "Type error exists, compiler exits\n"
+  in end else let
+    
+    val () = print "\n\nafter closure formation ==================================\n\n"
+    val prog_clo = trans_closure (prog1)
+    val () = fprint_e1xp (stdout_ref, prog_clo)
+    val () = print_newline ()
 
-  // val () = print "\n\ninterp0 ==================================\n\n"
-  // val v = interp0_exp(prog)
-  // val () = print_newline ()
-  // val () = fprint_v0al (stdout_ref, v)
-  // val () = print_newline ()
 
-  // val () = print "\n\ninterp1 ==================================\n\n"
-  // val v = interp1_exp(prog1)
-  // val () = print_newline ()
-  // val () = fprint_v1al (stdout_ref, v)
-  // val () = print_newline ()
 
-  // val () = print "\n\ntransform to IR ==================================\n\n"
-  // val (irs, fns) = trans2_exp (prog1)
+    // val () = print "\n\ninterp0 ==================================\n\n"
+    // val v = interp0_exp(prog)
+    // val () = print_newline ()
+    // val () = fprint_v0al (stdout_ref, v)
+    // val () = print_newline ()
 
-  // val os = trans_cpp (irs, fns)
-  // val () = print_ostream (os)
-  // val () = print_newline ()
+    // val () = print "\n\ninterp1 ==================================\n\n"
+    // val v = interp1_exp(prog1)
+    // val () = print_newline ()
+    // val () = fprint_v1al (stdout_ref, v)
+    // val () = print_newline ()
+
+    // val () = print "\n\ntransform to IR ==================================\n\n"
+    // val (irs, fns) = trans2_exp (prog1)
+
+    // val os = trans_cpp (irs, fns)
+    // val () = print_ostream (os)
+    // val () = print_newline ()
+  in end
 } // end of [main]
 
 (* ****** ****** *)

@@ -16,7 +16,7 @@ abstype t1Var
 
 datatype t1yp =
   | T1YPbase of $Symbol.symbol_t
-  // by rzq: actually we lost the info
+  // by rzq: we still have the info
   // about how many args the function
   // takes (may be n args or 1 arg which
   // is a tuple of n elements)
@@ -54,7 +54,6 @@ fun prerr_t1yp (t: t1yp): void
 overload print with print_t1yp
 overload prerr with prerr_t1yp
 fun t1yp_normalize (t: t1yp): t1yp
-fun t1yp_normalize_final (t: t1yp): t1yp
 
 (* ****** ****** *)
 abstype valprim_t (* declared in [trans2.sats] *)
@@ -63,16 +62,18 @@ datatype e1xp_node =
   | E1XPann of (e1xp, t1yp)
   | E1XPapp of (e1xp, e1xp)
   | E1XPbool of bool
-  | E1XPfix of (v1ar, v1arlst, e1xp)
+  | E1XPfix of (v1ar, v1arlst, e1xp, ref v1arlst(* for closure *))
   | E1XPif of (e1xp, e1xp, e1xpopt)
   | E1XPint of int
-  | E1XPlam of (v1arlst, e1xp)
+  | E1XPlam of (v1arlst, e1xp, ref v1arlst(* for closure *))
   | E1XPlet of (d1eclst, e1xp)
   | E1XPopr of ($Absyn.opr, e1xplst)
   | E1XPproj of (e1xp, int)
   | E1XPstr of string
   | E1XPtup of e1xplst
   | E1XPvar of v1ar
+  | E1XPfixclo of (v1ar, v1arlst, e1xp, v1arlst) (* for closure stage *)
+  | E1XPlamclo of (v1arlst, e1xp, v1arlst) (* for closure stage *)
 
 and d1ec_node =
   | D1ECval of (bool(*isrec*), v1aldeclst)
@@ -82,7 +83,8 @@ where e1xp = '{
   e1xp_loc= $Posloc.location_t
 , e1xp_node= e1xp_node
 , e1xp_typ= t1yp
-} // end of [e1xp]
+// , e1xp_esc=ref ($Symbol.symlst)  // todo to remove
+} // end of [e1xp] 
 
 and e1xplst = list0 (e1xp)
 and e1xpopt = option0 (e1xp)
@@ -92,7 +94,7 @@ and v1ar = '{
   v1ar_loc= $Posloc.location_t, 
   v1ar_nam= $Symbol.symbol_t, 
   v1ar_typ= t1yp, 
-  v1ar_def= e1xpopt,
+  v1ar_def= ref (e1xpopt),
   v1ar_val= ref (option0 (valprim_t))
 } // end of [v1ar]
 and v1arlst = list0 (v1ar)
@@ -143,6 +145,7 @@ fun v1ar_set_def
 
 (* ****** ****** *)
 
+fun e1xp_make (loc: $Posloc.location_t, node: e1xp_node, t1yp: t1yp): e1xp
 fun e1xp_make_ann (_: $Posloc.location_t, e: e1xp, t: t1yp): e1xp
 fun e1xp_make_app (_: $Posloc.location_t, e1: e1xp, e2: e1xp, t: t1yp): e1xp
 fun e1xp_make_bool (_: $Posloc.location_t, b: bool): e1xp
@@ -163,11 +166,20 @@ fun d1ec_make_val (_: $Posloc.location_t, isrec: bool, vds: v1aldeclst): d1ec
 (* ****** ****** *)
 
 fun trans1_typ (_: $Absyn.t0yp): t1yp
-fun trans1_exp (_: $Absyn.e0xp): e1xp
+
+(* return value
+ 0: O.K.
+ 1: type conflict
+ 2: type ambiguity
+ 3: both
+*)
+fun trans1_exp (_: $Absyn.e0xp): (e1xp, int)
 
 fun trans1_build_err (t_act: t1yp, t_expect: t1yp): string
 (* ****** ****** *)
 
 (* end of [trans1.sats] *)
 (* vi: set syntax=sml: *)
+
+
 

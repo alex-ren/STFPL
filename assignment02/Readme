@@ -1,24 +1,37 @@
 To build the program, please run
 >> make all
 
-To do the test, please run
->> ./testall.sh
-All the cpp files and executables are located in the TEST folder.
+At this moment, the compiler cannot generate C code. "trans2.dats" and "trans_cpp.dats" cannot compile.
 
+To do the test, simply run
+>> ./tester < TEST/xxx.stfpl
+
+and observe the output to check the functionality of type checking.
 
 Updates:
-  Type checking
+  Add no. of parameters to the function type.
 
-  Type inference
+  Add support of list.
 
-  generating Intermediate Representation
+  Collect information for closure and put it along with the functions.
 
-  >> (current)
-  generaing C++ code (to the screen)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Caution:
-  Doesn't support closure yet. Source file containing closure leads to segment fault.
-  No gabbage collector yet.
 
 Record (for functionality)
   Type inference including tuple of variant length
@@ -90,5 +103,35 @@ About Type Checking / Inference
   So far, the program should not go on to trans2, if trans1 has type conflicts.
   todo check the result of trans1 to see whether there is exp1 whose type
   hasn't been inferred yet.
+
+
+  statter and stammer
+  It's pointless to talk about the type of of a closure since different kinds
+  of closures can be used as same kind of function.
+
+
+  Be careful:
+  Different e1xp nodes of a tree can have the "same" v1ar. But when we copy
+  the tree, then different e1xp nodes contain different v1ar's though
+  those v1ar's may be structurally equivalent (but not identical).
+
+
+  Treat every function as a closure.
+
+
+  val f = lam (x) => (lam (y) => f y)  ?????
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   

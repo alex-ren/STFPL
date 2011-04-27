@@ -1,0 +1,34 @@
+let
+  val q1 = let
+    val fn = lam (x: int) => lam (y: int) => x + y
+    val fn1 = fn (1)
+    val r = fn1 (2)
+  in
+    r
+  end
+
+  val q2 = let
+    val fn = lam (x: int) => let
+      val clo_1 = lam (sl: int, y: int) => sl + y
+    in
+      (x, clo_1)
+    end
+    val fn1 = fn (1)
+    val r = fn1.1 (fn1.0, 2)
+  in
+    r
+  end
+
+  val fn1 = lam (x: int) => q2 + x
+  val q3 = fn1 (4)
+
+  val fn2 = (q2, lam (sl: int, x: int) => sl + x)
+
+  val q4 = fn2.1 (fn2.0, 4)
+
+
+in
+  q2
+end
+
+

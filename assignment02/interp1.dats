@@ -104,7 +104,7 @@ implement interp1_exp (e0) = let
         ) : env // end of [val]
       } (* end of [E1XPapp] *)
     | E1XPbool (b) => V1ALbool (b)
-    | E1XPfix (f, xs, body) => V1ALclo (env, xs, body) 
+    | E1XPfix (f, xs, body, _) => V1ALclo (env, xs, body) 
     | E1XPif (e1, e2, oe3) => let
         val- V1ALbool b = auxExp (env, e1)
       in
@@ -113,7 +113,7 @@ implement interp1_exp (e0) = let
         end // end of [if]
       end // end of [E1XPif]
     | E1XPint (i) => V1ALint (i)
-    | E1XPlam (xs, body) => V1ALclo (env, xs, body)
+    | E1XPlam (xs, body, _) => V1ALclo (env, xs, body)
     | E1XPlet (decs, body) => let
         val env = auxDeclst (env, decs) in auxExp (env, body)
       end // end of [E1XPlet]
@@ -133,6 +133,10 @@ implement interp1_exp (e0) = let
         val vs = auxExp_list (env, es) in V1ALtup (vs)
       end // end of [E1XPtup]
     | E1XPvar (x) => auxVar (env, x)
+    | E1XPfixclo _ => ETRACE_MSG_OPR ("interp1_exp E1XPfixclo is found\n", 
+          ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+    | E1XPlamclo _ => ETRACE_MSG_OPR ("interp1_exp E1XPlamclo is found\n", 
+          ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
 (*
     | _ => begin
         prerr "auxExp: not implemented"; prerr_newline (); abort (1)
@@ -225,7 +229,7 @@ implement interp1_exp (e0) = let
 //
   and auxVar (
     env: env, x: v1ar
-  ) : v1al = case+ x.v1ar_def of
+  ) : v1al = case+ !(x.v1ar_def) of
     | Some def => auxExp (env, def) | None () => auxVarNone (env, x)
   // end of [auxVar]
   

@@ -43,10 +43,11 @@
 <span class="keyword">dynload</span> "interp0.dats"
 <span class="keyword">dynload</span> "interp1.dats"
 <span class="keyword">dynload</span> "trans1.dats"
+<span class="keyword">dynload</span> "trans_closure.dats"
 <span class="keyword">dynload</span> "libfunctions.dats"
-<span class="keyword">dynload</span> "trans2.dats"
-<span class="keyword">dynload</span> "trans_cpp.dats"
-
+<span class="comment">// dynload "trans2.dats"
+</span><span class="comment">// dynload "trans_cpp.dats"
+</span>
 <span class="comment">(* ****** ****** *)</span>
 
 <span class="keyword">staload</span> <span class="staexp">"absyn.sats"</span>
@@ -55,9 +56,10 @@
 <span class="keyword">staload</span> <span class="staexp">"interp1.sats"</span>
 <span class="keyword">staload</span> <span class="staexp">"error.sats"</span>
 <span class="keyword">staload</span> <span class="staexp">"trans1.sats"</span>
-<span class="keyword">staload</span> <span class="staexp">"trans2.sats"</span>
-<span class="keyword">staload</span> <span class="staexp">"trans_cpp.sats"</span>
-
+<span class="keyword">staload</span> <span class="staexp">"trans_closure.sats"</span>
+<span class="comment">// staload "trans2.sats"
+</span><span class="comment">// staload "trans_cpp.sats"
+</span>
 
 <span class="comment">(* ****** ****** *)</span>
 
@@ -73,29 +75,41 @@ main <span class="keyword">(</span><span class="keyword">)</span> <span class="k
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print_newline <span class="keyword">(</span><span class="keyword">)</span>
 
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print "\n\nafter type inference ==================================\n\n"
-  <span class="keyword">val</span> prog1 <span class="keyword">=</span> trans1_exp <span class="keyword">(</span>prog<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>prog1<span class="keyword">,</span> err<span class="keyword">)</span> <span class="keyword">=</span> trans1_exp <span class="keyword">(</span>prog<span class="keyword">)</span>
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_e1xp <span class="keyword">(</span>stdout_ref<span class="keyword">,</span> prog1<span class="keyword">)</span>
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print_newline <span class="keyword">(</span><span class="keyword">)</span>
+  
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> err &lt;&gt; 0 <span class="keyword">then</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print "Type error exists, compiler exits\n"
+  <span class="keyword">in</span> <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+    
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print "\n\nafter closure formation ==================================\n\n"
+    <span class="keyword">val</span> prog_clo <span class="keyword">=</span> trans_closure <span class="keyword">(</span>prog1<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_e1xp <span class="keyword">(</span>stdout_ref<span class="keyword">,</span> prog_clo<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print_newline <span class="keyword">(</span><span class="keyword">)</span>
 
-  <span class="comment">// val () = print "\n\ninterp0 ==================================\n\n"
-</span>  <span class="comment">// val v = interp0_exp(prog)
-</span>  <span class="comment">// val () = print_newline ()
-</span>  <span class="comment">// val () = fprint_v0al (stdout_ref, v)
-</span>  <span class="comment">// val () = print_newline ()
+
+
+    <span class="comment">// val () = print "\n\ninterp0 ==================================\n\n"
+</span>    <span class="comment">// val v = interp0_exp(prog)
+</span>    <span class="comment">// val () = print_newline ()
+</span>    <span class="comment">// val () = fprint_v0al (stdout_ref, v)
+</span>    <span class="comment">// val () = print_newline ()
 </span>
-  <span class="comment">// val () = print "\n\ninterp1 ==================================\n\n"
-</span>  <span class="comment">// val v = interp1_exp(prog1)
-</span>  <span class="comment">// val () = print_newline ()
-</span>  <span class="comment">// val () = fprint_v1al (stdout_ref, v)
-</span>  <span class="comment">// val () = print_newline ()
+    <span class="comment">// val () = print "\n\ninterp1 ==================================\n\n"
+</span>    <span class="comment">// val v = interp1_exp(prog1)
+</span>    <span class="comment">// val () = print_newline ()
+</span>    <span class="comment">// val () = fprint_v1al (stdout_ref, v)
+</span>    <span class="comment">// val () = print_newline ()
 </span>
-  <span class="comment">// val () = print "\n\ntransform to IR ==================================\n\n"
-</span>  <span class="comment">// val (irs, fns) = trans2_exp (prog1)
+    <span class="comment">// val () = print "\n\ntransform to IR ==================================\n\n"
+</span>    <span class="comment">// val (irs, fns) = trans2_exp (prog1)
 </span>
-  <span class="comment">// val os = trans_cpp (irs, fns)
-</span>  <span class="comment">// val () = print_ostream (os)
-</span>  <span class="comment">// val () = print_newline ()
-</span><span class="keyword">}</span> <span class="comment">// end of [main]
+    <span class="comment">// val os = trans_cpp (irs, fns)
+</span>    <span class="comment">// val () = print_ostream (os)
+</span>    <span class="comment">// val () = print_newline ()
+</span>  <span class="keyword">in</span> <span class="keyword">end</span>
+<span class="keyword">}</span> <span class="comment">// end of [main]
 </span>
 <span class="comment">(* ****** ****** *)</span>
 

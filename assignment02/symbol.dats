@@ -243,6 +243,28 @@ in
   xs
 end
 
+implement{a}
+  symenv_merge (env1, env2) = symenv_inserts (env1, symenv_listize (env2))
+
+implement{a}
+  symenv_sub (env1, env2) = let
+  val xs = symenv_listize (env1)
+
+  fun loop (xs: list0 @(symbol_t, a), env: symenv_t a): list0 @(symbol_t, a) =
+    case+ xs of
+    | list0_cons (x, xs1) => let
+      val vopt = symenv_lookup (env, x.0)
+    in
+      case+ vopt of
+      | option0_some _ => loop (xs1, env)
+      | option0_none () => list0_cons (x, loop (xs1, env))
+    end
+    | list0_nil () => list0_nil
+
+  val xs1 = loop (xs, env2)
+in
+  symenv_inserts (symenv_make (), xs1)
+end
 
 end // end of [local]
 

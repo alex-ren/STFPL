@@ -399,7 +399,7 @@ and match_t1yplst_t1yplst_l (
 implement
 v1ar_make (loc, sym, t) = '{
   v1ar_loc= loc, v1ar_nam= sym, v1ar_typ= t, 
-  v1ar_def= None0, v1ar_val = ref<option0 valprim_t>(None0)
+  v1ar_def= ref_make_elt<option0 e1xp> (None0), v1ar_val = ref<option0 valprim_t>(None0)
 } // end of [v1ar_make]
 
 implement
@@ -419,7 +419,9 @@ e1xp_make_bool (loc, b) = '{
 
 implement
 e1xp_make_fix (loc, f, xs, body, t_fun) = '{
-  e1xp_loc= loc, e1xp_node = E1XPfix (f, xs, body), e1xp_typ= t_fun
+  e1xp_loc= loc, 
+  e1xp_node = E1XPfix (f, xs, body, ref_make_elt<v1arlst> (nil)), 
+  e1xp_typ= t_fun
 } // end of [e1xp_make_fix]
 
 implement
@@ -434,7 +436,9 @@ e1xp_make_int (loc, i) = '{
 
 implement
 e1xp_make_lam (loc, xs, body, t_fun) = '{
-  e1xp_loc= loc, e1xp_node = E1XPlam (xs, body), e1xp_typ= t_fun
+  e1xp_loc= loc, 
+  e1xp_node = E1XPlam (xs, body, ref_make_elt<v1arlst> (nil)),
+  e1xp_typ= t_fun
 } // end of [e1xp_make_lam]
 
 implement
@@ -1080,8 +1084,8 @@ implement e0xp_node_is_fun (e_node) =
 implement e1xp_node_is_fun (e_node) =
   case+ e_node of
   | E1XPann (e1, _) => e1xp_node_is_fun (e1.e1xp_node)
-  | E1XPfix (_, _, _) => true
-  | E1XPlam (_, _) => true
+  | E1XPfix (_, _, _, _) => true
+  | E1XPlam (_, _, _) => true
   | _ => false
 
 implement typcheck (Gamma, e0, t1) = let
@@ -1111,13 +1115,250 @@ in
   end
 end
 
+(* auxilliary function for list opertation *)
+fun {a:t@ype} list_scan_accu (xs: list0 a, scanner: a -> (a, int)): 
+  (list0 a, int) = let
+  fun loop (xs: list0 a, scanner: a -> (a, int), accu1: list0 a, accu2: int): 
+  (list0 a, int) =
+    case+ xs of
+    | cons (x, xs1) => let
+      val (x, amb) = scanner x
+    in
+      loop (xs1, scanner, cons (x, accu1), accu2 + amb)
+    end
+    | nil () => (accu1, accu2)
+  
+  val (xs, amb) = loop (xs, scanner, nil (), 0)
+  val xs = list0_reverse (xs)
+in
+  (xs, amb)
+end
+
+(* ret value:
+   0: no ambiguity
+   > 0: has ambiguity
+*)
+extern fun t1yp_finalize (t: t1yp): (t1yp, int)
+
+fun t1yp_lst_finalize (ts: t1yplst): (t1yplst, int) =
+  list_scan_accu (ts, t1yp_finalize)
+
+implement t1yp_finalize (t) = let
+  val t1 = t1yp_normalize (t)
+in
+  case+ t1 of
+  | T1YPbase (x) => (t1, 0)
+  | T1YPfun (x, args, ret) => let
+    val (args, amb1) = t1yp_finalize (args)
+    val (ret, amb2) = t1yp_finalize (ret)
+  in
+    (T1YPfun (x, args, ret), amb1 + amb2)
+  end
+  | T1YPtup (t1yps) => let
+    val (t1yps, amb) = t1yp_lst_finalize (t1yps)
+  in
+    (T1YPtup (t1yps), amb)
+  end
+  | T1YPtup_vl (ref_t1yps) => let
+    val (t1yps, amb) = t1yp_lst_finalize (!ref_t1yps)
+  in
+    (T1YPtup (t1yps), amb)
+  end
+  | T1YPvar (_) => (t1, 1)
+  | T1YPdummy () => ETRACE_MSG_OPR ("t1yp_finalize T1YPdummy is found\n", ETRACE_LEVEL_ERROR,
+                    abort (ERRORCODE_FORBIDDEN))
+  | T1YPlist (X) => let
+    val t = t1Var_get_typ (X)
+    val (t, amb) = t1yp_finalize (t)
+    val () = t1Var_set_typ (X, t)
+  in
+    (t1, amb)
+  end
+end // end of [t1yp_finalize]
+
+(* remove T1YPtup_vl and T1YPvar, T1YPdummy *)
+(* return value:
+     0: O.K.
+     not 0: ambiguity
+*)
+// Caution: This function creates a new e1xp, which shares nothing with the old one.
+extern fun e1xp_t1yp_finalize (e: e1xp): (e1xp, int)
+fun e1xp_lst_t1yp_finalize (es: e1xplst): (e1xplst, int) = 
+  list_scan_accu (es, e1xp_t1yp_finalize)
+
+extern fun e1xpopt_t1yp_finalize (eopt: e1xpopt): (e1xpopt, int)
+
+extern fun v1ar_t1yp_finalize (v: v1ar): (v1ar, int)
+fun v1ar_lst_t1yp_finalize (vs: v1arlst): (v1arlst, int) =
+  list_scan_accu (vs, v1ar_t1yp_finalize)
+
+extern fun d1ec_t1yp_finalize (dec: d1ec): (d1ec, int)
+fun d1eclst_t1yp_finalize (decs: d1eclst): (d1eclst, int) =
+  list_scan_accu (decs, d1ec_t1yp_finalize)
+
+extern fun v1aldec_t1yp_finalize (v1aldec: v1aldec): (v1aldec, int)
+fun v1aldec_lst_t1yp_finalize (v1aldecs: v1aldeclst): (v1aldeclst, int) =
+  list_scan_accu (v1aldecs, v1aldec_t1yp_finalize)
+
+implement e1xp_make (loc, node, t1yp) =
+  '{e1xp_loc = loc, e1xp_node = node, e1xp_typ = t1yp}
+
+implement e1xp_t1yp_finalize (e) = let
+  val e1_loc  = e.e1xp_loc
+  val e1_node = e.e1xp_node
+  val e1_typ  = e.e1xp_typ
+  val (e1_typ, amb) = t1yp_finalize (e1_typ)
+in
+  case+ e1_node of
+  | E1XPann (e1a, t1a) => let
+    val (t1a, amb_t) = t1yp_finalize (t1a)
+    val (e1a, amb_e) = e1xp_t1yp_finalize (e1a)
+    val e1_node = E1XPann (e1a, t1a)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb_t + amb_e)
+  end
+  | E1XPapp (e1fun, e1args) => let
+    val (e1fun, amb1) = e1xp_t1yp_finalize (e1fun)
+    val (e1args, amb2) = e1xp_t1yp_finalize (e1args)
+    val e1_node = E1XPapp (e1fun, e1args)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2)
+  end
+  | E1XPbool (_) => (e1xp_make (e1_loc, e1_node, e1_typ), amb)
+  | E1XPfix (f, args, body, esc) => let
+    val (f, amb1) = v1ar_t1yp_finalize (f)
+    val (args, amb2) = v1ar_lst_t1yp_finalize (args)
+    val (body, amb3) = e1xp_t1yp_finalize (body)
+    val e1_node = E1XPfix (f, args, body, esc)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2 + amb3)
+  end
+  | E1XPif (e1_if, e1_then, e1opt_else) => let
+    val (e1_if, amb1) = e1xp_t1yp_finalize (e1_if)
+    val (e1_then, amb2) = e1xp_t1yp_finalize (e1_then)
+    val (e1opt_else, amb3) = e1xpopt_t1yp_finalize (e1opt_else)
+    val e1_node = E1XPif (e1_if, e1_then, e1opt_else)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2 + amb3)
+  end
+  | E1XPint (_) => (e1xp_make (e1_loc, e1_node, e1_typ), amb)
+  | E1XPlam (args, body, esc) => let
+    val (args, amb1) = v1ar_lst_t1yp_finalize (args)
+    val (body, amb2) = e1xp_t1yp_finalize (body)
+    val e1_node = E1XPlam (args, body, esc)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2)
+  end
+  | E1XPlet (decs, body) => let
+    val (decs, amb1) = d1eclst_t1yp_finalize (decs)
+    val (body, amb2) = e1xp_t1yp_finalize (body)
+    val e1_node = E1XPlet (decs, body)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2)
+  end
+  | E1XPopr (opr, explst) => let
+    val (explst, amb1) = e1xp_lst_t1yp_finalize (explst)
+    val e1_node = E1XPopr (opr, explst)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1)
+  end
+  | E1XPproj (e1xp, i) => let
+    val (e1xp, amb1) = e1xp_t1yp_finalize (e1xp)
+    val e1_node = E1XPproj (e1xp, i)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1)
+  end
+  | E1XPstr (_) => (e1xp_make (e1_loc, e1_node, e1_typ), amb)
+  | E1XPtup (explst) => let
+    val (explst, amb1) = e1xp_lst_t1yp_finalize (explst)
+    val e1_node = E1XPtup (explst)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1)
+  end
+  | E1XPvar (v) => let
+    val (v, amb1) = v1ar_t1yp_finalize (v)
+    val e1_node = E1XPvar (v)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1)
+  end
+  | E1XPfixclo (f, args, body, env) => let
+    val (f, amb1) = v1ar_t1yp_finalize (f)
+    val (args, amb2) = v1ar_lst_t1yp_finalize (args)
+    val (body, amb3) = e1xp_t1yp_finalize (body)
+    val e1_node = E1XPfixclo (f, args, body, env)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2 + amb3)
+  end
+  | E1XPlamclo (args, body, env) => let
+    val (args, amb1) = v1ar_lst_t1yp_finalize (args)
+    val (body, amb2) = e1xp_t1yp_finalize (body)
+    val e1_node = E1XPlamclo (args, body, env)
+  in
+    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2)
+  end
+end
+  
+implement e1xpopt_t1yp_finalize (eopt) = 
+  case+ eopt of
+  | Some0 e => let
+    val (e, amb) = e1xp_t1yp_finalize (e)
+  in
+    (Some0 e, amb)
+  end
+  | None0 () => (None0, 0)
+
+implement v1ar_t1yp_finalize (v) = let
+  val (typ, amb1) = t1yp_finalize (v.v1ar_typ)
+  // val (def, amb2) = e1xpopt_t1yp_finalize (!(v.v1ar_def))  // after the closure translation, this could
+                                                              // cause circle
+in
+  ('{v1ar_loc = v.v1ar_loc,
+    v1ar_nam = v.v1ar_nam,
+    v1ar_typ = typ,
+    v1ar_def = v.v1ar_def,
+    v1ar_val = v.v1ar_val
+  }, amb1(* + amb2*))
+end
+
+implement d1ec_t1yp_finalize (dec) = let
+  val loc = dec.d1ec_loc
+  val node = dec.d1ec_node
+  val+ D1ECval (isrec, v1aldecs) = node
+  val (v1aldecs, amb) = v1aldec_lst_t1yp_finalize (v1aldecs)
+  val node = D1ECval (isrec, v1aldecs)
+in
+  ('{d1ec_loc = loc, d1ec_node = node}, amb)
+end
+
+
+implement v1aldec_t1yp_finalize (v1aldec) = let
+  val (v, amb1) = v1ar_t1yp_finalize (v1aldec.v1aldec_var)
+  val (e, amb2) = e1xp_t1yp_finalize (v1aldec.v1aldec_def)
+  val v1aldec = '{v1aldec_loc = v1aldec.v1aldec_loc,
+                  v1aldec_var = v,
+                  v1aldec_def = e}
+in
+  (v1aldec, amb1 + amb2)
+end
+
+(* return value
+ 0: O.K.
+ 1: type conflict
+ 2: type ambiguity
+ 3: both
+*)
 implement trans1_exp (e0xp) = let
   val (e1xp, tyerrs) = oftype (ctx_nil, e0xp)
-  val sz = tyerr_pool_size (tyerrs)
   val () = fprint_tyerr_pool (stderr_ref, tyerrs)
-  // todo check whether there is error
+  val sz = tyerr_pool_size (tyerrs)
+  val type_conflict = (if sz = 0 then 0 else 1): int
+  val (e1xp, amb) = e1xp_t1yp_finalize (e1xp)
+  // new e1xp has less information than the old one
+  val type_ambiguity = if amb = 0 then 0 else 2
 in
-  e1xp
+  (e1xp, type_conflict + type_ambiguity)
 end
+
+
 
 

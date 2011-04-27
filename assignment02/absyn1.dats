@@ -51,7 +51,11 @@ in
   | T1YPtup_vl rfts => begin
       "(" + tostring_t1yplst (!rfts) + ")"
     end // end of [T1YPtup_vl] 
-  | T1YPvar _ => "T1YPvar(...)"
+  | T1YPvar X => let
+    val t1 = t1Var_get_typ X
+  in
+    "T1YPvar(" + tostring_t1yp (t1) + ")"
+  end
   | T1YPdummy () => "T1YPdummy()"
   | T1YPlist (X) => let
     val t = t1Var_get_typ (X)
@@ -100,7 +104,12 @@ in
   | T1YPtup_vl rfts => begin
       prstr "("; fprint_t1yplst (out, !rfts); prstr ")"
     end // end of [T1YPtup_vl] 
-  | T1YPvar _ => prstr "T1YPvar(...)"
+  | T1YPvar X => let
+    val t1 = t1Var_get_typ X
+    val () = prstr "T1YPvar("
+    val () = fprint_t1yp (out, t1)
+    val () = prstr ")"
+  in end
   | T1YPdummy () => prstr "T1YPdummy()"
   | T1YPlist (X) => let
     val t = t1Var_get_typ (X)
@@ -159,45 +168,45 @@ in
     end // end of [E1XPann]
   | E1XPapp (e_fun, e_arg) => begin
       prstr "E1XPapp(";
-      prexp e_fun; prstr "; "; prexp e_arg;
+      prexp e_fun; prstr " @ "; prexp e_arg;
       prstr ")"
     end // end of [E1XPapp]
   | E1XPbool b => begin
       prstr "E1XPbool("; fprint_bool (out, b); prstr ")"
     end // end of [E1XPbool] 
-  | E1XPfix (f, args, body) => begin
+  | E1XPfix (f, args, body, _) => begin
       prstr "E1XPfix(";
       fprint_v1ar (out, f);
       prstr " (";
       fprint_v1arlst (out, args);
-      prstr ") => ";
+      prstr ") => \n";
       fprint_e1xp (out, body);
-      prstr ")"
-    end // end of [E1XPlam]  
+      prstr "\n)"
+    end // end of [E1XPfix]  
   | E1XPif (e1, e2, oe3) => begin
       prstr "E1XPif(";
-      prexp e1; prstr " $then "; prexp e2;
+      prexp e1; prstr " \n$then "; prexp e2;
       begin
-        case+ oe3 of Some e3 => (prstr " $else "; prexp e3) | None () => ()
+        case+ oe3 of Some e3 => (prstr " \n$else "; prexp e3) | None () => ()
       end;
       prstr ")"
     end // end of [E1XPif]
   | E1XPint i => begin
       prstr "E1XPint("; fprint_int (out, i); prstr ")"
     end // end of [E1XPint]
-  | E1XPlam (args, body) => begin
+  | E1XPlam (args, body, _) => begin
       prstr "E1XPlam((";
       fprint_v1arlst (out, args);
       prstr "): ";
       fprint_t1yp (out, body.e1xp_typ);
-      prstr " => ";
+      prstr " => \n";
       fprint_e1xp (out, body);
-      prstr ")"
+      prstr "\n)"
     end // end of [E1XPlam]  
   | E1XPlet (decs, e_body) => begin
-      prstr "E1XPlet(";
-      fprint_d1eclst (out, decs); prstr " $in "; prexp e_body;
-      prstr ")"
+      prstr "E1XPlet(\n";
+      fprint_d1eclst (out, decs); prstr " \n$in \n"; prexp e_body;
+      prstr "\nend)"
     end // end of [E1XPlet]
   | E1XPopr (sym, es) => begin
       prstr "E1XPopr(";
@@ -216,6 +225,28 @@ in
   | E1XPvar (v1ar) => begin
       prstr "E1XPvar("; fprint_v1ar (out, v1ar); prstr ")"
     end // end of [E1XPvar]
+  | E1XPfixclo (f, args, body, env) => begin
+      prstr "E1XPfixclo(";
+      fprint_v1ar (out, f);
+      prstr " (";
+      fprint_v1arlst (out, args);
+      prstr ") => \n";
+      fprint_e1xp (out, body);
+      prstr "\n)<<";
+      fprint_v1arlst (out, env);
+      prstr ">>"
+    end // end of [E1XPfixclo]  
+  | E1XPlamclo (args, body, env) => begin
+      prstr "E1XPlam((";
+      fprint_v1arlst (out, args);
+      prstr "): ";
+      fprint_t1yp (out, body.e1xp_typ);
+      prstr " => \n";
+      fprint_e1xp (out, body);
+      prstr "\n)<<";
+      fprint_v1arlst (out, env);
+      prstr ">>"
+    end // end of [E1XPlamclo]  
 (*
   | _ => ()
 *)
@@ -257,7 +288,7 @@ implement fprint_v1aldeclst (out, valdecs) = loop (valdecs, 0) where {
   fun loop (valdecs: v1aldeclst, i: int)
     :<cloref1> void = case+ valdecs of
     | cons (valdec, valdecs') => loop (valdecs', i+1) where {
-        val () = if i > 0 then fprint_string (out, ", ")
+        val () = if i > 0 then fprint_string (out, "\n")
         val () = fprint_v1aldec (out, valdec)
       } // end of [cons]
     | nil () => ()

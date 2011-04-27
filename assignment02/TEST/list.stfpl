@@ -22,7 +22,7 @@ let
   val tail = list_tail (xss)
 
   // This is O.K. But then fn can only be applied to list of certain kind.
-  val fn = list_cons
+  // val fn = list_cons
 
   val gg = list_cons ((list_cons (5, list_nil ()), 3, "ss"), list_nil ())
 in

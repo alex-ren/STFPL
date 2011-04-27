@@ -424,7 +424,7 @@ no indented T1YPvar
 <span class="keyword">implement</span>
 v1ar_make <span class="keyword">(</span>loc<span class="keyword">,</span> sym<span class="keyword">,</span> t<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
   v1ar_loc<span class="keyword">=</span> loc<span class="keyword">,</span> v1ar_nam<span class="keyword">=</span> sym<span class="keyword">,</span> v1ar_typ<span class="keyword">=</span> t<span class="keyword">,</span> 
-  v1ar_def<span class="keyword">=</span> None0<span class="keyword">,</span> v1ar_val <span class="keyword">=</span> ref&lt;<span class="staexp">option0 valprim_t</span><span class="keyword">&gt;</span><span class="keyword">(</span>None0<span class="keyword">)</span>
+  v1ar_def<span class="keyword">=</span> ref_make_elt&lt;<span class="staexp">option0 e1xp</span><span class="keyword">&gt;</span> <span class="keyword">(</span>None0<span class="keyword">)</span><span class="keyword">,</span> v1ar_val <span class="keyword">=</span> ref&lt;<span class="staexp">option0 valprim_t</span><span class="keyword">&gt;</span><span class="keyword">(</span>None0<span class="keyword">)</span>
 <span class="keyword">}</span> <span class="comment">// end of [v1ar_make]
 </span>
 <span class="keyword">implement</span>
@@ -444,7 +444,9 @@ e1xp_make_bool <span class="keyword">(</span>loc<span class="keyword">,</span> b
 </span>
 <span class="keyword">implement</span>
 e1xp_make_fix <span class="keyword">(</span>loc<span class="keyword">,</span> f<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">,</span> t_fun<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
-  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPfix <span class="keyword">(</span>f<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">)</span><span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t_fun
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> 
+  e1xp_node <span class="keyword">=</span> E1XPfix <span class="keyword">(</span>f<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">,</span> ref_make_elt&lt;<span class="staexp">v1arlst</span><span class="keyword">&gt;</span> <span class="keyword">(</span>nil<span class="keyword">)</span><span class="keyword">)</span><span class="keyword">,</span> 
+  e1xp_typ<span class="keyword">=</span> t_fun
 <span class="keyword">}</span> <span class="comment">// end of [e1xp_make_fix]
 </span>
 <span class="keyword">implement</span>
@@ -459,7 +461,9 @@ e1xp_make_int <span class="keyword">(</span>loc<span class="keyword">,</span> i<
 </span>
 <span class="keyword">implement</span>
 e1xp_make_lam <span class="keyword">(</span>loc<span class="keyword">,</span> xs<span class="keyword">,</span> body<span class="keyword">,</span> t_fun<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">'{</span>
-  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> E1XPlam <span class="keyword">(</span>xs<span class="keyword">,</span> body<span class="keyword">)</span><span class="keyword">,</span> e1xp_typ<span class="keyword">=</span> t_fun
+  e1xp_loc<span class="keyword">=</span> loc<span class="keyword">,</span> 
+  e1xp_node <span class="keyword">=</span> E1XPlam <span class="keyword">(</span>xs<span class="keyword">,</span> body<span class="keyword">,</span> ref_make_elt&lt;<span class="staexp">v1arlst</span><span class="keyword">&gt;</span> <span class="keyword">(</span>nil<span class="keyword">)</span><span class="keyword">)</span><span class="keyword">,</span>
+  e1xp_typ<span class="keyword">=</span> t_fun
 <span class="keyword">}</span> <span class="comment">// end of [e1xp_make_lam]
 </span>
 <span class="keyword">implement</span>
@@ -526,16 +530,16 @@ v1ar_set_def (
 %}</span> <span class="comment">// end of [%{$]
 </span><span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">typedef</span> <span class="staexp"><a name="14659"><span class="stacstdec">ctx <span class="keyword">=</span> symenv_t <span class="keyword">(</span>v1ar<span class="keyword">)</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="14757"><span class="stacstdec">ctx <span class="keyword">=</span> symenv_t <span class="keyword">(</span>v1ar<span class="keyword">)</span></span></a></span>
 <span class="keyword">val</span> ctx_nil <span class="keyword">=</span> symenv_make <span class="keyword">(</span><span class="keyword">)</span> <span class="comment">// empty context
 </span>
 <span class="comment">(* ****** ****** *)</span>
 <span class="comment">// exception TypeError of (loc, String)
 </span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="14801"><span class="dyncstdec">oftype <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="14899"><span class="dyncstdec">oftype <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="14863"><span class="dyncstdec">typcheck <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> t1<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="14961"><span class="dyncstdec">typcheck <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> t1<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
 <span class="keyword">fun</span> oftype_ann <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> loc<span class="keyword">:</span> <span class="staexp">loc</span><span class="keyword">,</span> e0<span class="keyword">:</span> <span class="staexp">e0xp</span><span class="keyword">,</span> t0<span class="keyword">:</span> <span class="staexp">t0yp</span><span class="keyword">)</span><span class="keyword">:</span> 
   <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
@@ -572,21 +576,21 @@ v1ar_set_def (
 <span class="keyword">end</span>
     
 <span class="comment">(* fill the environment and do the transformation *)</span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16136"><span class="dyncstdec">oftype_declst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> decs<span class="keyword">:</span> <span class="staexp">d0eclst</span><span class="keyword">)</span><span class="keyword">:</span> 
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16234"><span class="dyncstdec">oftype_declst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> decs<span class="keyword">:</span> <span class="staexp">d0eclst</span><span class="keyword">)</span><span class="keyword">:</span> 
   <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1eclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16221"><span class="dyncstdec">oftype_dec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> dec<span class="keyword">:</span> <span class="staexp">d0ec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1ec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16319"><span class="dyncstdec">oftype_dec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> dec<span class="keyword">:</span> <span class="staexp">d0ec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1ec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16293"><span class="dyncstdec">oftype_valdeclst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16391"><span class="dyncstdec">oftype_valdeclst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span>
   <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1aldeclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16390"><span class="dyncstdec">oftype_valdeclst_rec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16488"><span class="dyncstdec">oftype_valdeclst_rec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldecs<span class="keyword">:</span> <span class="staexp">v0aldeclst</span><span class="keyword">)</span><span class="keyword">:</span>
   <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1aldeclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16491"><span class="dyncstdec">oftype_valdec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16589"><span class="dyncstdec">oftype_valdec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span>
   <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1aldec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16578"><span class="dyncstdec">oftype_valdec_rec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>v1aldec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="16676"><span class="dyncstdec">oftype_valdec_rec <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> v0aldec<span class="keyword">:</span> <span class="staexp">v0aldec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>v1aldec<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
 <span class="keyword">implement</span> oftype_declst <span class="keyword">(</span>Gamma<span class="keyword">,</span> decs<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">fun</span> helper <span class="keyword">(</span>init<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> d1eclst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span><span class="keyword">,</span> dec<span class="keyword">:</span> <span class="staexp">d0ec</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span>
@@ -742,9 +746,9 @@ v1ar_set_def (
   <span class="keyword">(</span>e1xp_make_let <span class="keyword">(</span>loc<span class="keyword">,</span> d1ecs<span class="keyword">,</span> e1<span class="keyword">,</span> e1<span class="keyword">.</span>e1xp_typ<span class="keyword">)</span><span class="keyword">,</span> tyerrs<span class="keyword">)</span>
 <span class="keyword">end</span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="22065"><span class="dyncstdec">oftyp_arglst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> a0rgs<span class="keyword">:</span> <span class="staexp">a0rglst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1arlst<span class="keyword">,</span> t1yplst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="22163"><span class="dyncstdec">oftyp_arglst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> a0rgs<span class="keyword">:</span> <span class="staexp">a0rglst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1arlst<span class="keyword">,</span> t1yplst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="22156"><span class="dyncstdec">oftyp_arg <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> a0rg<span class="keyword">:</span> <span class="staexp">a0rg</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1ar<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="22254"><span class="dyncstdec">oftyp_arg <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp">ctx</span><span class="keyword">,</span> a0rg<span class="keyword">:</span> <span class="staexp">a0rg</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1ar<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span></span></a>
 
 <span class="keyword">implement</span> oftyp_arglst <span class="keyword">(</span>Gamma<span class="keyword">,</span> a0rgs<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">fun</span> helper <span class="keyword">(</span>init<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>ctx<span class="keyword">,</span> v1arlst<span class="keyword">,</span> t1yplst<span class="keyword">,</span> tyerr_pool<span class="keyword">)</span></span><span class="keyword">,</span> a0rg<span class="keyword">:</span> <span class="staexp">a0rg</span><span class="keyword">)</span>
@@ -1105,8 +1109,8 @@ v1ar_set_def (
 <span class="keyword">implement</span> e1xp_node_is_fun <span class="keyword">(</span>e_node<span class="keyword">)</span> <span class="keyword">=</span>
   <span class="keyword">case+</span> e_node <span class="keyword">of</span>
   <span class="keyword">|</span> E1XPann <span class="keyword">(</span>e1<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> e1xp_node_is_fun <span class="keyword">(</span>e1<span class="keyword">.</span>e1xp_node<span class="keyword">)</span>
-  <span class="keyword">|</span> E1XPfix <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> true
-  <span class="keyword">|</span> E1XPlam <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> true
+  <span class="keyword">|</span> E1XPfix <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> _<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> true
+  <span class="keyword">|</span> E1XPlam <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> true
   <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> false
 
 <span class="keyword">implement</span> typcheck <span class="keyword">(</span>Gamma<span class="keyword">,</span> e0<span class="keyword">,</span> t1<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
@@ -1136,14 +1140,251 @@ v1ar_set_def (
   <span class="keyword">end</span>
 <span class="keyword">end</span>
 
+<span class="comment">(* auxilliary function for list opertation *)</span>
+<span class="keyword">fun</span> <span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> list_scan_accu <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> scanner<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&gt;</span> <span class="keyword">(</span>a<span class="keyword">,</span> int<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:</span> 
+  <span class="staexp"><span class="keyword">(</span>list0 a<span class="keyword">,</span> int<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> scanner<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&gt;</span> <span class="keyword">(</span>a<span class="keyword">,</span> int<span class="keyword">)</span></span><span class="keyword">,</span> accu1<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> accu2<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> 
+  <span class="staexp"><span class="keyword">(</span>list0 a<span class="keyword">,</span> int<span class="keyword">)</span></span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> xs <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>x<span class="keyword">,</span> xs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> <span class="keyword">(</span>x<span class="keyword">,</span> amb<span class="keyword">)</span> <span class="keyword">=</span> scanner x
+    <span class="keyword">in</span>
+      loop <span class="keyword">(</span>xs1<span class="keyword">,</span> scanner<span class="keyword">,</span> cons <span class="keyword">(</span>x<span class="keyword">,</span> accu1<span class="keyword">)</span><span class="keyword">,</span> accu2 + amb<span class="keyword">)</span>
+    <span class="keyword">end</span>
+    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>accu1<span class="keyword">,</span> accu2<span class="keyword">)</span>
+  
+  <span class="keyword">val</span> <span class="keyword">(</span>xs<span class="keyword">,</span> amb<span class="keyword">)</span> <span class="keyword">=</span> loop <span class="keyword">(</span>xs<span class="keyword">,</span> scanner<span class="keyword">,</span> nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">,</span> 0<span class="keyword">)</span>
+  <span class="keyword">val</span> xs <span class="keyword">=</span> list0_reverse <span class="keyword">(</span>xs<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">(</span>xs<span class="keyword">,</span> amb<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="comment">(* ret value:
+   0: no ambiguity
+   &gt; 0: has ambiguity
+*)</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="36466"><span class="dyncstdec">t1yp_finalize <span class="keyword">(</span>t<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>t1yp<span class="keyword">,</span> int<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span> t1yp_lst_finalize <span class="keyword">(</span>ts<span class="keyword">:</span> <span class="staexp">t1yplst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>t1yplst<span class="keyword">,</span> int<span class="keyword">)</span></span> <span class="keyword">=</span>
+  list_scan_accu <span class="keyword">(</span>ts<span class="keyword">,</span> t1yp_finalize<span class="keyword">)</span>
+
+<span class="keyword">implement</span> t1yp_finalize <span class="keyword">(</span>t<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> t1 <span class="keyword">=</span> t1yp_normalize <span class="keyword">(</span>t<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> t1 <span class="keyword">of</span>
+  <span class="keyword">|</span> T1YPbase <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>t1<span class="keyword">,</span> 0<span class="keyword">)</span>
+  <span class="keyword">|</span> T1YPfun <span class="keyword">(</span>x<span class="keyword">,</span> args<span class="keyword">,</span> ret<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>args<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> t1yp_finalize <span class="keyword">(</span>args<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>ret<span class="keyword">,</span> amb2<span class="keyword">)</span> <span class="keyword">=</span> t1yp_finalize <span class="keyword">(</span>ret<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>T1YPfun <span class="keyword">(</span>x<span class="keyword">,</span> args<span class="keyword">,</span> ret<span class="keyword">)</span><span class="keyword">,</span> amb1 + amb2<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> T1YPtup <span class="keyword">(</span>t1yps<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>t1yps<span class="keyword">,</span> amb<span class="keyword">)</span> <span class="keyword">=</span> t1yp_lst_finalize <span class="keyword">(</span>t1yps<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>T1YPtup <span class="keyword">(</span>t1yps<span class="keyword">)</span><span class="keyword">,</span> amb<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> T1YPtup_vl <span class="keyword">(</span>ref_t1yps<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>t1yps<span class="keyword">,</span> amb<span class="keyword">)</span> <span class="keyword">=</span> t1yp_lst_finalize <span class="keyword">(</span><span class="keyword">!</span>ref_t1yps<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>T1YPtup <span class="keyword">(</span>t1yps<span class="keyword">)</span><span class="keyword">,</span> amb<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> T1YPvar <span class="keyword">(</span>_<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>t1<span class="keyword">,</span> 1<span class="keyword">)</span>
+  <span class="keyword">|</span> T1YPdummy <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"t1yp_finalize T1YPdummy is found\n"<span class="keyword">,</span> ETRACE_LEVEL_ERROR<span class="keyword">,</span>
+                    abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">|</span> T1YPlist <span class="keyword">(</span>X<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> t <span class="keyword">=</span> t1Var_get_typ <span class="keyword">(</span>X<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>t<span class="keyword">,</span> amb<span class="keyword">)</span> <span class="keyword">=</span> t1yp_finalize <span class="keyword">(</span>t<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> t1Var_set_typ <span class="keyword">(</span>X<span class="keyword">,</span> t<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>t1<span class="keyword">,</span> amb<span class="keyword">)</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span> <span class="comment">// end of [t1yp_finalize]
+</span>
+<span class="comment">(* remove T1YPtup_vl and T1YPvar, T1YPdummy *)</span>
+<span class="comment">(* return value:
+     0: O.K.
+     not 0: ambiguity
+*)</span>
+<span class="comment">// Caution: This function creates a new e1xp, which shares nothing with the old one.
+</span><span class="keyword">extern</span> <span class="keyword">fun</span> <a name="37667"><span class="dyncstdec">e1xp_t1yp_finalize <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xp<span class="keyword">,</span> int<span class="keyword">)</span></span></span></a>
+<span class="keyword">fun</span> e1xp_lst_t1yp_finalize <span class="keyword">(</span>es<span class="keyword">:</span> <span class="staexp">e1xplst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xplst<span class="keyword">,</span> int<span class="keyword">)</span></span> <span class="keyword">=</span> 
+  list_scan_accu <span class="keyword">(</span>es<span class="keyword">,</span> e1xp_t1yp_finalize<span class="keyword">)</span>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="37823"><span class="dyncstdec">e1xpopt_t1yp_finalize <span class="keyword">(</span>eopt<span class="keyword">:</span> <span class="staexp">e1xpopt</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>e1xpopt<span class="keyword">,</span> int<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="37889"><span class="dyncstdec">v1ar_t1yp_finalize <span class="keyword">(</span>v<span class="keyword">:</span> <span class="staexp">v1ar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>v1ar<span class="keyword">,</span> int<span class="keyword">)</span></span></span></a>
+<span class="keyword">fun</span> v1ar_lst_t1yp_finalize <span class="keyword">(</span>vs<span class="keyword">:</span> <span class="staexp">v1arlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>v1arlst<span class="keyword">,</span> int<span class="keyword">)</span></span> <span class="keyword">=</span>
+  list_scan_accu <span class="keyword">(</span>vs<span class="keyword">,</span> v1ar_t1yp_finalize<span class="keyword">)</span>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="38044"><span class="dyncstdec">d1ec_t1yp_finalize <span class="keyword">(</span>dec<span class="keyword">:</span> <span class="staexp">d1ec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>d1ec<span class="keyword">,</span> int<span class="keyword">)</span></span></span></a>
+<span class="keyword">fun</span> d1eclst_t1yp_finalize <span class="keyword">(</span>decs<span class="keyword">:</span> <span class="staexp">d1eclst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>d1eclst<span class="keyword">,</span> int<span class="keyword">)</span></span> <span class="keyword">=</span>
+  list_scan_accu <span class="keyword">(</span>decs<span class="keyword">,</span> d1ec_t1yp_finalize<span class="keyword">)</span>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="38204"><span class="dyncstdec">v1aldec_t1yp_finalize <span class="keyword">(</span>v1aldec<span class="keyword">:</span> <span class="staexp">v1aldec</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>v1aldec<span class="keyword">,</span> int<span class="keyword">)</span></span></span></a>
+<span class="keyword">fun</span> v1aldec_lst_t1yp_finalize <span class="keyword">(</span>v1aldecs<span class="keyword">:</span> <span class="staexp">v1aldeclst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>v1aldeclst<span class="keyword">,</span> int<span class="keyword">)</span></span> <span class="keyword">=</span>
+  list_scan_accu <span class="keyword">(</span>v1aldecs<span class="keyword">,</span> v1aldec_t1yp_finalize<span class="keyword">)</span>
+
+<span class="keyword">implement</span> e1xp_make <span class="keyword">(</span>loc<span class="keyword">,</span> node<span class="keyword">,</span> t1yp<span class="keyword">)</span> <span class="keyword">=</span>
+  <span class="keyword">'{</span>e1xp_loc <span class="keyword">=</span> loc<span class="keyword">,</span> e1xp_node <span class="keyword">=</span> node<span class="keyword">,</span> e1xp_typ <span class="keyword">=</span> t1yp<span class="keyword">}</span>
+
+<span class="keyword">implement</span> e1xp_t1yp_finalize <span class="keyword">(</span>e<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> e1_loc  <span class="keyword">=</span> e<span class="keyword">.</span>e1xp_loc
+  <span class="keyword">val</span> e1_node <span class="keyword">=</span> e<span class="keyword">.</span>e1xp_node
+  <span class="keyword">val</span> e1_typ  <span class="keyword">=</span> e<span class="keyword">.</span>e1xp_typ
+  <span class="keyword">val</span> <span class="keyword">(</span>e1_typ<span class="keyword">,</span> amb<span class="keyword">)</span> <span class="keyword">=</span> t1yp_finalize <span class="keyword">(</span>e1_typ<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> e1_node <span class="keyword">of</span>
+  <span class="keyword">|</span> E1XPann <span class="keyword">(</span>e1a<span class="keyword">,</span> t1a<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>t1a<span class="keyword">,</span> amb_t<span class="keyword">)</span> <span class="keyword">=</span> t1yp_finalize <span class="keyword">(</span>t1a<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1a<span class="keyword">,</span> amb_e<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>e1a<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPann <span class="keyword">(</span>e1a<span class="keyword">,</span> t1a<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb_t + amb_e<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPapp <span class="keyword">(</span>e1fun<span class="keyword">,</span> e1args<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1fun<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>e1fun<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1args<span class="keyword">,</span> amb2<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>e1args<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPapp <span class="keyword">(</span>e1fun<span class="keyword">,</span> e1args<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1 + amb2<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPbool <span class="keyword">(</span>_<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPfix <span class="keyword">(</span>f<span class="keyword">,</span> args<span class="keyword">,</span> body<span class="keyword">,</span> esc<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>f<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> v1ar_t1yp_finalize <span class="keyword">(</span>f<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>args<span class="keyword">,</span> amb2<span class="keyword">)</span> <span class="keyword">=</span> v1ar_lst_t1yp_finalize <span class="keyword">(</span>args<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>body<span class="keyword">,</span> amb3<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>body<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPfix <span class="keyword">(</span>f<span class="keyword">,</span> args<span class="keyword">,</span> body<span class="keyword">,</span> esc<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1 + amb2 + amb3<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPif <span class="keyword">(</span>e1_if<span class="keyword">,</span> e1_then<span class="keyword">,</span> e1opt_else<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1_if<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>e1_if<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1_then<span class="keyword">,</span> amb2<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>e1_then<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1opt_else<span class="keyword">,</span> amb3<span class="keyword">)</span> <span class="keyword">=</span> e1xpopt_t1yp_finalize <span class="keyword">(</span>e1opt_else<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPif <span class="keyword">(</span>e1_if<span class="keyword">,</span> e1_then<span class="keyword">,</span> e1opt_else<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1 + amb2 + amb3<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPint <span class="keyword">(</span>_<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPlam <span class="keyword">(</span>args<span class="keyword">,</span> body<span class="keyword">,</span> esc<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>args<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> v1ar_lst_t1yp_finalize <span class="keyword">(</span>args<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>body<span class="keyword">,</span> amb2<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>body<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPlam <span class="keyword">(</span>args<span class="keyword">,</span> body<span class="keyword">,</span> esc<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1 + amb2<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPlet <span class="keyword">(</span>decs<span class="keyword">,</span> body<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>decs<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> d1eclst_t1yp_finalize <span class="keyword">(</span>decs<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>body<span class="keyword">,</span> amb2<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>body<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPlet <span class="keyword">(</span>decs<span class="keyword">,</span> body<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1 + amb2<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPopr <span class="keyword">(</span>opr<span class="keyword">,</span> explst<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>explst<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> e1xp_lst_t1yp_finalize <span class="keyword">(</span>explst<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPopr <span class="keyword">(</span>opr<span class="keyword">,</span> explst<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPproj <span class="keyword">(</span>e1xp<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e1xp<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>e1xp<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPproj <span class="keyword">(</span>e1xp<span class="keyword">,</span> i<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPstr <span class="keyword">(</span>_<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPtup <span class="keyword">(</span>explst<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>explst<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> e1xp_lst_t1yp_finalize <span class="keyword">(</span>explst<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPtup <span class="keyword">(</span>explst<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPvar <span class="keyword">(</span>v<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>v<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> v1ar_t1yp_finalize <span class="keyword">(</span>v<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPvar <span class="keyword">(</span>v<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPfixclo <span class="keyword">(</span>f<span class="keyword">,</span> args<span class="keyword">,</span> body<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>f<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> v1ar_t1yp_finalize <span class="keyword">(</span>f<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>args<span class="keyword">,</span> amb2<span class="keyword">)</span> <span class="keyword">=</span> v1ar_lst_t1yp_finalize <span class="keyword">(</span>args<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>body<span class="keyword">,</span> amb3<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>body<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPfixclo <span class="keyword">(</span>f<span class="keyword">,</span> args<span class="keyword">,</span> body<span class="keyword">,</span> env<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1 + amb2 + amb3<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> E1XPlamclo <span class="keyword">(</span>args<span class="keyword">,</span> body<span class="keyword">,</span> env<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>args<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> v1ar_lst_t1yp_finalize <span class="keyword">(</span>args<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>body<span class="keyword">,</span> amb2<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>body<span class="keyword">)</span>
+    <span class="keyword">val</span> e1_node <span class="keyword">=</span> E1XPlamclo <span class="keyword">(</span>args<span class="keyword">,</span> body<span class="keyword">,</span> env<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>e1xp_make <span class="keyword">(</span>e1_loc<span class="keyword">,</span> e1_node<span class="keyword">,</span> e1_typ<span class="keyword">)</span><span class="keyword">,</span> amb + amb1 + amb2<span class="keyword">)</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+  
+<span class="keyword">implement</span> e1xpopt_t1yp_finalize <span class="keyword">(</span>eopt<span class="keyword">)</span> <span class="keyword">=</span> 
+  <span class="keyword">case+</span> eopt <span class="keyword">of</span>
+  <span class="keyword">|</span> Some0 e <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>e<span class="keyword">,</span> amb<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>e<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>Some0 e<span class="keyword">,</span> amb<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>None0<span class="keyword">,</span> 0<span class="keyword">)</span>
+
+<span class="keyword">implement</span> v1ar_t1yp_finalize <span class="keyword">(</span>v<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>typ<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> t1yp_finalize <span class="keyword">(</span>v<span class="keyword">.</span>v1ar_typ<span class="keyword">)</span>
+  <span class="comment">// val (def, amb2) = e1xpopt_t1yp_finalize (!(v.v1ar_def))  // after the closure translation, this could
+</span>                                                              <span class="comment">// cause circle
+</span><span class="keyword">in</span>
+  <span class="keyword">(</span><span class="keyword">'{</span>v1ar_loc <span class="keyword">=</span> v<span class="keyword">.</span>v1ar_loc<span class="keyword">,</span>
+    v1ar_nam <span class="keyword">=</span> v<span class="keyword">.</span>v1ar_nam<span class="keyword">,</span>
+    v1ar_typ <span class="keyword">=</span> typ<span class="keyword">,</span>
+    v1ar_def <span class="keyword">=</span> v<span class="keyword">.</span>v1ar_def<span class="keyword">,</span>
+    v1ar_val <span class="keyword">=</span> v<span class="keyword">.</span>v1ar_val
+  <span class="keyword">}</span><span class="keyword">,</span> amb1<span class="comment">(* + amb2*)</span><span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> d1ec_t1yp_finalize <span class="keyword">(</span>dec<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> loc <span class="keyword">=</span> dec<span class="keyword">.</span>d1ec_loc
+  <span class="keyword">val</span> node <span class="keyword">=</span> dec<span class="keyword">.</span>d1ec_node
+  <span class="keyword">val+</span> D1ECval <span class="keyword">(</span>isrec<span class="keyword">,</span> v1aldecs<span class="keyword">)</span> <span class="keyword">=</span> node
+  <span class="keyword">val</span> <span class="keyword">(</span>v1aldecs<span class="keyword">,</span> amb<span class="keyword">)</span> <span class="keyword">=</span> v1aldec_lst_t1yp_finalize <span class="keyword">(</span>v1aldecs<span class="keyword">)</span>
+  <span class="keyword">val</span> node <span class="keyword">=</span> D1ECval <span class="keyword">(</span>isrec<span class="keyword">,</span> v1aldecs<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">(</span><span class="keyword">'{</span>d1ec_loc <span class="keyword">=</span> loc<span class="keyword">,</span> d1ec_node <span class="keyword">=</span> node<span class="keyword">}</span><span class="keyword">,</span> amb<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+
+<span class="keyword">implement</span> v1aldec_t1yp_finalize <span class="keyword">(</span>v1aldec<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>v<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> v1ar_t1yp_finalize <span class="keyword">(</span>v1aldec<span class="keyword">.</span>v1aldec_var<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>e<span class="keyword">,</span> amb2<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>v1aldec<span class="keyword">.</span>v1aldec_def<span class="keyword">)</span>
+  <span class="keyword">val</span> v1aldec <span class="keyword">=</span> <span class="keyword">'{</span>v1aldec_loc <span class="keyword">=</span> v1aldec<span class="keyword">.</span>v1aldec_loc<span class="keyword">,</span>
+                  v1aldec_var <span class="keyword">=</span> v<span class="keyword">,</span>
+                  v1aldec_def <span class="keyword">=</span> e<span class="keyword">}</span>
+<span class="keyword">in</span>
+  <span class="keyword">(</span>v1aldec<span class="keyword">,</span> amb1 + amb2<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="comment">(* return value
+ 0: O.K.
+ 1: type conflict
+ 2: type ambiguity
+ 3: both
+*)</span>
 <span class="keyword">implement</span> trans1_exp <span class="keyword">(</span>e0xp<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> <span class="keyword">(</span>e1xp<span class="keyword">,</span> tyerrs<span class="keyword">)</span> <span class="keyword">=</span> oftype <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> e0xp<span class="keyword">)</span>
-  <span class="keyword">val</span> sz <span class="keyword">=</span> tyerr_pool_size <span class="keyword">(</span>tyerrs<span class="keyword">)</span>
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_tyerr_pool <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> tyerrs<span class="keyword">)</span>
-  <span class="comment">// todo check whether there is error
-</span><span class="keyword">in</span>
-  e1xp
+  <span class="keyword">val</span> sz <span class="keyword">=</span> tyerr_pool_size <span class="keyword">(</span>tyerrs<span class="keyword">)</span>
+  <span class="keyword">val</span> type_conflict <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">if</span> sz <span class="keyword">=</span> 0 <span class="keyword">then</span> 0 <span class="keyword">else</span> 1<span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>e1xp<span class="keyword">,</span> amb<span class="keyword">)</span> <span class="keyword">=</span> e1xp_t1yp_finalize <span class="keyword">(</span>e1xp<span class="keyword">)</span>
+  <span class="comment">// new e1xp has less information than the old one
+</span>  <span class="keyword">val</span> type_ambiguity <span class="keyword">=</span> <span class="keyword">if</span> amb <span class="keyword">=</span> 0 <span class="keyword">then</span> 0 <span class="keyword">else</span> 2
+<span class="keyword">in</span>
+  <span class="keyword">(</span>e1xp<span class="keyword">,</span> type_conflict + type_ambiguity<span class="keyword">)</span>
 <span class="keyword">end</span>
+
+
 
 
 </pre>
