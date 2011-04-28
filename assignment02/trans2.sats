@@ -72,6 +72,7 @@ datatype valprim = // primitive values
 //  | VParg of int // function arguments: the ith argument -- no need
   | VPenv of int // closure parameter: the ith parameter
   | VPbool of bool // boolean constants
+  | VPfun of funlab
   | VPclo of (tmpvar, funlab, valprimlst) // (closure name, function labels, env)
   | VPint of int // integer constants
   | VPstr of string // string constants
@@ -98,7 +99,8 @@ datatype instr_node =
   | INSTRmove_val of (tmpvar(*x*), valprim(*v*)) // x := v
   | INSTRopr of (tmpvar, $Absyn.opr, valprimlst) // primtive operator
   | INSTRtup of (tmpvar, valprimlst) // create tuple
-  | INSTRclos of (list0 (tmpvar, valprimlst))  // create closures
+  // create closures
+  | INSTRclos of (list0 @(tmpvar, funlab, valprimlst))  
   | INSTRproj of (tmpvar, valprim, int) // projection
 
 where instr = '{
@@ -129,7 +131,8 @@ fun funlab_get_name (fl: funlab): string
 val mainlab: funlab
 
 fun funent_make_label (
-  fl: funlab, nargs: int, body: instrlst, ret: valprim): funent
+  fl: funlab, nargs: int, args: $Trans1.v1arlst, 
+  body: instrlst, ret: valprim): funent
 
 
 (* ****** ****** *)

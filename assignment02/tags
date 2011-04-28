@@ -8,8 +8,8 @@ a0rg	absyn.sats	/^and a0rg = @{$/;"	kind: declaration
 
 
 
-aux_exp	trans2.dats	/^extern fun aux_exp /;"	kind: declaration 
 aux_exp	trans2.dats	/^implement aux_exp /;"	kind: implementation 
+aux_exp	trans2.dats	/^extern fun aux_exp /;"	kind: declaration 
 aux_exp_ret	trans2.dats	/^aux_exp_ret /;"	kind: declaration 
 aux_exp_ret	trans2.dats	/^extern fun aux_exp_ret /;"	kind: implementation 
 

@@ -216,6 +216,7 @@ extern fun trans_clo2_e1xplst (exps: e1xplst,
 (* Gamma: from function arguments and var declaration
    env: the closure info
 *)
+(* reconstruct the tree, semantically same v1ar's are actually the same. *)
 fun trans_clo2_e1xp (exp: e1xp, Gamma: ctx, env: v1arlst): e1xp = let
   val loc = exp.e1xp_loc
   val node = exp.e1xp_node

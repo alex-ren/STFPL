@@ -76,9 +76,11 @@ end
 
 symintr tmpvar_new
 extern fun tmpvar_new_anon (): tmpvar_t
-extern fun tmpvar_new_name (v: v1ar): tmpvar_t
+extern fun tmpvar_new_v1ar (v: v1ar): tmpvar_t
+extern fun tmpvar_new_string (str: string): tmpvar_t
 overload tmpvar_new with tmpvar_new_anon
-overload tmpvar_new with tmpvar_new_name
+overload tmpvar_new with tmpvar_new_v1ar
+overload tmpvar_new with tmpvar_new_string
 
 local
 assume tmpvar_t = symbol_t
@@ -99,14 +101,18 @@ in
   symbol_make_name (name)
 end
 
-implement tmpvar_new_name (v) = let
+implement tmpvar_new_v1ar (v) = let
   val nam = symbol_get_name (v.v1ar_nam)
+in
+  tmpvar_new_string (nam)
+end
 
+implement tmpvar_new_string (str) = let
   val i = !tmpvar_count
   val () = !tmpvar_count := i + 1
 
   val id = tostring_int (i)
-  val fullname = string0_append (tmpvar_prefix, string0_append (nam, id))
+  val fullname = string0_append (tmpvar_prefix, string0_append (str, id))
 in
   symbol_make_name (fullname)
 end
@@ -134,7 +140,7 @@ in
     | None0 () => None0
   end // end of [v1ar_get_val]
   
-  fun v1ar_initset_val (
+  fun v1ar_set_val (
     x: v1ar, vp: valprim
   ) : void = let
     val r = x.v1ar_val
@@ -149,6 +155,7 @@ end // end of [local]
 typedef funent = '{
   funent_fun= funlab_t
 , funent_narg= int
+, funent_args = v1arlst
 , funent_body= instrlst
 , funent_ret= valprim
 }
@@ -162,9 +169,10 @@ implement funent_get_body (ent) = ent.funent_body
 implement funent_get_ret (ent) = ent.funent_ret
 
 
-implement funent_make_label (fl, nargs, body, ret) = 
+implement funent_make_label (fl, nargs, args, body, ret) = 
   '{funent_fun = fl,
     funent_narg = nargs,
+    funent_args = args,
     funent_body = body,
     funent_ret = ret
     }
@@ -182,9 +190,10 @@ overload funlab_make with funlab_make_name
 (* ***** ****** *)
 
 fun funent_make (
-  label: funlab, narg: int, body: instrlst, ret: valprim): funent = '{
+  label: funlab, narg: int, args: v1arlst, body: instrlst, ret: valprim): funent = '{
   funent_fun= label,
   funent_narg= narg,
+  funent_args= args,
   funent_body= body,
   funent_ret= ret
   }
@@ -244,6 +253,61 @@ implement mainlab = symbol_make_name ("__main")
 end
 
 (* ****** ****** *)
+fun instr_add_call (loc: loc, tmpv: tmpvar,
+  vpf: valprim, vpargs: valprimlst, iswrapper: bool, res: &instrlst): void = let
+  val ins_node = INSTRcall (tmpv, vpf, vpargs)
+  val ins = instr_make (loc, ins_node)
+  val () = instr_add (res, ins)
+in
+end  // end of [instr_add_call]
+
+fun instr_add_cond (loc: loc, tmpv: tmpvar, vp_test: valprim, 
+  instr1: instrlst, instr2: instrlst, res: &instrlst): void = let
+  val ins_node = INSTRcond (tmpv, vp_test, instr1, instr2)
+  val ins = instr_make (loc, ins_node)
+  val () = instr_add (res, ins)
+in
+end  // end of [instr_add_cond]
+
+fun instr_add_move (loc: loc, tmpv: tmpvar, vp: valprim, res: &instrlst): void = let
+  val ins_node = INSTRmove_val (tmpv, vp)
+  val ins = instr_make (loc, ins_node)
+  val () = instr_add (res, ins)
+in
+end  // end of [instr_add_move]
+
+fun instr_add_opr (loc: loc, tmpv: tmpvar, opr: opr, 
+  vps: valprimlst, res: &instrlst): void = let
+  val ins_node = INSTRopr (tmpv, opr, vps)
+  val ins = instr_make (loc, ins_node)
+  val () = instr_add (res, ins)
+in
+end  // end of [instr_add_opr]
+
+fun instr_add_tup (loc: loc, tmpv: tmpvar,
+  vps: valprimlst, res: &instrlst): void = let
+  val ins_node = INSTRtup (tmpv, vps)
+  val ins = instr_make (loc, ins_node)
+  val () = instr_add (res, ins)
+in
+end  // end of [instr_add_tup]
+
+fun instr_add_proj (loc: loc, tmpv: tmpvar,
+  vp: valprim, pos: int, res: &instrlst): void = let
+  val ins_node = INSTRproj (tmpv, vp, pos)
+  val ins = instr_make (loc, ins_node)
+  val () = instr_add (res, ins)
+in
+end  // end of [instr_add_proj]
+
+fun instr_add_clos (loc: loc,
+  clos: list0 @(tmpvar, funlab, valprimlst), res: &instrlst): void = let
+  val ins_node = INSTRclos (clos)
+  val ins = instr_make (loc, ins_node)
+  val () = instr_add (res, ins)
+in
+end
+(* ****** ****** *)
 
 extern fun aux_exp (e: e1xp, res: &instrlst, env: v1arlst): valprim
 
@@ -285,40 +349,59 @@ fun make_env (cloargs: v1arlst, env: v1arlst): valprimlst =
 
 (* f is already in the cloargs, but it's not in env *)
 fun aux_exp_fix_lab
-  (f: v1ar, v_args: v1arlst, e_body: e1xp, fl: funlab, cloargs: v1arlst, env: v1arlst): 
+  (loc: loc, f: v1ar, v_args: v1arlst, e_body: e1xp, 
+   fl: funlab, cloargs: v1arlst, env: v1arlst,
+   res: &instrlst): 
   valprim = let
-  val valprims = make_env (cloargs, env)
-  val vp_clo = VPclo (fl, valprims)
+  
+  val flstr = funlab_get_name (fl)
+  val closure_tmpvar = tmpvar_new (flstr)
+  val closure_vp = VPtmp closure_tmpvar
 
-  val () = v1ar_initset_val (f, vp_clo)
-  val narg = loop (v_args, 0) where {
+  val () = v1ar_set_val (f, closure_vp)
+
+  val cloargs_valprims = make_env (cloargs, env)
+
+  // closure_tmpvar has been in the cloargs_valprims
+  val vp_clo = VPclo (closure_tmpvar, fl, cloargs_valprims)
+
+  val () = instr_add_clos (loc, 
+    cons (@(closure_tmpvar, fl, cloargs_valprims), nil), 
+    res)
+
+  val nargs = loop (v_args, 0) where {
     fun loop (xs: v1arlst, n: int): int =
       case+ xs of
       | cons (x, xs) => let
-          val vp = VParg (n)
-          val () = v1ar_initset_val (x, vp)
+          val tmpvar = tmpvar_new (x)
+          val vp = VPtmp (tmpvar)
+          val () = v1ar_set_val (x, vp)
         in
           loop (xs, n+1)
         end
       | nil () => n
   }
+
   var res: instrlst = nil
-  val vp_ret = aux_exp (e_body, res)
+  val vp_ret = aux_exp (e_body, res, cloargs)
   val res = instr_reverse (res)
-  val ent = funent_make (fl, narg, res, vp_ret)
+  val ent = funent_make (fl, nargs, v_args, res, vp_ret)
   val () = funent_add (fl, ent)
 in
   VPfun (fl)
 end
 
-fun aux_exp_lam_lab (v_args: v1arlst, e_body: e1xp, fl: funlab): valprim = let
+fun aux_exp_lam_lab (
+  loc: loc, v_args: v1arlst, e_body: e1xp, fl: funlab): valprim = let
+
+
   (* handle the arguments *)
   val narg = loop (v_args, 0) where {
     fun loop (xs: v1arlst, n: int): int =
       case+ xs of
       | cons (x, xs) => let
           val vp = VParg (n)
-          val () = v1ar_initset_val (x, vp)
+          val () = v1ar_set_val (x, vp)
         in
           loop (xs, n+1)
         end
@@ -379,53 +462,6 @@ implement aux_exp (e, res, env) = (
 
 // end of [aux_exp]
 (* ****** ****** *)
-fun instr_add_call (loc: loc, tmpv: tmpvar,
-  vpf: valprim, vpargs: valprimlst, iswrapper: bool, res: &instrlst): void = let
-  val ins_node = INSTRcall (tmpv, vpf, vpargs, iswrapper)
-  val ins = instr_make (loc, ins_node)
-  val () = instr_add (res, ins)
-in
-end  // end of [instr_add_call]
-
-fun instr_add_cond (loc: loc, tmpv: tmpvar, vp_test: valprim, 
-  instr1: instrlst, instr2: instrlst, res: &instrlst): void = let
-  val ins_node = INSTRcond (tmpv, vp_test, instr1, instr2)
-  val ins = instr_make (loc, ins_node)
-  val () = instr_add (res, ins)
-in
-end  // end of [instr_add_cond]
-
-fun instr_add_move (loc: loc, tmpv: tmpvar, vp: valprim, res: &instrlst): void = let
-  val ins_node = INSTRmove_val (tmpv, vp)
-  val ins = instr_make (loc, ins_node)
-  val () = instr_add (res, ins)
-in
-end  // end of [instr_add_move]
-
-fun instr_add_opr (loc: loc, tmpv: tmpvar, opr: opr, 
-  vps: valprimlst, res: &instrlst): void = let
-  val ins_node = INSTRopr (tmpv, opr, vps)
-  val ins = instr_make (loc, ins_node)
-  val () = instr_add (res, ins)
-in
-end  // end of [instr_add_opr]
-
-fun instr_add_tup (loc: loc, tmpv: tmpvar,
-  vps: valprimlst, res: &instrlst): void = let
-  val ins_node = INSTRtup (tmpv, vps)
-  val ins = instr_make (loc, ins_node)
-  val () = instr_add (res, ins)
-in
-end  // end of [instr_add_tup]
-
-fun instr_add_proj (loc: loc, tmpv: tmpvar,
-  vp: valprim, pos: int, res: &instrlst): void = let
-  val ins_node = INSTRproj (tmpv, vp, pos)
-  val ins = instr_make (loc, ins_node)
-  val () = instr_add (res, ins)
-in
-end  // end of [instr_add_proj]
-
 fun aux_exp_ret_if (loc: loc, e_test: e1xp, e_then: e1xp, oe_else: e1xpopt, 
   res: &instrlst, tmp_ret: tmpvar): valprim = let
   val v_test = aux_exp (e_test, res)
@@ -475,7 +511,7 @@ fun aux_exp_v1aldeclst (v1aldecs: v1aldeclst, res: &instrlst): void =
           abort (ERRORCODE_FORBIDDEN))
         )
       | None0 () => aux_exp_ret (v1aldec.v1aldec_def, res, tmpvar_new (v1ar))
-    val () = v1ar_initset_val (v1ar, vp)  // vp may be equal to VPfun fl, just let it be
+    val () = v1ar_set_val (v1ar, vp)  // vp may be equal to VPfun fl, just let it be
   in
     aux_exp_v1aldeclst (v1aldecs1, res)
   end
@@ -493,7 +529,7 @@ fun aux_exp_v1aldeclst_rec_r1 (v1aldecs: v1aldeclst): void =
       if e1xp_node_is_fun (e_node) = true then let
         val fl = funlab_make_name (v)
         val vp_fun = VPfun (fl)
-        val () = v1ar_initset_val (v, vp_fun)
+        val () = v1ar_set_val (v, vp_fun)
       in end
   in
     aux_exp_v1aldeclst_rec_r1 (v1aldecs1)
