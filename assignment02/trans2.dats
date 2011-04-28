@@ -28,6 +28,17 @@ staload _(*anon*) = "prelude/DATS/reference.dats"
 #define Some0 option0_some
 #define None0 option0_none
 
+fun{a:t@ype} list0_locate (
+  xs: list0 a, pred: a -<cloref1> bool): option0 int = let
+  fun loop (xs: list0 a, pred: a -<cloref1> bool, accu: int): 
+  option0 int = 
+    case+ xs of
+    | cons (x, xs1) => if pred (x) then Some0 accu else loop (xs1, pred, accu + 1)
+    | nil () => None0
+in
+  loop (xs, pred, 0)
+end
+
 extern val tmpvar_void: tmpvar;
 
 fun instr_add (
@@ -234,29 +245,52 @@ end
 
 (* ****** ****** *)
 
-extern fun aux_exp (e: e1xp, res: &instrlst): valprim
+extern fun aux_exp (e: e1xp, res: &instrlst, env: v1arlst): valprim
 
 (* ret is supposed to be used in the evaluation *)
-extern fun aux_exp_ret (e: e1xp, res: &instrlst, ret: tmpvar): valprim
+extern fun aux_exp_ret (e: e1xp, res: &instrlst, ret: tmpvar, env: v1arlst): valprim
 
-(* this function only handle E1XPfix and E1XPlam and E1XPann *)
-extern fun aux_exp_fun (e: e1xp, fl: funlab): valprim
+(* this function only handle E1XPfixclo and E1XPlamclo and E1XPann *)
+(* caller guarantees that e is a function *)
+extern fun aux_exp_fun (e: e1xp, fl: funlab, env: v1arlst): valprim
 
 fun auxlst_exp (
-  es: e1xplst, res: &instrlst
+  es: e1xplst, res: &instrlst, env: v1arlst
 ) : valprimlst = case+ es of
   | list0_cons (e, es) => let
-      val v = aux_exp (e, res)
-      val vs = auxlst_exp (es, res)
+      val v = aux_exp (e, res, env)
+      val vs = auxlst_exp (es, res, env)
     in
       list0_cons (v, vs)
     end
   | list0_nil () => list0_nil ()
 
+fun aux_v1ar (v: v1ar, env: v1arlst): valprim = let
+  val vp_opt = v1ar_get_val (v)
+in
+  case+ vp_opt of
+  | Some0 (vp) => vp
+  | None0 () => let
+    val v1ar_opt = list0_locate<v1ar> (env, lam x => x.v1ar_nam = v.v1ar_nam)
+  in
+    case+ v1ar_opt of
+    | Some0 n => VPenv (n)
+    | None0 () => ETRACE_MSG_OPR ("aux_exp v1ar doesn't have valprim\n", ETRACE_LEVEL_ERROR,
+                  abort (ERRORCODE_FORBIDDEN))  // todo closure
+  end
+end
+
+fun make_env (cloargs: v1arlst, env: v1arlst): valprimlst =
+  list0_map_cloref<v1ar><valprim> (cloargs, lam x => aux_v1ar (x, env))
+
+(* f is already in the cloargs, but it's not in env *)
 fun aux_exp_fix_lab
-  (f: v1ar, v_args: v1arlst, e_body: e1xp, fl: funlab): valprim = let
-  val vp_fun = VPfun (fl)
-  val () = v1ar_initset_val (f, vp_fun)
+  (f: v1ar, v_args: v1arlst, e_body: e1xp, fl: funlab, cloargs: v1arlst, env: v1arlst): 
+  valprim = let
+  val valprims = make_env (cloargs, env)
+  val vp_clo = VPclo (fl, valprims)
+
+  val () = v1ar_initset_val (f, vp_clo)
   val narg = loop (v_args, 0) where {
     fun loop (xs: v1arlst, n: int): int =
       case+ xs of
@@ -300,41 +334,46 @@ in
   VPfun (fl)
 end
 
-implement aux_exp (e, res) = (
+implement aux_exp (e, res, env) = (
   case e.e1xp_node of
-  | E1XPann (e, _) => aux_exp (e, res)
-  | E1XPapp (_, _) => wrapper (e, res)
+  | E1XPann (e, _) => aux_exp (e, res, env)
+  | E1XPapp (_, _) => wrapper (e, res, env)
   | E1XPbool b => VPbool (b)
-  | E1XPfix (_, _, _) => let
+  | E1XPfixclo (_, _, _, _) => let
     val fl = funlab_make_anon ()
   in
-    aux_exp_fun (e, fl)
+    aux_exp_fun (e, fl, env)
   end
-  | E1XPif (_, _, _) => wrapper (e, res)
+  | E1XPif (_, _, _) => wrapper (e, res, env)
   | E1XPint i => VPint (i)
-  | E1XPlam (_, _) => let
+  | E1XPlam (_, _, _) => let
     val fl = funlab_make_anon ()
   in
-    aux_exp_fun (e, fl)
+    aux_exp_fun (e, fl, env)
   end
-  | E1XPlet (_, _) => wrapper (e, res)
-  | E1XPopr (_, _) => wrapper (e, res)
-  | E1XPproj (_, _) => wrapper (e, res)
+  | E1XPlet (_, _) => wrapper (e, res, env)
+  | E1XPopr (_, _) => wrapper (e, res, env)
+  | E1XPproj (_, _) => wrapper (e, res, env)
   | E1XPstr (str) => VPstr (str)
-  | E1XPtup exps => wrapper (e, res)
+  | E1XPtup exps => wrapper (e, res, env)
   | E1XPvar v => let
     val vp_opt = v1ar_get_val (v)
   in
     case+ vp_opt of
     | Some0 (vp) => vp
-    | None0 () =>
-      ETRACE_MSG_OPR ("aux_exp v1ar doesn't have valprim\n", ETRACE_LEVEL_ERROR,
+    | None0 () => let
+      val v1ar_opt = list0_locate<v1ar> (env, lam x => x.v1ar_nam = v.v1ar_nam)
+    in
+      case+ v1ar_opt of
+      | Some0 n => VPenv (n)
+      | None0 () => ETRACE_MSG_OPR ("aux_exp v1ar doesn't have valprim\n", ETRACE_LEVEL_ERROR,
                     abort (ERRORCODE_FORBIDDEN))  // todo closure
+    end
   end) where {
-  fun wrapper (e: e1xp, res: &instrlst): valprim = let
+  fun wrapper (e: e1xp, res: &instrlst, env: v1arlst): valprim = let
       val tmp_ret = tmpvar_new ()
     in
-      aux_exp_ret (e, res, tmp_ret)
+      aux_exp_ret (e, res, tmp_ret, env)
   end
   } // end of [where]
 
@@ -578,11 +617,11 @@ end
 
 (* extern fun aux_exp_fun (e: e1xp, fl: funlab): valprim *)
 (* this function only handle E1XPfix and E1XPlam and E1XPann *)
-implement aux_exp_fun (e, fl) = 
+implement aux_exp_fun (e, fl, env) = 
   case+ e.e1xp_node of
   | E1XPann (e1, _) => aux_exp_fun (e1, fl)
-  | E1XPfix (f, args, body) => aux_exp_fix_lab (f, args, body, fl)
-  | E1XPlam (args, body) => aux_exp_lam_lab (args, body, fl)
+  | E1XPfixclo (f, args, body, cloargs) => aux_exp_fix_lab (f, args, body, fl, cloargs, env)
+  | E1XPlamclo (args, body) => aux_exp_lam_lab (args, body, fl, cloargs, env)
   | _ => ETRACE_MSG_OPR ("aux_exp_fun handle non-function\n", ETRACE_LEVEL_ERROR,
                     abort (ERRORCODE_FORBIDDEN))
 
@@ -597,7 +636,8 @@ trans2_exp (e) = let
   // val () = ETRACE_MSG ("trans2_exp\n", ETRACE_LEVEL_DEBUG)
 
   var res: instrlst = list0_nil ()
-  val v = aux_exp (e, res)
+  var env: v1arlst = list0_nil ()
+  val v = aux_exp (e, res, env)
   (* reverse the main let *)
   val res = instr_reverse (res)
 

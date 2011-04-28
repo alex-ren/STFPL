@@ -56,18 +56,26 @@ overload print with print_funent
 (* ****** ****** *)
 
 (* ****** ****** *)
+datatype t2yp =
+  | T2YPint
+  | T2YPstr
+  | T2YPlist
+  | T2YPclo of (int, t2yplst, t2yp)  // nargs, args, ret
+  | T2YPtup of (t2yplst)
+where t2yplst = list0 (t2yp)
 
 (* by Zhiqiang Ren ***** *)
 (* valprim is either a literal value or
  * a tag for a temporary variable
  *)
 datatype valprim = // primitive values
-  | VParg of int // function arguments: the ith argument
+//  | VParg of int // function arguments: the ith argument -- no need
+  | VPenv of int // closure parameter: the ith parameter
   | VPbool of bool // boolean constants
-  | VPfun of funlab // function labels
+  | VPclo of (tmpvar, funlab, valprimlst) // (closure name, function labels, env)
   | VPint of int // integer constants
   | VPstr of string // string constants
-  | VPtmp of tmpvar // tmporaries
+  | VPtmp of tmpvar // temporaries
   | VPtup of (tmpvar, valprimlst) // (name of tuples, tuples)
 
 (*
@@ -84,12 +92,13 @@ overload fprint with fprint_valprimlst
 (* ****** ****** *)
 
 datatype instr_node =
-  | INSTRcall of (tmpvar, valprim, valprimlst, bool(*iswrapper*)) // fun call
+  | INSTRcall of (tmpvar, valprim, valprimlst) // fun call
   // conditional  // no return val, so no tmpvar
   | INSTRcond of (tmpvar, valprim, instrlst, instrlst) 
   | INSTRmove_val of (tmpvar(*x*), valprim(*v*)) // x := v
   | INSTRopr of (tmpvar, $Absyn.opr, valprimlst) // primtive operator
   | INSTRtup of (tmpvar, valprimlst) // create tuple
+  | INSTRclos of (list0 (tmpvar, valprimlst))  // create closures
   | INSTRproj of (tmpvar, valprim, int) // projection
 
 where instr = '{
