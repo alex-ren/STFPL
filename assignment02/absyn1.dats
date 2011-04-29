@@ -225,28 +225,28 @@ in
   | E1XPvar (v1ar) => begin
       prstr "E1XPvar("; fprint_v1ar (out, v1ar); prstr ")"
     end // end of [E1XPvar]
-  | E1XPfixclo (f, args, body, env) => begin
-      prstr "E1XPfixclo(";
-      fprint_v1ar (out, f);
-      prstr " (";
-      fprint_v1arlst (out, args);
-      prstr ") => \n";
-      fprint_e1xp (out, body);
-      prstr "\n)<<";
-      fprint_v1arlst (out, env);
-      prstr ">>"
-    end // end of [E1XPfixclo]  
-  | E1XPlamclo (args, body, env) => begin
-      prstr "E1XPlam((";
-      fprint_v1arlst (out, args);
-      prstr "): ";
-      fprint_t1yp (out, body.e1xp_typ);
-      prstr " => \n";
-      fprint_e1xp (out, body);
-      prstr "\n)<<";
-      fprint_v1arlst (out, env);
-      prstr ">>"
-    end // end of [E1XPlamclo]  
+//   | E1XPfixclo (f, args, body, env) => begin
+//       prstr "E1XPfixclo(";
+//       fprint_v1ar (out, f);
+//       prstr " (";
+//       fprint_v1arlst (out, args);
+//       prstr ") => \n";
+//       fprint_e1xp (out, body);
+//       prstr "\n)<<";
+//       fprint_v1arlst (out, env);
+//       prstr ">>"
+//     end // end of [E1XPfixclo]  
+//   | E1XPlamclo (args, body, env) => begin
+//       prstr "E1XPlam((";
+//       fprint_v1arlst (out, args);
+//       prstr "): ";
+//       fprint_t1yp (out, body.e1xp_typ);
+//       prstr " => \n";
+//       fprint_e1xp (out, body);
+//       prstr "\n)<<";
+//       fprint_v1arlst (out, env);
+//       prstr ">>"
+//     end // end of [E1XPlamclo]  
 (*
   | _ => ()
 *)

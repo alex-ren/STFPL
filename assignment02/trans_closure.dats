@@ -66,9 +66,8 @@ in
   end
   | E1XPbool _ => ctx_nil
   | E1XPfix (f, args, body, ref_esc) => let
-    // val new_gamma = symenv_insert (ctx_nil, f.v1ar_nam, f)
-    // todo: didn't put f into ctx, is this correct?
-    val new_gamma = ctx_nil
+    // put f into ctx
+    val new_gamma = symenv_insert (ctx_nil, f.v1ar_nam, f)
     val sym_args = list0_map_fun<v1ar>< @(symbol_t, v1ar)> (
       args, lam x => (x.v1ar_nam, x))
     val new_gamma = symenv_inserts (new_gamma, sym_args)
@@ -117,10 +116,10 @@ in
     | Some0 _ => ctx_nil 
     | None0 () => symenv_insert (ctx_nil, v.v1ar_nam, v)
   end
-  | E1XPfixclo _ => ETRACE_MSG_OPR ("trans_clo1_e1xp E1XPfixclo is found\n", ETRACE_LEVEL_ERROR,
-                    abort (ERRORCODE_FORBIDDEN))
-  | E1XPlamclo _ => ETRACE_MSG_OPR ("trans_clo1_e1xp E1XPlamclo is found\n", ETRACE_LEVEL_ERROR,
-                    abort (ERRORCODE_FORBIDDEN))
+//  | E1XPfixclo _ => ETRACE_MSG_OPR ("trans_clo1_e1xp E1XPfixclo is found\n", ETRACE_LEVEL_ERROR,
+//                    abort (ERRORCODE_FORBIDDEN))
+//  | E1XPlamclo _ => ETRACE_MSG_OPR ("trans_clo1_e1xp E1XPlamclo is found\n", ETRACE_LEVEL_ERROR,
+//                    abort (ERRORCODE_FORBIDDEN))
 end
 
 (* extern fun trans_clo1_e1xplst (exps: e1xplst, Gamma: ctx): ctx *)
@@ -167,26 +166,37 @@ implement trans_clo1_v1aldeclst (valdecs, Gamma) =
 
 
 (* extern fun trans_clo1_v1aldeclst_rec (valdecs: v1aldeclst, Gamma: ctx): (ctx, ctx) *)
-implement trans_clo1_v1aldeclst_rec (valdecs, Gamma) =
-  trans_clo1_v1aldeclst (valdecs, Gamma)  // todo is this correct?
-
+implement trans_clo1_v1aldeclst_rec (valdecs, Gamma) = let
+  fun collect_var (valdecs: v1aldeclst, ctx: ctx): ctx = 
+    case+ valdecs of
+    | cons (valdec, valdecs1) => let
+      val v = valdec.v1aldec_var
+      val nam = v.v1ar_nam
+      val ctx = symenv_insert (ctx, nam, v)
+    in
+      collect_var (valdecs1, ctx)
+    end
+    | nil () => ctx
+  
+  val Gamma1 = collect_var (valdecs, Gamma)
+in
+  trans_clo1_v1aldeclst (valdecs, Gamma1)
+end
 
 (* extern fun trans_clo1_v1aldec (valdec: v1aldec, Gamma: ctx): (ctx, ctx) *)
 implement trans_clo1_v1aldec (valdec, Gamma) = let
   val v = valdec.v1aldec_var
   val e = valdec.v1aldec_def
+
+  val esc = trans_clo1_e1xp (e, Gamma)
+
   val nam = v.v1ar_nam
   val gamma = symenv_insert (Gamma, nam, v)
-  val esc = trans_clo1_e1xp (e, gamma)
 in
   (gamma, esc)
 end
 
-(* extern fun trans_clo1_v1aldec_rec (valdec: v1aldec, Gamma: ctx): (ctx, ctx) *)
-implement trans_clo1_v1aldec_rec (valdec, Gamma) = 
-  trans_clo1_v1aldec (valdec, Gamma) // todo is this correct?
-
-
+(*
 (* *********** ************** *************** *)
 extern fun trans_clo2_e1xp_fix (f: v1ar, args: v1arlst, body: e1xp, 
   esc: v1arlst, Gamma: ctx, env: v1arlst): e1xp_node
@@ -461,12 +471,17 @@ implement trans_clo2_v1aldec_rec (valdec, Gamma, env) = let
 in
   v1aldec_make (loc, v, def')
 end
+*)
 
 implement trans_closure (e1xp) = let
-  val _ = trans_clo1_e1xp (e1xp, ctx_nil)
-  val e = trans_clo2_e1xp (e1xp, ctx_nil, nil)
+  val ctx = trans_clo1_e1xp (e1xp, ctx_nil)
+  val ctx = symenv_listize (ctx)
+  // val () = case+ ctx of
+  //          | cons (_, _) => fprint (stderr_ref, "000000000000000000000000000000000\n")
+  //          | nil () => fprint (stderr_ref, "111111111111111111111111111111\n")
+  // val e = trans_clo2_e1xp (e1xp, ctx_nil, nil)  // todo remove
 in
-  e
+  e1xp
 end
 
 

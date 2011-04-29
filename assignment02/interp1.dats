@@ -133,10 +133,10 @@ implement interp1_exp (e0) = let
         val vs = auxExp_list (env, es) in V1ALtup (vs)
       end // end of [E1XPtup]
     | E1XPvar (x) => auxVar (env, x)
-    | E1XPfixclo _ => ETRACE_MSG_OPR ("interp1_exp E1XPfixclo is found\n", 
-          ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
-    | E1XPlamclo _ => ETRACE_MSG_OPR ("interp1_exp E1XPlamclo is found\n", 
-          ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+//     | E1XPfixclo _ => ETRACE_MSG_OPR ("interp1_exp E1XPfixclo is found\n", 
+//           ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+//     | E1XPlamclo _ => ETRACE_MSG_OPR ("interp1_exp E1XPlamclo is found\n", 
+//           ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
 (*
     | _ => begin
         prerr "auxExp: not implemented"; prerr_newline (); abort (1)

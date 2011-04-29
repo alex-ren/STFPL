@@ -1281,21 +1281,21 @@ in
   in
     (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1)
   end
-  | E1XPfixclo (f, args, body, env) => let
-    val (f, amb1) = v1ar_t1yp_finalize (f)
-    val (args, amb2) = v1ar_lst_t1yp_finalize (args)
-    val (body, amb3) = e1xp_t1yp_finalize (body)
-    val e1_node = E1XPfixclo (f, args, body, env)
-  in
-    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2 + amb3)
-  end
-  | E1XPlamclo (args, body, env) => let
-    val (args, amb1) = v1ar_lst_t1yp_finalize (args)
-    val (body, amb2) = e1xp_t1yp_finalize (body)
-    val e1_node = E1XPlamclo (args, body, env)
-  in
-    (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2)
-  end
+//   | E1XPfixclo (f, args, body, env) => let
+//     val (f, amb1) = v1ar_t1yp_finalize (f)
+//     val (args, amb2) = v1ar_lst_t1yp_finalize (args)
+//     val (body, amb3) = e1xp_t1yp_finalize (body)
+//     val e1_node = E1XPfixclo (f, args, body, env)
+//   in
+//     (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2 + amb3)
+//   end
+//   | E1XPlamclo (args, body, env) => let
+//     val (args, amb1) = v1ar_lst_t1yp_finalize (args)
+//     val (body, amb2) = e1xp_t1yp_finalize (body)
+//     val e1_node = E1XPlamclo (args, body, env)
+//   in
+//     (e1xp_make (e1_loc, e1_node, e1_typ), amb + amb1 + amb2)
+//   end
 end
   
 implement e1xpopt_t1yp_finalize (eopt) = 

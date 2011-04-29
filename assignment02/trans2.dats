@@ -39,6 +39,50 @@ in
   loop (xs, pred, 0)
 end
 
+fun trans2_typlst (t1yplst: t1yplst): t2yplst =
+  list0_map_fun (t1yplst, lam x => trans2_typ x)
+
+implement trans2_typ (t1yp) =
+  case+ t1yp of
+  | T1YPbase sym => (
+    case+ 0 of 
+    | _ when sym = symbol_BOOL => T2YPbool
+    | _ when sym = symbol_INT => T2YPint
+    | _ when sym = symbol_STRING => T2YPstr
+    | _ => ETRACE_MSG_OPR ("trans2_typ unknown base type\n", 
+      ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+    )
+  | T1YPfun (nargs_ref, arg, ret) => let
+    val t2yp_ret = trans2_typ (ret)
+    val t2yp_arg = trans2_typ (arg)    
+    val t2yp_args = (if !nargs_ref = 0 then nil
+                    else if !nargs_ref = 1 then cons (t2yp_arg, nil)
+                    else (case+ t2yp_arg of
+                          | T2YPtup (t2yp_args) => t2yp_args
+                          | _ => ETRACE_MSG_OPR ("trans2_typ must be tuple\n", 
+                          ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+                         ): t2yplst
+                    ): t2yplst
+ 
+    val t2yp_args = cons (T2YPenv, t2yp_args)
+  in
+    T2YPfun (!nargs_ref, t2yp_args, t2yp_ret)
+  end
+  | T1YPtup t1yplst => T2YPtup (trans2_typlst (t1yplst))
+  | T1YPlist (X) => let
+    val t = t1Var_get_typ (X)
+    val t2yp = trans2_typ t
+  in
+    T2YPlist t2yp
+  end
+  | _ => ETRACE_MSG_OPR ("trans2_typ cannot process such t1yp\n", 
+          ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+
+implement make_valprim (node, typ) = '{
+  valprim_node = node,
+  valprim_typ = typ
+}
+
 extern val tmpvar_void: tmpvar;
 
 fun instr_add (
@@ -82,14 +126,14 @@ overload tmpvar_new with tmpvar_new_anon
 overload tmpvar_new with tmpvar_new_v1ar
 overload tmpvar_new with tmpvar_new_string
 
-local
+local  // tmpvar
 assume tmpvar_t = symbol_t
 val tmpvar_count = ref<int> (0)
 val tmpvar_prefix = "__v_": string
 in
 
 implement tmpvar_void = symbol_make_name ("dummy_void")
-val valprim_void = VPtup (tmpvar_void, list0_nil)  // todo must be put here
+val valprim_void = VPtup (tmpvar_void, list0_nil)  // must be put here
 
 implement tmpvar_new_anon () = let
   val i = !tmpvar_count
@@ -123,9 +167,8 @@ implement tmpvar_get_name (v) = let
   // val () = printf ("tmpvar_get_name10\n", @())
 in
   ret
-end
-
-end
+end  
+end // [end of local]
 
 local
   extern castfn valprim_encode (x: valprim): valprim_t
@@ -153,11 +196,12 @@ in
 end // end of [local]
 
 typedef funent = '{
-  funent_fun= funlab_t
-, funent_narg= int
-, funent_args = v1arlst
-, funent_body= instrlst
-, funent_ret= valprim
+  funent_fun = funlab_t
+, funent_narg = int
+, funent_args = valprimlst
+, funent_body = instrlst
+, funent_ret = valprim
+, funent_env = valprimlst
 }
 
 assume funent_t = funent
@@ -169,12 +213,13 @@ implement funent_get_body (ent) = ent.funent_body
 implement funent_get_ret (ent) = ent.funent_ret
 
 
-implement funent_make_label (fl, nargs, args, body, ret) = 
+implement funent_make_label (fl, nargs, args, body, ret, env) = 
   '{funent_fun = fl,
     funent_narg = nargs,
     funent_args = args,
     funent_body = body,
-    funent_ret = ret
+    funent_ret = ret,
+    funent_env = env
     }
 
 (* ***** ****** *)
@@ -190,12 +235,14 @@ overload funlab_make with funlab_make_name
 (* ***** ****** *)
 
 fun funent_make (
-  label: funlab, narg: int, args: v1arlst, body: instrlst, ret: valprim): funent = '{
-  funent_fun= label,
-  funent_narg= narg,
-  funent_args= args,
-  funent_body= body,
-  funent_ret= ret
+  label: funlab, narg: int, args: valprimlst, body: instrlst, 
+  ret: valprim, env: valprimlst): funent = '{
+  funent_fun = label,
+  funent_narg = narg,
+  funent_args = args,
+  funent_body = body,
+  funent_ret = ret,
+  funent_env = env
   }
 
 (*
@@ -250,11 +297,11 @@ end
 
 implement mainlab = symbol_make_name ("__main")
 
-end
+end // end of [local]
 
 (* ****** ****** *)
 fun instr_add_call (loc: loc, tmpv: tmpvar,
-  vpf: valprim, vpargs: valprimlst, iswrapper: bool, res: &instrlst): void = let
+  vpf: valprim, vpargs: valprimlst, res: &instrlst): void = let
   val ins_node = INSTRcall (tmpv, vpf, vpargs)
   val ins = instr_make (loc, ins_node)
   val () = instr_add (res, ins)
@@ -300,97 +347,113 @@ fun instr_add_proj (loc: loc, tmpv: tmpvar,
 in
 end  // end of [instr_add_proj]
 
-fun instr_add_clos (loc: loc,
-  clos: list0 @(tmpvar, funlab, valprimlst), res: &instrlst): void = let
-  val ins_node = INSTRclos (clos)
+fun instr_add_closure (loc: loc,
+  tmpvar: tmpvar, fl: funlab, env: valprimlst, res: &instrlst): void = let
+  val ins_node = INSTRclosure (tmpvar, fl, env)
   val ins = instr_make (loc, ins_node)
   val () = instr_add (res, ins)
 in
 end
 (* ****** ****** *)
 
-extern fun aux_exp (e: e1xp, res: &instrlst, env: v1arlst): valprim
+extern fun aux_exp (e: e1xp, res: &instrlst): valprim
 
 (* ret is supposed to be used in the evaluation *)
-extern fun aux_exp_ret (e: e1xp, res: &instrlst, ret: tmpvar, env: v1arlst): valprim
+extern fun aux_exp_ret (e: e1xp, res: &instrlst, ret: tmpvar): valprim
 
 (* this function only handle E1XPfixclo and E1XPlamclo and E1XPann *)
 (* caller guarantees that e is a function *)
-extern fun aux_exp_fun (e: e1xp, fl: funlab, env: v1arlst): valprim
+extern fun aux_exp_fun (e: e1xp, fl: funlab): valprim
 
 fun auxlst_exp (
-  es: e1xplst, res: &instrlst, env: v1arlst
+  es: e1xplst, res: &instrlst
 ) : valprimlst = case+ es of
   | list0_cons (e, es) => let
-      val v = aux_exp (e, res, env)
-      val vs = auxlst_exp (es, res, env)
+      val v = aux_exp (e, res)
+      val vs = auxlst_exp (es, res)
     in
       list0_cons (v, vs)
     end
   | list0_nil () => list0_nil ()
 
-fun aux_v1ar (v: v1ar, env: v1arlst): valprim = let
+fun aux_v1ar_valprim (v: v1ar): valprim = let
   val vp_opt = v1ar_get_val (v)
 in
   case+ vp_opt of
   | Some0 (vp) => vp
-  | None0 () => let
-    val v1ar_opt = list0_locate<v1ar> (env, lam x => x.v1ar_nam = v.v1ar_nam)
-  in
-    case+ v1ar_opt of
-    | Some0 n => VPenv (n)
-    | None0 () => ETRACE_MSG_OPR ("aux_exp v1ar doesn't have valprim\n", ETRACE_LEVEL_ERROR,
-                  abort (ERRORCODE_FORBIDDEN))  // todo closure
-  end
+  | None0 () => ETRACE_MSG_OPR ("aux_v1ar v1ar doesn't have valprim\n", 
+      ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
 end
 
-fun make_env (cloargs: v1arlst, env: v1arlst): valprimlst =
-  list0_map_cloref<v1ar><valprim> (cloargs, lam x => aux_v1ar (x, env))
+fun v1arlst_2_valprimlst (cloargs: v1arlst): valprimlst =
+  list0_map_cloref<v1ar><valprim> (cloargs, 
+                     lam x => aux_v1ar_valprim (x))
 
-(* f is already in the cloargs, but it's not in env *)
+fun v1arlst_set_tmpvar (xs: v1arlst, n: int): int =
+  case+ xs of
+  | cons (x, xs) => let
+      val tmpvar = tmpvar_new (x)
+      val vp_node = VPtmp (tmpvar)
+      val vp_typ = trans2_typ (x.v1ar_typ)
+      val vp = make_valprim (vp_node, vp_typ)
+      val () = v1ar_set_val (x, vp)
+    in
+      v1arlst_set_tmpvar (xs, n+1)
+    end
+  | nil () => n
+
+fun v1arlst_set_env (xs: v1arlst, n: int): int =
+  case+ xs of
+  | cons (x, xs) => let
+      val vp_node = VPenv (n)
+      val vp_typ = trans2_typ (x.v1ar_typ)
+      val vp = make_valprim (vp_node, vp_typ)
+      val () = v1ar_set_val (x, vp)
+    in
+      v1arlst_set_env (xs, n+1)
+    end
+  | nil () => n
+
 fun aux_exp_fix_lab
   (loc: loc, f: v1ar, v_args: v1arlst, e_body: e1xp, 
-   fl: funlab, cloargs: v1arlst, env: v1arlst,
-   res: &instrlst): 
-  valprim = let
-  
-  val flstr = funlab_get_name (fl)
-  val closure_tmpvar = tmpvar_new (flstr)
-  val closure_vp = VPtmp closure_tmpvar
+   fl: funlab, cloargs: v1arlst, res: &instrlst): valprim = let
 
-  val () = v1ar_set_val (f, closure_vp)
+  val cloargs_valprims = v1arlst_2_valprimlst (cloargs)
+  val fl_nam = funlab_get_name (fl)
+  val f_tmpvar = tmpvar_new (fl_nam)
+  val () = instr_add_closure (loc, f_tmpvar, fl, cloargs_valprims, res)
 
-  val cloargs_valprims = make_env (cloargs, env)
+  // set parameters
+  val nargs = v1arlst_set_tmpvar (v_args, 0)
+  val args_valprims = v1arlst_2_valprimlst (v_args)
 
-  // closure_tmpvar has been in the cloargs_valprims
-  val vp_clo = VPclo (closure_tmpvar, fl, cloargs_valprims)
+  val ncloargs = v1arlst_set_tmpvar (cloargs, 0)
+  val cloargs_valprims2 = v1arlst_2_valprimlst (cloargs)
 
-  val () = instr_add_clos (loc, 
-    cons (@(closure_tmpvar, fl, cloargs_valprims), nil), 
-    res)
+  // reset cloargs
+  val ncloargs = v1arlst_set_env (cloargs, 0)
 
-  val nargs = loop (v_args, 0) where {
-    fun loop (xs: v1arlst, n: int): int =
-      case+ xs of
-      | cons (x, xs) => let
-          val tmpvar = tmpvar_new (x)
-          val vp = VPtmp (tmpvar)
-          val () = v1ar_set_val (x, vp)
-        in
-          loop (xs, n+1)
-        end
-      | nil () => n
-  }
+  // f is VPfun not VPclo
+  val f_t1yp = f.v1ar_typ
+  val f_t2yp = trans2_typ (f_t1yp)
+  val vp_f = make_valprim (VPfun fl, f_t2yp)
+  val () = v1ar_set_val (f, vp_f)
 
   var res: instrlst = nil
-  val vp_ret = aux_exp (e_body, res, cloargs)
+  val vp_ret = aux_exp (e_body, res)
   val res = instr_reverse (res)
-  val ent = funent_make (fl, nargs, v_args, res, vp_ret)
+  val ent = funent_make (fl, nargs, args_valprims, res, vp_ret, cloargs_valprims2)
   val () = funent_add (fl, ent)
+
+  val f_clo_node = VPclo (f_tmpvar, fl, cloargs_valprims)
+  val f_clo_typ = T2YPclo f_t2yp
+  val f_clo = make_valprim (f_clo_node, f_clo_typ)
 in
-  VPfun (fl)
+  f_clo
 end
 
+
+////
 fun aux_exp_lam_lab (
   loc: loc, v_args: v1arlst, e_body: e1xp, fl: funlab): valprim = let
 

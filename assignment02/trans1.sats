@@ -72,8 +72,8 @@ datatype e1xp_node =
   | E1XPstr of string
   | E1XPtup of e1xplst
   | E1XPvar of v1ar
-  | E1XPfixclo of (v1ar, v1arlst, e1xp, v1arlst) (* for closure stage *)
-  | E1XPlamclo of (v1arlst, e1xp, v1arlst) (* for closure stage *)
+//  | E1XPfixclo of (v1ar, v1arlst, e1xp, v1arlst) (* for closure stage *)
+//  | E1XPlamclo of (v1arlst, e1xp, v1arlst) (* for closure stage *)
 
 and d1ec_node =
   | D1ECval of (bool(*isrec*), v1aldeclst)

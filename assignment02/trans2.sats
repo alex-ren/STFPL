@@ -58,9 +58,12 @@ overload print with print_funent
 (* ****** ****** *)
 datatype t2yp =
   | T2YPint
+  | T2YPbool
   | T2YPstr
-  | T2YPlist
-  | T2YPclo of (int, t2yplst, t2yp)  // nargs, args, ret
+  | T2YPenv
+  | T2YPlist of t2yp
+  | T2YPclo of t2yp  (* function type *)
+  | T2YPfun of (int, t2yplst, t2yp)  // nargs, args, ret
   | T2YPtup of (t2yplst)
 where t2yplst = list0 (t2yp)
 
@@ -68,21 +71,31 @@ where t2yplst = list0 (t2yp)
 (* valprim is either a literal value or
  * a tag for a temporary variable
  *)
-datatype valprim = // primitive values
+datatype valprim_node = // primitive values
 //  | VParg of int // function arguments: the ith argument -- no need
   | VPenv of int // closure parameter: the ith parameter
   | VPbool of bool // boolean constants
+  // function label
   | VPfun of funlab
-  | VPclo of (tmpvar, funlab, valprimlst) // (closure name, function labels, env)
+  // (closure name, function labels, env)
+  | VPclo of (tmpvar, funlab, valprimlst)
   | VPint of int // integer constants
   | VPstr of string // string constants
   | VPtmp of tmpvar // temporaries
   | VPtup of (tmpvar, valprimlst) // (name of tuples, tuples)
 
+where valprim = '{
+  valprim_node = valprim_node,
+  valprim_typ = t2yp
+}
+
 (*
 ** please extend the datatype if you need to
 *)
-where valprimlst = list0 (valprim)
+and valprimlst = list0 (valprim)
+// end of [where]
+
+fun make_valprim (node: valprim_node, typ: t2yp): valprim
 
 fun fprint_valprim (out: FILEref, x: valprim): void
 overload fprint with fprint_valprim
@@ -100,7 +113,7 @@ datatype instr_node =
   | INSTRopr of (tmpvar, $Absyn.opr, valprimlst) // primtive operator
   | INSTRtup of (tmpvar, valprimlst) // create tuple
   // create closures
-  | INSTRclos of (list0 @(tmpvar, funlab, valprimlst))  
+  | INSTRclosure of (tmpvar, funlab, valprimlst)  
   | INSTRproj of (tmpvar, valprim, int) // projection
 
 where instr = '{
@@ -131,8 +144,10 @@ fun funlab_get_name (fl: funlab): string
 val mainlab: funlab
 
 fun funent_make_label (
-  fl: funlab, nargs: int, args: $Trans1.v1arlst, 
-  body: instrlst, ret: valprim): funent
+  fl: funlab, nargs: int, args: valprimlst, 
+  body: instrlst, ret: valprim, env: valprimlst): funent
+
+fun trans2_typ (t1yp: $Trans1.t1yp): t2yp
 
 
 (* ****** ****** *)
