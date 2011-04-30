@@ -11,6 +11,7 @@ Posloc = "contrib/parcomb/SATS/posloc.sats"
 (* ****** ****** *)
 
 staload Absyn = "absyn.sats"
+staload Symbol = "symbol.sats"
 
 (* ****** ****** *)
 
@@ -37,6 +38,8 @@ overload print with print_tmpvar
 abstype funlab_t
 typedef funlab = funlab_t
 
+fun funlab_allocate (nam: $Symbol.symbol_t): funlab_t
+
 fun fprint_funlab (out: FILEref, x: funlab): void
 overload fprint with fprint_funlab
 fun print_funlab (x: funlab): void
@@ -62,8 +65,9 @@ datatype t2yp =
   | T2YPstr
   | T2YPenv
   | T2YPlist of t2yp
-  | T2YPclo of t2yp  (* function type *)
-  | T2YPfun of (int, t2yplst, t2yp)  // nargs, args, ret
+  | T2YPvar
+  // nargs, args (including the closure as the first parameter), ret
+  | T2YPclo of (int, t2yplst, t2yp)  
   | T2YPtup of (t2yplst)
 where t2yplst = list0 (t2yp)
 
@@ -76,7 +80,7 @@ datatype valprim_node = // primitive values
   | VPenv of int // closure parameter: the ith parameter
   | VPbool of bool // boolean constants
   // function label
-  | VPfun of funlab
+  // | VPfun of funlab
   // (closure name, function labels, env)
   | VPclo of (tmpvar, funlab, valprimlst)
   | VPint of int // integer constants

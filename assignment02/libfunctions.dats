@@ -3,13 +3,16 @@ staload "libfunctions.sats"
 staload "absyn.sats"
 staload "trans1.sats"
 staload "symbol.sats"
+staload "trans2.sats"
 
 staload _(*anon*) = "prelude/DATS/reference.dats"
 staload _(*anon*) = "symbol.dats"
 
 typedef sym = symbol_t
 
-#define :: list0_cons; #define nil list0_nil
+#define :: list0_cons
+#define cons list0_cons
+#define nil list0_nil
 
 #define Some0 option0_some
 #define None0 option0_none
@@ -23,6 +26,23 @@ implement symbol_LIST_HEAD = symbol_make_name "list_head"
 implement symbol_LIST_TAIL = symbol_make_name "list_tail"
 
 implement symbol_STRING_ADD = symbol_make_name "string_add"
+
+val label_LIST_CONS = funlab_allocate symbol_LIST_CONS
+val label_LIST_NIL = funlab_allocate symbol_LIST_NIL
+val label_LIST_IS_EMPTY = funlab_allocate symbol_LIST_IS_EMPTY
+val label_LIST_HEAD = funlab_allocate symbol_LIST_HEAD
+val label_LIST_TAIL = funlab_allocate symbol_LIST_TAIL
+val label_STRING_ADD = funlab_allocate symbol_STRING_ADD
+
+val t2yp_list = T2YPlist (T2YPvar)
+val t2yp_LIST_CONS = T2YPfun (3, T2YPenv :: T2YPvar :: t2yp_list :: nil, t2yp_list)
+val t2yp_LIST_NIL = T2YPfun (1, T2YPenv :: nil, t2yp_list)
+val t2yp_LIST_IS_EMPTY = T2YPfun (2, T2YPenv :: t2yp_list :: nil, T2YPbool)
+val t2yp_LIST_HEAD = T2YPfun (2, T2YPenv :: t2yp_list :: nil, T2YPvar)
+val t2yp_LIST_TAIL = T2YPfun (2, T2YPenv :: t2yp_list :: nil, t2yp_list)
+
+val t2yp_STRING_ADD = T2YPfun (3, T2YPstr :: T2YPstr :: nil, T2YPstr)
+
 
 abstype theConstTypMap_t
 
@@ -146,11 +166,22 @@ in
   | None0 () => constructorTypFind (nam)
 end
 
-
-
-
-
-
+implement libFunVPFind (fname) =
+todo
+  case+ 0 of
+  | _ when fname = symbol_LIST_CONS => 
+      Some0 (make_valprim (VPfun (label_LIST_CONS), t2yp_LIST_CONS))
+  | _ when fname = symbol_LIST_NIL => 
+      Some0 (make_valprim (VPfun (label_LIST_NIL), t2yp_LIST_NIL))
+  | _ when fname = symbol_LIST_IS_EMPTY =>
+      Some0 (make_valprim (VPfun (label_LIST_IS_EMPTY), t2yp_LIST_IS_EMPTY))
+  | _ when fname = symbol_LIST_HEAD =>
+      Some0 (make_valprim (VPfun (label_LIST_HEAD), t2yp_LIST_HEAD))
+  | _ when fname = symbol_LIST_TAIL =>
+      Some0 (make_valprim (VPfun (label_LIST_TAIL), t2yp_LIST_TAIL))
+  | _ when fname = symbol_STRING_ADD =>
+      Some0 (make_valprim (VPfun (label_STRING_ADD), t2yp_STRING_ADD))
+  | _ => None0 ()
 
 
 

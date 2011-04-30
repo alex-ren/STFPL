@@ -5,6 +5,7 @@
 staload Absyn = "absyn.sats"
 staload Symbol = "symbol.sats"
 staload Trans1 = "trans1.sats"
+staload Trans2 = "trans2.sats"
 
 (* ******* ******** *)
 val symbol_STRING_ADD: $Symbol.symbol_t
@@ -63,6 +64,8 @@ val r = fn (x1, x2)
 
 fun libSymTypFind (nam: $Symbol.symbol_t): option0 $Trans1.t1yp
 fun libOprTypFind (opr: $Absyn.opr): option0 $Trans1.t1yp
+
+fun libFunVPFind (nam: $Symbol.symbol_t): option0 $Trans2.valprim
 
 
 

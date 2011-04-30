@@ -174,14 +174,17 @@ in
   | E1XPbool b => begin
       prstr "E1XPbool("; fprint_bool (out, b); prstr ")"
     end // end of [E1XPbool] 
-  | E1XPfix (f, args, body, _) => begin
+  | E1XPfix (f, args, body, env_ref) => begin
       prstr "E1XPfix(";
       fprint_v1ar (out, f);
       prstr " (";
       fprint_v1arlst (out, args);
       prstr ") => \n";
       fprint_e1xp (out, body);
-      prstr "\n)"
+      prstr "\n)<<";
+      fprint_v1arlst (out, !env_ref);
+      prstr ">>"
+      
     end // end of [E1XPfix]  
   | E1XPif (e1, e2, oe3) => begin
       prstr "E1XPif(";
@@ -194,14 +197,16 @@ in
   | E1XPint i => begin
       prstr "E1XPint("; fprint_int (out, i); prstr ")"
     end // end of [E1XPint]
-  | E1XPlam (args, body, _) => begin
+  | E1XPlam (args, body, env_ref) => begin
       prstr "E1XPlam((";
       fprint_v1arlst (out, args);
       prstr "): ";
       fprint_t1yp (out, body.e1xp_typ);
       prstr " => \n";
       fprint_e1xp (out, body);
-      prstr "\n)"
+      prstr "\n)<<";
+      fprint_v1arlst (out, !env_ref);
+      prstr ">>"
     end // end of [E1XPlam]  
   | E1XPlet (decs, e_body) => begin
       prstr "E1XPlet(\n";
