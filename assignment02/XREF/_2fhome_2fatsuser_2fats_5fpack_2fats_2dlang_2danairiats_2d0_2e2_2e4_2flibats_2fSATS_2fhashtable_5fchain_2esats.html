@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2010 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the  terms of the  GNU General Public License as published by the Free
+** Software Foundation; either version 2.1, or (at your option) any later
+** version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see  the  file  COPYING.  If not, write to the Free
+** Software Foundation, 51  Franklin  Street,  Fifth  Floor,  Boston,  MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+**
+** A hashtable implementation
+** where buckets are represented as linked lists
+**
+** Contributed by Hongwei Xi (hwxi AT cs DOT bu DOT edu)
+** Time: March, 2010 // based on a version done in October, 2008
+**
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">//
+</span><span class="comment">// License: LGPL 3.0 (available at http://www.gnu.org/licenses/lgpl.txt)
+</span><span class="comment">//
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="extern">%{#
+#include "libats/CATS/hashtable_chain.cats"
+%}</span> <span class="comment">// end of [%{#]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#define</span> <span class="neuexp">ATS_STALOADFLAG 0</span> <span class="comment">// no static loading at run-time
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">typedef</span> <span class="staexp"><a name="1924"><span class="stacstdec">hash <span class="keyword">(</span>key<span class="keyword">:</span> t@ype<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>key<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> ulint</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="1974"><span class="stacstdec">eqfn <span class="keyword">(</span>key<span class="keyword">:</span> t@ype<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>key<span class="keyword">,</span> key<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> bool</span></a></span>
+
+<span class="keyword">absviewtype</span> <span class="staexp"><a name="2033"><span class="stacstdec">HASHTBLptr</span></a></span> <span class="keyword">(</span>key<span class="keyword">:</span>t@ype<span class="keyword">,</span> itm<span class="keyword">:</span>viewt@ype+<span class="keyword">,</span> l<span class="keyword">:</span>addr<span class="keyword">)</span>
+<span class="keyword">viewtypedef</span> <span class="staexp"><a name="2092"><span class="stacstdec">HASHTBLptr0
+  <span class="keyword">(</span>key<span class="keyword">:</span>t@ype<span class="keyword">,</span> itm<span class="keyword">:</span>viewt@ype<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">[</span>l<span class="keyword">:</span>agez<span class="keyword">]</span> HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span></a></span>
+<span class="comment">// end of [HASHTBLptr0]
+</span><span class="keyword">viewtypedef</span> <span class="staexp"><a name="2205"><span class="stacstdec">HASHTBLptr1
+  <span class="keyword">(</span>key<span class="keyword">:</span>t@ype<span class="keyword">,</span> itm<span class="keyword">:</span>viewt@ype<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">[</span>l<span class="keyword">:</span>addr <span class="keyword">|</span> l <span class="keyword">&gt;</span> null<span class="keyword">]</span> HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span></a></span>
+<span class="comment">// end of [HASHTBLptr1]
+</span>
+<span class="keyword">castfn</span> <a name="2325"><span class="dyncstdec">ptr_of_HASHTBLptr
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t@ype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>itm<span class="keyword">:</span>viewt@ype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">ptr l</span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> ptr_of <span class="keyword">with</span> ptr_of_HASHTBLptr</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abstype</span>
+<span class="staexp"><a name="2491"><span class="stacstdec">HASHTBLref</span></a></span> <span class="keyword">(</span>key<span class="keyword">:</span>t@ype<span class="keyword">,</span> itm<span class="keyword">:</span>viewt@ype<span class="keyword">)</span>
+
+<span class="keyword">castfn</span> <a name="2537"><span class="dyncstdec">HASHTBLref_make_ptr
+<span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t@ype<span class="keyword">;</span>itm<span class="keyword">:</span>viewt@ype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span>
+  <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">HASHTBLref <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [HASHTBLref_make_ptr]
+</span>
+<span class="keyword">castfn</span> <a name="2688"><span class="dyncstdec">HASHTBLref_takeout_ptr
+<span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t@ype<span class="keyword">;</span>itm<span class="keyword">:</span>viewt@ype<span class="keyword">}</span></span> <span class="keyword">(</span>
+  x<span class="keyword">:</span> <span class="staexp">HASHTBLref <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">ref</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>l<span class="keyword">:</span>agz<span class="keyword">]</span> <span class="keyword">(</span>
+  HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span> <span class="keyword">-&lt;</span>lin<span class="keyword">,</span>prf<span class="keyword">&gt;</span> void <span class="keyword">|</span> HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span>
+<span class="keyword">)</span></span></span></a> <span class="comment">// end of [HASHTBLref_takeout_ptr]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="2930"><span class="dyncstdec">hash_key <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> fhash<span class="keyword">:</span> <span class="staexp">hash key</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">ulint</span></span></a>
+<span class="comment">// end of [hash_key]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3011"><span class="dyncstdec">equal_key_key <span class="keyword">(</span>x1<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> x2<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> eqfn<span class="keyword">:</span> <span class="staexp">eqfn key</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">bool</span></span></a>
+<span class="comment">// end of [equal_key_key]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="3120"><span class="dyncstdec">hashtbl_size <span class="comment">// the (array) size of the hashtable
+</span>  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t@ype<span class="keyword">;</span>itm<span class="keyword">:</span>viewt@ype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">size_t</span></span></a>
+<span class="comment">// end of [hashtbl_size]
+</span>
+<span class="keyword">fun</span> <a name="3277"><span class="dyncstdec">hashtbl_total <span class="comment">// the total number of elements present in the hashtable
+</span>  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t@ype<span class="keyword">;</span>itm<span class="keyword">:</span>viewt@ype<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>tbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">size_t</span></span></a>
+<span class="comment">// end of [hashtbl_total]
+</span>
+<span class="comment">//
+</span><span class="comment">// HX: clear the hashtable: all the chains are freed
+</span><span class="comment">//
+</span><span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t@ype</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3538"><span class="dyncstdec">hashtbl_clear <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [hashtbl_clear]
+</span>
+<span class="comment">//
+</span><span class="comment">// HX: clear the hashtable: all the chains are freed
+</span><span class="comment">//
+</span><span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t@ype</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3713"><span class="dyncstdec">hashtbl_clear_vt
+  <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">&amp;</span>itm &gt;&gt; itm?<span class="keyword">)</span> <span class="keyword">-&lt;&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [hashtbl_clear_vt]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">//
+</span><span class="comment">// HX-2010-03-20:
+</span><span class="comment">// if the returned pointer is used, it must be done before the hashtable
+</span><span class="comment">// is changed!
+</span><span class="comment">//
+</span><span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t@ype</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span> <span class="comment">// unsafe but ...
+</span><a name="4020"><span class="dyncstdec">hashtbl_search_ref <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">,</span> k0<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">Ptr</span></span></a>
+<span class="comment">// end of [hashtbl_search_ptr]
+</span>
+<span class="comment">//
+</span><span class="comment">// HX-2010-03-20:
+</span><span class="comment">// this one is a safe version, but it can only handle non-linear items
+</span><span class="comment">//
+</span><span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t@ype</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4249"><span class="dyncstdec">hashtbl_search <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>
+  ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">,</span> k0<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>itm? &gt;&gt; opt <span class="keyword">(</span>itm<span class="keyword">,</span> b<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">#[</span>b<span class="keyword">:</span>bool<span class="keyword">]</span> bool b</span></span></a>
+<span class="comment">// end of [hashtbl_search]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t@ype</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="4446"><span class="dyncstdec">hashtbl_insert <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span>
+  <span class="keyword">(</span>ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">,</span> k<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">itm</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a>
+<span class="comment">// end of [hashtbl_insert]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t@ype</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>viewt@ype</span><span class="keyword">}</span>
+<a name="4586"><span class="dyncstdec">hashtbl_remove <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>
+  ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">,</span> k0<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>itm? &gt;&gt; opt <span class="keyword">(</span>itm<span class="keyword">,</span> b<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">#[</span>b<span class="keyword">:</span>bool<span class="keyword">]</span> bool b</span></span></a>
+<span class="comment">// end of [hashtbl_remove]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">sortdef</span> <span class="staexp">t0p <span class="keyword">=</span> t@ype <span class="keyword">and</span> vt0p <span class="keyword">=</span> viewt@ype</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+<a name="4818"><span class="dyncstdec">hashtbl_foreach_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">|</span> ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> key<span class="keyword">,</span> <span class="keyword">&amp;</span>itm<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [hashtbl_foreach_clo]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+<a name="5000"><span class="dyncstdec">hashtbl_foreach_cloref <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>
+  ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span><span class="keyword">(</span>key<span class="keyword">,</span> <span class="keyword">&amp;</span>itm<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a> <span class="comment">// end of [hashtbl_foreach_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="5171"><span class="dyncstdec">hashtbl_make
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>vt0p<span class="keyword">}</span></span> <span class="keyword">(</span>
+  fhash<span class="keyword">:</span> <span class="staexp">hash key</span><span class="keyword">,</span> eqfn<span class="keyword">:</span> <span class="staexp">eqfn key</span>
+<span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">HASHTBLptr1 <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">)</span></span></span></a> <span class="comment">// end of [hashtbl_make]
+</span>
+<span class="keyword">fun</span> <a name="5298"><span class="dyncstdec">hashtbl_make_hint
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>vt0p<span class="keyword">}</span></span> <span class="keyword">(</span>
+  fhash<span class="keyword">:</span> <span class="staexp">hash key</span><span class="keyword">,</span> eqfn<span class="keyword">:</span> <span class="staexp">eqfn key</span><span class="keyword">,</span> hint<span class="keyword">:</span> <span class="staexp">size_t</span>
+<span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">HASHTBLptr1 <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">)</span></span></span></a>
+  <span class="keyword">=</span> "atslib_hashtbl_make_hint__chain"
+<span class="comment">// end of [hashtbl_make_hint]
+</span>
+<span class="keyword">fun</span> <a name="5487"><span class="dyncstdec">hashtbl_make_null
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>vt0p<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> null<span class="keyword">)</span></span></span></a>
+  <span class="keyword">=</span> "atslib_hashtbl_make_null__chain"
+<span class="comment">// end of [hashtbl_make_null]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="5652"><span class="dyncstdec">hashtbl_free
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>t0p<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>
+  tbl<span class="keyword">:</span> <span class="staexp">HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "atslib_hashtbl_free__chain"
+<span class="comment">// end of [hashtbl_free]
+</span>
+<span class="keyword">fun</span> <a name="5803"><span class="dyncstdec">hashtbl_free_null
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>vt0p<span class="keyword">}</span></span> <span class="keyword">(</span>
+  tbl<span class="keyword">:</span> <span class="staexp">HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> null<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "atslib_hashtbl_free_null__chain"
+<span class="comment">// end of [hashtbl_free_null]
+</span>
+<span class="comment">//
+</span><span class="comment">// HX-2010-03-21:
+</span><span class="comment">// [hashtbl_clear_vt] may need to be called first to clear up
+</span><span class="comment">//
+</span><span class="keyword">fun</span> <a name="6049"><span class="dyncstdec">hashtbl_free_vt
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>vt0p<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>
+  tbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span> &gt;&gt; opt <span class="keyword">(</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span><span class="keyword">,</span> b<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">#[</span>b<span class="keyword">:</span>bool<span class="keyword">]</span> bool b</span></span></a><span class="comment">(*~freed*)</span> <span class="keyword">=</span> "atslib_hashtbl_free_vt__chain"
+<span class="comment">// end of [hashtbl_free_vt]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+//
+// HX-2010-07-01: it can be readily implemented based on [foreach]
+//
+fun{key:t0p;itm:t0p}
+hashtbl_listize {l:agz} (tbl: !HASHTBLptr (key, itm, l)): List_vt @(key, itm)
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [hashtable_chain.sats] *)</span>
+</pre>
+</body>
+</html>

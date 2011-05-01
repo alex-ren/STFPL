@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(*
+** Some patch code
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/list.dats"</span>
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/list_vt.dats"</span>
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/list0.dats"</span>
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/reference.dats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">extern</span>
+<span class="keyword">castfn</span> <a name="272"><span class="dyncstdec">option0_of_option_vt <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>t@ype<span class="keyword">}</span></span> <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">Option_vt a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">option0 a</span></span></a>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="355"><span class="dyncstdec">list0_find_fun <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> pred<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>fun1<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 a</span></span></a>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_find_fun <span class="keyword">(</span>xs<span class="keyword">,</span> pred<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> list_find_fun <span class="keyword">(</span>list1_of_list0 <span class="keyword">(</span>xs<span class="keyword">)</span><span class="keyword">,</span> pred<span class="keyword">)</span>
+<span class="keyword">in</span>
+  option0_of_option_vt <span class="keyword">(</span>ans<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_find_fun]
+</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="600"><span class="dyncstdec">list0_find_cloref <span class="keyword">(</span>xs<span class="keyword">:</span> <span class="staexp">list0 a</span><span class="keyword">,</span> pred<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 a</span></span></a>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">a</span><span class="keyword">}</span>
+list0_find_cloref <span class="keyword">(</span>xs<span class="keyword">,</span> pred<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> list_find_cloref <span class="keyword">(</span>list1_of_list0 <span class="keyword">(</span>xs<span class="keyword">)</span><span class="keyword">,</span> pred<span class="keyword">)</span>
+<span class="keyword">in</span>
+  option0_of_option_vt <span class="keyword">(</span>ans<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [list0_find_cloref]
+</span>
+</pre>
+</body>
+</html>

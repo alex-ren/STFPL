@@ -1,0 +1,763 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2010 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the  terms of the  GNU General Public License as published by the Free
+** Software Foundation; either version 2.1, or (at your option) any later
+** version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see  the  file  COPYING.  If not, write to the Free
+** Software Foundation, 51  Franklin  Street,  Fifth  Floor,  Boston,  MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+**
+** A hashtable implementation
+** where buckets are represented as linked lists
+**
+** Contributed by Hongwei Xi (hwxi AT cs DOT bu DOT edu)
+** Time: March, 2010 // based on a version done in October, 2008
+**
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#define</span> <span class="neuexp">ATS_DYNLOADFLAG 0</span> <span class="comment">// no need for dynamic loading
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">"libats/SATS/hashtable_chain.sats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">sortdef</span> <span class="staexp">t0p <span class="keyword">=</span> t@ype <span class="keyword">and</span> vt0p <span class="keyword">=</span> viewt@ype</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">key</span><span class="keyword">}</span> hash_key <span class="keyword">(</span>x<span class="keyword">,</span> hash<span class="keyword">)</span> <span class="keyword">=</span> hash <span class="keyword">(</span>x<span class="keyword">)</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">key</span><span class="keyword">}</span> equal_key_key <span class="keyword">(</span>x1<span class="keyword">,</span> x2<span class="keyword">,</span> eqfn<span class="keyword">)</span> <span class="keyword">=</span> eqfn <span class="keyword">(</span>x1<span class="keyword">,</span> x2<span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">dataviewtype</span> <span class="staexp"><a name="1992"><span class="stacstdec">chain <span class="keyword">(</span>
+  key<span class="keyword">:</span>t@ype<span class="keyword">,</span> itm<span class="keyword">:</span>viewt@ype+<span class="keyword">,</span> int
+<span class="keyword">)</span></span></a></span> <span class="keyword">=</span>
+  <span class="keyword">|</span> <span class="keyword">{</span><span class="staexp">n<span class="keyword">:</span>nat</span><span class="keyword">}</span>
+    CHAINcons <span class="staexp"><span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> n+1<span class="keyword">)</span></span> <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> chain <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> n<span class="keyword">)</span><span class="keyword">)</span></span>
+  <span class="keyword">|</span> CHAINnil <span class="staexp"><span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> 0<span class="keyword">)</span></span>
+<span class="comment">// end of [chain]
+</span>
+<span class="keyword">viewtypedef</span>
+<span class="staexp"><a name="2172"><span class="stacstdec">chain <span class="keyword">(</span>
+  key<span class="keyword">:</span>t0p
+<span class="keyword">,</span> itm<span class="keyword">:</span>vt0p
+<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">[</span>n<span class="keyword">:</span>nat<span class="keyword">]</span> chain <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> n<span class="keyword">)</span></span></a></span>
+
+<span class="keyword">viewtypedef</span>
+<span class="staexp"><a name="2246"><span class="stacstdec">chain0 <span class="keyword">=</span> chain <span class="keyword">(</span>void<span class="keyword">,</span> void<span class="keyword">,</span> 0<span class="keyword">)</span></span></a></span>
+<span class="keyword">stadef</span> <span class="staexp"><a name="2284"><span class="stacstdec">chainsz <span class="keyword">=</span> sizeof <span class="keyword">(</span>chain0<span class="keyword">)</span></span></a></span>
+<span class="keyword">extern</span> <span class="keyword">typedef</span> <span class="staexp">"chain0_ptr" <span class="keyword">=</span> chain0</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>t0p</span><span class="keyword">}</span>
+chain_free
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+  kis<span class="keyword">:</span> <span class="staexp">chain <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">begin</span> <span class="keyword">case+</span> kis <span class="keyword">of</span>
+  <span class="keyword">|</span> <span class="keyword">~</span>CHAINcons <span class="keyword">(</span>_<span class="comment">(*key*)</span><span class="keyword">,</span> _<span class="comment">(*itm*)</span><span class="keyword">,</span> kis<span class="keyword">)</span> <span class="keyword">=&gt;</span> chain_free <span class="keyword">(</span>kis<span class="keyword">)</span>
+  <span class="keyword">|</span> <span class="keyword">~</span>CHAINnil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [chain_free]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+chain_search
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+  kis<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>chain <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> k0<span class="keyword">:</span> <span class="staexp">key</span>
+<span class="keyword">,</span> eqfn<span class="keyword">:</span> <span class="staexp">eqfn key</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">Ptr</span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> kis <span class="keyword">of</span>
+  <span class="keyword">|</span> CHAINcons <span class="keyword">(</span>k<span class="keyword">,</span> <span class="keyword">!</span>i<span class="keyword">,</span> <span class="keyword">!</span>kis1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> keq <span class="keyword">=</span> equal_key_key <span class="keyword">(</span>k0<span class="keyword">,</span> k<span class="keyword">,</span> eqfn<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      <span class="keyword">if</span> keq <span class="keyword">then</span> <span class="keyword">(</span>fold@ kis<span class="keyword">;</span> i<span class="keyword">)</span> <span class="keyword">else</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> ans <span class="keyword">=</span> chain_search <span class="keyword">(</span><span class="keyword">!</span>kis1<span class="keyword">,</span> k0<span class="keyword">,</span> eqfn<span class="keyword">)</span>
+      <span class="keyword">in</span>
+        fold@ kis<span class="keyword">;</span> ans
+      <span class="keyword">end</span> <span class="comment">// end of [if]
+</span>    <span class="keyword">end</span> <span class="comment">// end of [cons]
+</span>  <span class="keyword">|</span> CHAINnil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>fold@ kis<span class="keyword">;</span> null<span class="keyword">)</span>
+<span class="comment">// end of [chain_search]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fn</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+chain_insert <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>
+  kis<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>chain <span class="keyword">(</span>key<span class="keyword">,</span>itm<span class="keyword">,</span>n<span class="keyword">)</span> &gt;&gt; chain <span class="keyword">(</span>key<span class="keyword">,</span>itm<span class="keyword">,</span>n+1<span class="keyword">)</span></span><span class="keyword">,</span> k<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">itm</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span>
+  kis := CHAINcons <span class="keyword">(</span>k<span class="keyword">,</span> i<span class="keyword">,</span> kis<span class="keyword">)</span>
+<span class="comment">// end of [chain_insert]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">stadef</span> <span class="staexp"><a name="3297"><span class="stacstdec">b2i <span class="keyword">=</span> int_of_bool</span></a></span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+chain_remove <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+  kis<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>chain <span class="keyword">(</span>key<span class="keyword">,</span>itm<span class="keyword">,</span>n<span class="keyword">)</span> &gt;&gt; chain <span class="keyword">(</span>key<span class="keyword">,</span>itm<span class="keyword">,</span>n-b2i b<span class="keyword">)</span></span>
+<span class="keyword">,</span> k0<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> eqfn<span class="keyword">:</span> <span class="staexp">eqfn key</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>itm? &gt;&gt; opt <span class="keyword">(</span>itm<span class="keyword">,</span> b<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">#[</span>b<span class="keyword">:</span>bool <span class="keyword">|</span> b2i b &lt;= n<span class="keyword">]</span> bool b</span> <span class="keyword">=</span> <span class="keyword">begin</span> <span class="keyword">case+</span> kis <span class="keyword">of</span>
+  <span class="keyword">|</span> CHAINcons <span class="keyword">(</span>k<span class="keyword">,</span> <span class="keyword">!</span>i<span class="keyword">,</span> <span class="keyword">!</span>kis1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> keq <span class="keyword">=</span> equal_key_key <span class="keyword">(</span>k0<span class="keyword">,</span> k<span class="keyword">,</span> eqfn<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      <span class="keyword">if</span> keq <span class="keyword">then</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> res := <span class="keyword">!</span>i
+        <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> opt_some <span class="staexp"><span class="keyword">{</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>res<span class="keyword">)</span></span>
+        <span class="keyword">val</span> kis1 <span class="keyword">=</span> <span class="keyword">!</span>kis1
+      <span class="keyword">in</span>
+        free@ <span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span> <span class="keyword">{</span>n<span class="keyword">}</span> <span class="keyword">(</span>kis<span class="keyword">)</span><span class="keyword">;</span> kis := kis1<span class="keyword">;</span> true
+      <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+        <span class="keyword">val</span> ans <span class="keyword">=</span> chain_remove&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>n-1<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">!</span>kis1<span class="keyword">,</span> k0<span class="keyword">,</span> eqfn<span class="keyword">,</span> res<span class="keyword">)</span>
+      <span class="keyword">in</span>
+        fold@ kis<span class="keyword">;</span> ans
+      <span class="keyword">end</span> <span class="comment">// end of [if]
+</span>    <span class="keyword">end</span> <span class="comment">// end of [cons]
+</span>  <span class="keyword">|</span> CHAINnil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> opt_none <span class="staexp"><span class="keyword">{</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>res<span class="keyword">)</span></span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fold@ kis</span>
+    <span class="keyword">in</span>
+      false
+    <span class="keyword">end</span> <span class="comment">// end of [nil]
+</span><span class="keyword">end</span> <span class="comment">// end of [chain_remove]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+chain_foreach_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span> <span class="keyword">|</span> kis<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>chain <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> n<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> key<span class="keyword">,</span> <span class="keyword">&amp;</span>itm<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">begin</span> <span class="keyword">case+</span> kis <span class="keyword">of</span>
+  <span class="keyword">|</span> CHAINcons <span class="keyword">(</span>k<span class="keyword">,</span> <span class="keyword">!</span>i<span class="keyword">,</span> <span class="keyword">!</span>kis1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">begin</span>
+      f <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> k<span class="keyword">,</span> <span class="keyword">!</span>i<span class="keyword">)</span><span class="keyword">;</span> chain_foreach_clo <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> <span class="keyword">!</span>kis1<span class="keyword">,</span> f<span class="keyword">)</span><span class="keyword">;</span> fold@ kis
+    <span class="keyword">end</span> <span class="comment">// end of [cons]
+</span>  <span class="keyword">|</span> CHAINnil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> fold@ kis
+<span class="keyword">end</span> <span class="comment">// end of [chain_foreach_clo]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">dataview</span> <span class="prfexp"><span class="staexp"><a name="4527"><span class="stacstdec">hashtbl_v <span class="comment">// it is just an array of chains
+</span>  <span class="keyword">(</span>key<span class="keyword">:</span>t@ype<span class="keyword">,</span> itm<span class="keyword">:</span>viewt@ype+<span class="keyword">,</span> int<span class="comment">(*sz*)</span><span class="keyword">,</span> int<span class="comment">(*tot*)</span><span class="keyword">,</span> addr<span class="keyword">,</span> addr<span class="keyword">)</span></span></a></span> <span class="keyword">=</span>
+  <span class="keyword">|</span> <span class="keyword">{</span><span class="staexp">sz<span class="keyword">,</span>tot<span class="keyword">,</span>n<span class="keyword">:</span>nat</span><span class="keyword">}</span> <span class="keyword">{</span><span class="staexp">l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr</span><span class="keyword">}</span>
+    hashtbl_v_cons <span class="staexp"><span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz+1<span class="keyword">,</span> tot+n<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span> <span class="keyword">of</span>
+      <span class="staexp"><span class="keyword">(</span>chain <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> n<span class="keyword">)</span> @ l_beg<span class="keyword">,</span> hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg+chainsz<span class="keyword">,</span> l_end<span class="keyword">)</span><span class="keyword">)</span></span>
+  <span class="keyword">|</span> <span class="keyword">{</span><span class="staexp">l<span class="keyword">:</span>addr</span><span class="keyword">}</span> hashtbl_v_nil <span class="staexp"><span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> 0<span class="keyword">,</span> 0<span class="keyword">,</span> l<span class="keyword">,</span> l<span class="keyword">)</span></span></span>
+<span class="comment">// end of [hashtbl_v]
+</span>
+<span class="keyword">viewtypedef</span>
+<span class="staexp"><a name="4909"><span class="stacstdec">HASHTBL <span class="keyword">(</span>
+  key<span class="keyword">:</span> t0p<span class="keyword">,</span> itm<span class="keyword">:</span> vt0p
+<span class="keyword">,</span> sz<span class="keyword">:</span> int<span class="keyword">,</span> tot<span class="keyword">:</span> int
+<span class="keyword">,</span> l_beg<span class="keyword">:</span> addr<span class="keyword">,</span> l_end<span class="keyword">:</span> addr
+<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">@{</span>
+  pfgc<span class="keyword">=</span> free_gc_v <span class="keyword">(</span>l_beg<span class="keyword">)</span>
+<span class="keyword">,</span> pftbl<span class="keyword">=</span> hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span>
+<span class="keyword">,</span> sz<span class="keyword">=</span> size_t sz
+<span class="keyword">,</span> tot<span class="keyword">=</span> size_t tot
+<span class="keyword">,</span> pbeg<span class="keyword">=</span> ptr l_beg
+<span class="keyword">,</span> hash<span class="keyword">=</span> hash key
+<span class="keyword">,</span> eqfn <span class="keyword">=</span> eqfn key
+<span class="keyword">}</span></span></a></span> <span class="comment">// end of [HASHTBL]
+</span>
+<span class="keyword">viewtypedef</span>
+<span class="staexp"><a name="5196"><span class="stacstdec">HASHTBL <span class="keyword">(</span>
+  key<span class="keyword">:</span> t0p<span class="keyword">,</span> itm<span class="keyword">:</span> vt0p
+<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">[</span>
+  sz<span class="keyword">,</span>tot<span class="keyword">:</span>int<span class="keyword">;</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">;</span>0 <span class="keyword">&lt;</span> sz<span class="keyword">;</span> 0 &lt;= tot
+<span class="keyword">]</span> HASHTBL <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span></a></span>
+<span class="comment">// end of [HASHTBL]
+</span>
+<span class="keyword">extern</span> <span class="keyword">typedef</span> <span class="staexp">"HASHTBL_struct" <span class="keyword">=</span> HASHTBL <span class="keyword">(</span>void<span class="keyword">,</span> void<span class="keyword">)</span></span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">extern</span>
+<span class="keyword">castfn</span> <a name="5437"><span class="dyncstdec">HASHTBLptr_get_hashtbl
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>vt0p<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>
+  ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span>
+  HASHTBL <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">)</span> @ l
+<span class="keyword">,</span> minus <span class="keyword">(</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span><span class="keyword">,</span> HASHTBL <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">)</span> @ l<span class="keyword">)</span>
+<span class="keyword">|</span> ptr l
+<span class="keyword">)</span></span></span></a> <span class="comment">// end of [HASHTBLptr_get_hashtble]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span>
+hashtbl_size
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">)</span> <span class="keyword">=</span> sz <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> HASHTBLptr_get_hashtbl <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="keyword">val</span> sz <span class="keyword">=</span> p<span class="keyword">-&gt;</span>sz
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> minus_addback <span class="keyword">(</span><span class="prfexp">fpf</span><span class="keyword">,</span> <span class="prfexp">pf</span> <span class="keyword">|</span> ptbl<span class="keyword">)</span></span>
+<span class="keyword">}</span> <span class="comment">// end of [hashtbl_size]  
+</span>
+<span class="keyword">implement</span>
+hashtbl_total
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">)</span> <span class="keyword">=</span> tot <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> HASHTBLptr_get_hashtbl <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="keyword">val</span> tot <span class="keyword">=</span> p<span class="keyword">-&gt;</span>tot
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> minus_addback <span class="keyword">(</span><span class="prfexp">fpf</span><span class="keyword">,</span> <span class="prfexp">pf</span> <span class="keyword">|</span> ptbl<span class="keyword">)</span></span>
+<span class="keyword">}</span> <span class="comment">// end of [hashtbl_total]  
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>t0p</span><span class="keyword">}</span>
+hashtbl_ptr_clear
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>tot<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>sz<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+   <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span>
+         &gt;&gt; hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> 0<span class="comment">(*tot*)</span><span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span></span>
+<span class="keyword">|</span> sz<span class="keyword">:</span> <span class="staexp">size_t sz</span><span class="keyword">,</span> p_beg<span class="keyword">:</span> <span class="staexp">ptr l_beg</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">begin</span>
+  <span class="keyword">if</span> sz <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp">hashtbl_v_cons <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span> <span class="keyword">=</span> pf</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> chain_free <span class="keyword">(</span><span class="keyword">!</span>p_beg<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>p_beg := CHAINnil <span class="keyword">(</span><span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> hashtbl_ptr_clear&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="prfexp">pf2</span> <span class="keyword">|</span> sz-1<span class="keyword">,</span> p_beg+sizeof&lt;<span class="staexp">chain0</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf := hashtbl_v_cons <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span></span>
+  <span class="keyword">in</span>
+    <span class="comment">// empty
+</span>  <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp">hashtbl_v_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf</span><span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf := hashtbl_v_nil <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">in</span>
+    <span class="comment">// empty
+</span>  <span class="keyword">end</span> <span class="comment">// end of [if]
+</span><span class="keyword">end</span> <span class="comment">// end of [hashtbl_ptr_clear]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">}</span>
+hashtbl_clear <span class="keyword">(</span>ptbl<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> HASHTBLptr_get_hashtbl <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> hashtbl_ptr_clear&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="prfexp">p<span class="keyword">-&gt;</span>pftbl</span> <span class="keyword">|</span> p<span class="keyword">-&gt;</span>sz<span class="keyword">,</span> p<span class="keyword">-&gt;</span>pbeg<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> p<span class="keyword">-&gt;</span>tot := <span class="keyword">(</span>size1_of_int1<span class="keyword">)</span>0 <span class="comment">// reset it to zero
+</span>  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> minus_addback <span class="keyword">(</span><span class="prfexp">fpf</span><span class="keyword">,</span> <span class="prfexp">pf</span> <span class="keyword">|</span> ptbl<span class="keyword">)</span></span>
+<span class="keyword">}</span> <span class="comment">// end of [hashtbl_clear]  
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7149"><span class="dyncstdec">hashtbl_ptr_make
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>vt0p<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">:</span>pos<span class="keyword">}</span></span> <span class="keyword">(</span>sz<span class="keyword">:</span> <span class="staexp">size_t sz</span><span class="keyword">)</span>
+  <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">]</span> <span class="keyword">@(</span>
+  free_gc_v l_beg
+<span class="keyword">,</span> hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> 0<span class="comment">(*tot*)</span><span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span>
+<span class="keyword">|</span> ptr l_beg
+<span class="keyword">)</span></span></span></a> <span class="keyword">=</span> "atslib_hashtbl_ptr_make__chain"
+<span class="comment">// end of [hashtbl_ptr_make]
+</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7399"><span class="dyncstdec">hashtbl_ptr_free
+  <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>vt0p<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">:</span>pos<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf_gc<span class="keyword">:</span> <span class="staexp">free_gc_v l_beg</span></span>
+<span class="keyword">,</span> <span class="prfexp">pf_tbl<span class="keyword">:</span> <span class="staexp">hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> 0<span class="comment">(*tot*)</span><span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span></span>
+<span class="keyword">|</span> p_beg<span class="keyword">:</span> <span class="staexp">ptr l_beg</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "atslib_hashtbl_ptr_free__chain"
+<span class="comment">// end of [hashtbl_ptr_free]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">extern</span> <span class="keyword">prfun</span> <span class="comment">// proof is omitted
+</span><a name="7702"><span class="dyncstdec"><span class="prfexp">hashtbl_v_split <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>vt0p<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>sz1<span class="keyword">,</span>tot<span class="keyword">:</span>nat <span class="keyword">|</span> sz1 &lt;= sz<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>ofs<span class="keyword">:</span>int<span class="keyword">}</span></span> <span class="keyword">(</span>
+  pf_mul<span class="keyword">:</span> <span class="staexp">MUL <span class="keyword">(</span>sz1<span class="keyword">,</span> chainsz<span class="keyword">,</span> ofs<span class="keyword">)</span></span>
+<span class="keyword">,</span> pf_tbl<span class="keyword">:</span> <span class="staexp">hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>tot1<span class="keyword">:</span>nat <span class="keyword">|</span> tot1 &lt;= tot<span class="keyword">]</span> <span class="keyword">@(</span>
+  hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz1<span class="keyword">,</span> tot1<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_beg+ofs<span class="keyword">)</span>
+<span class="keyword">,</span> hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz-sz1<span class="keyword">,</span> tot-tot1<span class="keyword">,</span> l_beg+ofs<span class="keyword">,</span> l_end<span class="keyword">)</span>
+<span class="keyword">)</span></span></span></span></a> <span class="comment">// end of [hashtbl_v_split]
+</span>
+<span class="keyword">extern</span> <span class="keyword">prfun</span> <span class="comment">// proof is omitted
+</span><a name="8096"><span class="dyncstdec"><span class="prfexp">hashtbl_v_unsplit <span class="staexp"><span class="keyword">{</span>key<span class="keyword">:</span>t0p<span class="keyword">;</span>itm<span class="keyword">:</span>vt0p<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>sz1<span class="keyword">,</span>sz2<span class="keyword">,</span>tot1<span class="keyword">,</span>tot2<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l_beg<span class="keyword">,</span>l_mid<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+  pf1<span class="keyword">:</span> <span class="staexp">hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz1<span class="keyword">,</span> tot1<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_mid<span class="keyword">)</span></span>
+<span class="keyword">,</span> pf2<span class="keyword">:</span> <span class="staexp">hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz2<span class="keyword">,</span> tot2<span class="keyword">,</span> l_mid<span class="keyword">,</span> l_end<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">prf</span><span class="keyword">&gt;</span> <span class="staexp">hashtbl_v <span class="keyword">(</span>
+  key<span class="keyword">,</span> itm<span class="keyword">,</span> sz1+sz2<span class="keyword">,</span> tot1+tot2<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end
+<span class="keyword">)</span></span></span></span></a> <span class="comment">// end of [hashtbl_v_unsplit]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fn</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+hashtbl_ptr_split 
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>sz1<span class="keyword">,</span>tot<span class="keyword">:</span>nat <span class="keyword">|</span> sz1 &lt;= sz<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf_tbl<span class="keyword">:</span> <span class="staexp">hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span></span>
+<span class="keyword">|</span> p_beg<span class="keyword">:</span> <span class="staexp">ptr l_beg</span><span class="keyword">,</span> sz1<span class="keyword">:</span> <span class="staexp">size_t sz1</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>tot1<span class="keyword">:</span>nat <span class="keyword">|</span> tot1 &lt;= tot<span class="keyword">]</span> <span class="keyword">[</span>l_mid<span class="keyword">:</span>addr<span class="keyword">]</span> <span class="keyword">@(</span>
+  hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz1<span class="keyword">,</span> tot1<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_mid<span class="keyword">)</span>
+<span class="keyword">,</span> hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz-sz1<span class="keyword">,</span> tot-tot1<span class="keyword">,</span> l_mid<span class="keyword">,</span> l_end<span class="keyword">)</span>
+<span class="keyword">|</span> ptr l_mid
+<span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf_mul</span> <span class="keyword">|</span> ofs<span class="keyword">)</span> <span class="keyword">=</span> mul2_size1_size1 <span class="keyword">(</span>sz1<span class="keyword">,</span> sizeof&lt;<span class="staexp">chain0</span><span class="keyword">&gt;</span><span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf1_tbl<span class="keyword">,</span> pf2_tbl<span class="keyword">)</span> <span class="keyword">=</span> hashtbl_v_split <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>pf_mul<span class="keyword">,</span> pf_tbl<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="keyword">(</span><span class="prfexp">pf1_tbl</span><span class="keyword">,</span> <span class="prfexp">pf2_tbl</span> <span class="keyword">|</span> p_beg + ofs<span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [hashtbl_ptr_split]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="9006"><span class="dyncstdec">size1_of_ulint <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">ulint</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>i<span class="keyword">:</span>nat<span class="keyword">]</span> size_t i</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">#define</span> <span class="neuexp">i2sz size1_of_int1</span>
+<span class="keyword">#define</span> <span class="neuexp">sz1mod mod1_size1_size1</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fn</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+hashtbl_ptr_search_ofs
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>ofs<span class="keyword">,</span>tot<span class="keyword">:</span>nat <span class="keyword">|</span> ofs <span class="keyword">&lt;</span> sz<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span></span>
+<span class="keyword">|</span> p_beg<span class="keyword">:</span> <span class="staexp">ptr l_beg</span><span class="keyword">,</span> k0<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> eqfn<span class="keyword">:</span> <span class="staexp">eqfn key</span><span class="keyword">,</span> ofs<span class="keyword">:</span> <span class="staexp">size_t ofs</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">Ptr</span> <span class="comment">(* null or pointing to the found item *)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf1</span><span class="keyword">,</span> <span class="prfexp">pf2</span> <span class="keyword">|</span> p_mid<span class="keyword">)</span> <span class="keyword">=</span>
+    hashtbl_ptr_split&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>ofs<span class="keyword">,</span>tot<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> p_beg<span class="keyword">,</span> ofs<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">hashtbl_v_cons <span class="keyword">(</span>pf21<span class="keyword">,</span> pf22<span class="keyword">)</span> <span class="keyword">=</span> pf2</span>
+  <span class="keyword">val</span> p_itm <span class="keyword">=</span> chain_search <span class="keyword">(</span><span class="keyword">!</span>p_mid<span class="keyword">,</span> k0<span class="keyword">,</span> eqfn<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">pf2 <span class="keyword">=</span> hashtbl_v_cons <span class="keyword">(</span>pf21<span class="keyword">,</span> pf22<span class="keyword">)</span></span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf := hashtbl_v_unsplit <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  p_itm
+<span class="keyword">end</span> <span class="comment">// end of [hashtbl_ptr_search_ofs]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">}</span>
+hashtbl_search_ref <span class="keyword">(</span>ptbl<span class="keyword">,</span> k0<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> HASHTBLptr_get_hashtbl <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="keyword">val</span> h <span class="keyword">=</span> hash_key <span class="keyword">(</span>k0<span class="keyword">,</span> p<span class="keyword">-&gt;</span>hash<span class="keyword">)</span>
+  <span class="keyword">val</span> h <span class="keyword">=</span> size1_of_ulint <span class="keyword">(</span>h<span class="keyword">)</span><span class="keyword">;</span> <span class="keyword">val</span> ofs <span class="keyword">=</span> sz1mod <span class="keyword">(</span>h<span class="keyword">,</span> p<span class="keyword">-&gt;</span>sz<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">[</span><span class="staexp">l<span class="keyword">:</span>addr</span><span class="keyword">]</span> p_itm <span class="keyword">=</span>
+    hashtbl_ptr_search_ofs <span class="keyword">(</span><span class="prfexp">p<span class="keyword">-&gt;</span>pftbl</span> <span class="keyword">|</span> p<span class="keyword">-&gt;</span>pbeg<span class="keyword">,</span> k0<span class="keyword">,</span> p<span class="keyword">-&gt;</span>eqfn<span class="keyword">,</span> ofs<span class="keyword">)</span>
+  <span class="comment">// end of [val]
+</span>  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> minus_addback <span class="keyword">(</span><span class="prfexp">fpf</span><span class="keyword">,</span> <span class="prfexp">pf</span> <span class="keyword">|</span> ptbl<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  p_itm
+<span class="keyword">end</span> <span class="comment">// end of [hashtbl_search_ref]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">}</span>
+hashtbl_search <span class="keyword">(</span>ptbl<span class="keyword">,</span> k0<span class="keyword">,</span> res<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">[</span><span class="staexp">l<span class="keyword">:</span>addr</span><span class="keyword">]</span> p_itm <span class="keyword">=</span> hashtbl_search_ref <span class="keyword">(</span>ptbl<span class="keyword">,</span> k0<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">if</span> p_itm &lt;&gt; null <span class="keyword">then</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>fpf<span class="keyword">,</span> pf<span class="keyword">)</span> <span class="keyword">=</span> __assert <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+      <span class="keyword">extern</span> <span class="keyword">prfun</span> <a name="10346"><span class="dyncstdec"><span class="prfexp">__assert <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>itm @ l <span class="keyword">-&lt;</span>prf<span class="keyword">&gt;</span> void<span class="keyword">,</span> itm @ l<span class="keyword">)</span></span></span></span></a>
+    <span class="keyword">}</span></span> <span class="comment">// end of [prval]
+</span>    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> res := <span class="keyword">!</span>p_itm
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fpf <span class="keyword">(</span>pf<span class="keyword">)</span></span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> opt_some <span class="staexp"><span class="keyword">{</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>res<span class="keyword">)</span></span>
+  <span class="keyword">in</span>
+    true
+  <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> opt_none <span class="staexp"><span class="keyword">{</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>res<span class="keyword">)</span></span> <span class="keyword">in</span> false
+  <span class="keyword">end</span> <span class="comment">// end of [if]
+</span><span class="keyword">end</span> <span class="comment">// end of [hashtbl_search]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fn</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+hashtbl_ptr_insert_ofs
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>ofs<span class="keyword">,</span>tot<span class="keyword">:</span>nat <span class="keyword">|</span> ofs <span class="keyword">&lt;</span> sz<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span>
+        &gt;&gt; hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot+1<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span></span>
+<span class="keyword">|</span> p_beg<span class="keyword">:</span> <span class="staexp">ptr l_beg</span><span class="keyword">,</span> k<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">itm</span><span class="keyword">,</span> ofs<span class="keyword">:</span> <span class="staexp">size_t ofs</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf1</span><span class="keyword">,</span> <span class="prfexp">pf2</span> <span class="keyword">|</span> p_mid<span class="keyword">)</span> <span class="keyword">=</span>
+    hashtbl_ptr_split&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>ofs<span class="keyword">,</span>tot<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> p_beg<span class="keyword">,</span> ofs<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">hashtbl_v_cons <span class="keyword">(</span>pf21<span class="keyword">,</span> pf22<span class="keyword">)</span> <span class="keyword">=</span> pf2</span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> chain_insert <span class="keyword">(</span><span class="keyword">!</span>p_mid<span class="keyword">,</span> k<span class="keyword">,</span> i<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">pf2 <span class="keyword">=</span> hashtbl_v_cons <span class="keyword">(</span>pf21<span class="keyword">,</span> pf22<span class="keyword">)</span></span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf := hashtbl_v_unsplit <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  <span class="comment">// empty
+</span><span class="keyword">end</span> <span class="comment">// end of [hashtbl_ptr_insert_ofs]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fn</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+hashtbl_ptr_remove_ofs
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>ofs<span class="keyword">,</span>tot<span class="keyword">:</span>nat <span class="keyword">|</span> ofs <span class="keyword">&lt;</span> sz<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span>
+        &gt;&gt; hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot-b2i b<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span></span>
+<span class="keyword">|</span> p_beg<span class="keyword">:</span> <span class="staexp">ptr l_beg</span><span class="keyword">,</span> k0<span class="keyword">:</span> <span class="staexp">key</span><span class="keyword">,</span> eqfn<span class="keyword">:</span> <span class="staexp">eqfn key</span><span class="keyword">,</span> ofs<span class="keyword">:</span> <span class="staexp">size_t ofs</span>
+<span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>itm? &gt;&gt; opt <span class="keyword">(</span>itm<span class="keyword">,</span> b<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">#[</span>b<span class="keyword">:</span>bool <span class="keyword">|</span> b2i b &lt;= tot<span class="keyword">]</span> bool b</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf1</span><span class="keyword">,</span> <span class="prfexp">pf2</span> <span class="keyword">|</span> p_mid<span class="keyword">)</span> <span class="keyword">=</span>
+    hashtbl_ptr_split&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>ofs<span class="keyword">,</span>tot<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> p_beg<span class="keyword">,</span> ofs<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">hashtbl_v_cons <span class="keyword">(</span>pf21<span class="keyword">,</span> pf22<span class="keyword">)</span> <span class="keyword">=</span> pf2</span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> chain_remove <span class="keyword">(</span><span class="keyword">!</span>p_mid<span class="keyword">,</span> k0<span class="keyword">,</span> eqfn<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">pf2 <span class="keyword">=</span> hashtbl_v_cons <span class="keyword">(</span>pf21<span class="keyword">,</span> pf22<span class="keyword">)</span></span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf := hashtbl_v_unsplit <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  ans
+<span class="keyword">end</span> <span class="comment">// end of [hashtbl_ptr_remove_ofs]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+hashtbl_ptr_insert_chain
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">:</span>pos<span class="keyword">;</span>tot<span class="keyword">,</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>n<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span>
+        &gt;&gt; hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot+n<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span></span>
+<span class="keyword">|</span> sz<span class="keyword">:</span> <span class="staexp">size_t sz</span>
+<span class="keyword">,</span> p_beg<span class="keyword">:</span> <span class="staexp">ptr l_beg</span>
+<span class="keyword">,</span> kis<span class="keyword">:</span> <span class="staexp">chain <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> n<span class="keyword">)</span></span>
+<span class="keyword">,</span> hash<span class="keyword">:</span> <span class="staexp">hash key</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">begin</span> <span class="keyword">case+</span> kis <span class="keyword">of</span>
+  <span class="keyword">|</span> <span class="keyword">~</span>CHAINcons <span class="keyword">(</span>k<span class="keyword">,</span> i<span class="keyword">,</span> kis<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="comment">// insertion must be done in the reverse order!
+</span>      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> hashtbl_ptr_insert_chain <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> sz<span class="keyword">,</span> p_beg<span class="keyword">,</span> kis<span class="keyword">,</span> hash<span class="keyword">)</span>
+      <span class="keyword">val</span> h <span class="keyword">=</span> hash_key <span class="keyword">(</span>k<span class="keyword">,</span> hash<span class="keyword">)</span>
+      <span class="keyword">val</span> h <span class="keyword">=</span> size1_of_ulint <span class="keyword">(</span>h<span class="keyword">)</span>
+      <span class="keyword">val</span> <span class="keyword">[</span><span class="staexp">ofs<span class="keyword">:</span>int</span><span class="keyword">]</span> ofs <span class="keyword">=</span> sz1mod <span class="keyword">(</span>h<span class="keyword">,</span> sz<span class="keyword">)</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf1</span><span class="keyword">,</span> <span class="prfexp">pf2</span> <span class="keyword">|</span> p_mid<span class="keyword">)</span> <span class="keyword">=</span>
+        hashtbl_ptr_split&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>ofs<span class="keyword">,</span>tot+n-1<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf</span> <span class="keyword">|</span> p_beg<span class="keyword">,</span> ofs<span class="keyword">)</span>
+      <span class="keyword">prval</span> <span class="prfexp">hashtbl_v_cons <span class="keyword">(</span>pf21<span class="keyword">,</span> pf22<span class="keyword">)</span> <span class="keyword">=</span> pf2</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> chain_insert <span class="keyword">(</span><span class="keyword">!</span>p_mid<span class="keyword">,</span> k<span class="keyword">,</span> i<span class="keyword">)</span>
+      <span class="keyword">prval</span> <span class="prfexp">pf2 <span class="keyword">=</span> hashtbl_v_cons <span class="keyword">(</span>pf21<span class="keyword">,</span> pf22<span class="keyword">)</span></span>
+      <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf := hashtbl_v_unsplit <span class="keyword">(</span>pf1<span class="keyword">,</span> pf2<span class="keyword">)</span></span>
+    <span class="keyword">in</span>
+      <span class="comment">// empty
+</span>    <span class="keyword">end</span> <span class="comment">// end of [cons]
+</span>  <span class="keyword">|</span> <span class="keyword">~</span>CHAINnil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [hashtbl_ptr_insert_chain]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+hashtbl_ptr_relocate
+  <span class="staexp"><span class="keyword">{</span>sz1<span class="keyword">:</span>nat<span class="keyword">;</span>sz2<span class="keyword">:</span>pos<span class="keyword">;</span>tot1<span class="keyword">,</span>tot2<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>l1_beg<span class="keyword">,</span>l2_beg<span class="keyword">,</span>l1_end<span class="keyword">,</span>l2_end<span class="keyword">:</span>addr<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">.&lt;</span>sz1<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf1<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz1<span class="keyword">,</span> tot1<span class="keyword">,</span> l1_beg<span class="keyword">,</span> l1_end<span class="keyword">)</span>
+        &gt;&gt; hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz1<span class="keyword">,</span> 0<span class="comment">(*tot*)</span><span class="keyword">,</span> l1_beg<span class="keyword">,</span> l1_end<span class="keyword">)</span></span></span>
+<span class="keyword">,</span> <span class="prfexp">pf2<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz2<span class="keyword">,</span> tot2<span class="keyword">,</span> l2_beg<span class="keyword">,</span> l2_end<span class="keyword">)</span>
+        &gt;&gt; hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz2<span class="keyword">,</span> tot1+tot2<span class="keyword">,</span> l2_beg<span class="keyword">,</span> l2_end<span class="keyword">)</span></span></span>
+<span class="keyword">|</span> sz1<span class="keyword">:</span> <span class="staexp">size_t sz1</span><span class="keyword">,</span> sz2<span class="keyword">:</span> <span class="staexp">size_t sz2</span>
+<span class="keyword">,</span> p1_beg<span class="keyword">:</span> <span class="staexp">ptr l1_beg</span><span class="keyword">,</span> p2_beg<span class="keyword">:</span> <span class="staexp">ptr l2_beg</span>
+<span class="keyword">,</span> hash<span class="keyword">:</span> <span class="staexp">hash key</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">begin</span>
+  <span class="keyword">if</span> sz1 <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp">hashtbl_v_cons <span class="keyword">(</span>pf11<span class="keyword">,</span> pf12<span class="keyword">)</span> <span class="keyword">=</span> pf1</span>
+    <span class="keyword">val</span> kis <span class="keyword">=</span> <span class="keyword">!</span>p1_beg<span class="keyword">;</span> <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>p1_beg := CHAINnil <span class="keyword">(</span><span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> hashtbl_ptr_insert_chain <span class="keyword">(</span><span class="prfexp">pf2</span> <span class="keyword">|</span> sz2<span class="keyword">,</span> p2_beg<span class="keyword">,</span> kis<span class="keyword">,</span> hash<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> hashtbl_ptr_relocate
+      <span class="keyword">(</span><span class="prfexp">pf12</span><span class="keyword">,</span> <span class="prfexp">pf2</span> <span class="keyword">|</span> sz1-1<span class="keyword">,</span> sz2<span class="keyword">,</span> p1_beg+sizeof&lt;<span class="staexp">chain0</span><span class="keyword">&gt;</span><span class="keyword">,</span> p2_beg<span class="keyword">,</span> hash<span class="keyword">)</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf1 := hashtbl_v_cons <span class="keyword">(</span>pf11<span class="keyword">,</span> pf12<span class="keyword">)</span></span>
+  <span class="keyword">in</span>
+    <span class="comment">// empty
+</span>  <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp">hashtbl_v_nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf1</span><span class="keyword">;</span> <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf1 := hashtbl_v_nil <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">in</span>
+    <span class="comment">// empty
+</span>  <span class="keyword">end</span> <span class="comment">// end of [if]
+</span><span class="keyword">end</span> <span class="comment">// end of [hashtbl_ptr_relocate]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fn</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+hashtbl_resize <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>sz_new<span class="keyword">:</span>pos<span class="keyword">}</span></span> <span class="keyword">(</span>
+  ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span><span class="keyword">,</span> sz_new<span class="keyword">:</span> <span class="staexp">size_t sz_new</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> HASHTBLptr_get_hashtbl <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pfgc2</span><span class="keyword">,</span> <span class="prfexp">pftbl2</span> <span class="keyword">|</span> pbeg2<span class="keyword">)</span> <span class="keyword">=</span> hashtbl_ptr_make <span class="keyword">(</span>sz_new<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> hashtbl_ptr_relocate
+    <span class="keyword">(</span><span class="prfexp">p<span class="keyword">-&gt;</span>pftbl</span><span class="keyword">,</span> <span class="prfexp">pftbl2</span> <span class="keyword">|</span> p<span class="keyword">-&gt;</span>sz<span class="keyword">,</span> sz_new<span class="keyword">,</span> p<span class="keyword">-&gt;</span>pbeg<span class="keyword">,</span> pbeg2<span class="keyword">,</span> p<span class="keyword">-&gt;</span>hash<span class="keyword">)</span>
+  <span class="comment">// end of [val]
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> hashtbl_ptr_free <span class="keyword">(</span><span class="prfexp">p<span class="keyword">-&gt;</span>pfgc</span><span class="keyword">,</span> <span class="prfexp">p<span class="keyword">-&gt;</span>pftbl</span> <span class="keyword">|</span> p<span class="keyword">-&gt;</span>pbeg<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> p<span class="keyword">-&gt;</span>pfgc := pfgc2</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> p<span class="keyword">-&gt;</span>pftbl := pftbl2</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> p<span class="keyword">-&gt;</span>sz := sz_new
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> p<span class="keyword">-&gt;</span>pbeg := pbeg2
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> minus_addback <span class="keyword">(</span><span class="prfexp">fpf</span><span class="keyword">,</span> <span class="prfexp">pf</span> <span class="keyword">|</span> ptbl<span class="keyword">)</span></span>
+<span class="keyword">}</span> <span class="comment">// end of [hashtbl_resize]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="extern">%{^
+#define HASHTBL_MINSZ 97
+%}</span> <span class="comment">// end of [%{^]
+</span><span class="keyword">#define</span> <span class="neuexp">HASHTBL_MINSZ 97</span> <span class="comment">// it is chosen, more or less, arbitrarily
+</span><span class="keyword">#define</span> <span class="neuexp">HASHTABLE_DOUBLE_FACTOR 5.0</span>
+<span class="keyword">#assert</span> <span class="neuexp"><span class="keyword">(</span>HASHTABLE_DOUBLE_FACTOR <span class="keyword">&gt;</span> 2.0<span class="keyword">)</span></span>
+<span class="keyword">#define</span> <span class="neuexp">HASHTABLE_HALF_FACTOR 0.5</span>
+<span class="keyword">#assert</span> <span class="neuexp"><span class="keyword">(</span>HASHTABLE_HALF_FACTOR <span class="keyword">&lt;</span> 1.0<span class="keyword">)</span></span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fn</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+hashtbl_resize_double
+  <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>
+  ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> sz <span class="keyword">=</span> hashtbl_size <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="keyword">val</span> sz <span class="keyword">=</span> size1_of_size <span class="keyword">(</span>sz<span class="keyword">)</span> <span class="comment">// casting: no op
+</span><span class="keyword">in</span>
+  <span class="keyword">if</span> sz <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> hashtbl_resize&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="keyword">(</span>ptbl<span class="keyword">,</span> sz + sz<span class="keyword">)</span> <span class="keyword">else</span> <span class="keyword">(</span><span class="keyword">)</span>
+<span class="keyword">end</span> <span class="comment">// end of [hashtbl_resize_double]
+</span>
+<span class="keyword">fn</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+hashtbl_resize_half
+  <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>agz<span class="keyword">}</span></span> <span class="keyword">(</span>
+  ptbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>HASHTBLptr <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> l<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> sz <span class="keyword">=</span> hashtbl_size <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="keyword">val</span> sz <span class="keyword">=</span> size1_of_size <span class="keyword">(</span>sz<span class="keyword">)</span> <span class="comment">// casting: no op
+</span>  <span class="keyword">val</span> sz2 <span class="keyword">=</span> sz / 2
+<span class="keyword">in</span>
+  <span class="keyword">if</span> sz2 &gt;= HASHTBL_MINSZ
+    <span class="keyword">then</span> hashtbl_resize&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="keyword">(</span>ptbl<span class="keyword">,</span> sz2<span class="keyword">)</span> <span class="keyword">else</span> <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="comment">// end of [if]
+</span><span class="keyword">end</span> <span class="comment">// end of [hashtbl_resize_half]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">}</span>
+hashtbl_insert
+  <span class="keyword">(</span>ptbl<span class="keyword">,</span> k<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">var</span> ratio<span class="keyword">:</span> <span class="staexp">double</span> <span class="keyword">=</span> 0.0
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> HASHTBLptr_get_hashtbl <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="keyword">val</span> tot1 <span class="keyword">=</span> p<span class="keyword">-&gt;</span>tot + 1
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ratio := double_of_size <span class="keyword">(</span>tot1<span class="keyword">)</span> / double_of_size <span class="keyword">(</span>p<span class="keyword">-&gt;</span>sz<span class="keyword">)</span>
+  <span class="keyword">val</span> h <span class="keyword">=</span> hash_key <span class="keyword">(</span>k<span class="keyword">,</span> p<span class="keyword">-&gt;</span>hash<span class="keyword">)</span>
+  <span class="keyword">val</span> h <span class="keyword">=</span> size1_of_ulint <span class="keyword">(</span>h<span class="keyword">)</span><span class="keyword">;</span> <span class="keyword">val</span> ofs <span class="keyword">=</span> sz1mod <span class="keyword">(</span>h<span class="keyword">,</span> p<span class="keyword">-&gt;</span>sz<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> hashtbl_ptr_insert_ofs&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="keyword">(</span><span class="prfexp">p<span class="keyword">-&gt;</span>pftbl</span> <span class="keyword">|</span> p<span class="keyword">-&gt;</span>pbeg<span class="keyword">,</span> k<span class="keyword">,</span> i<span class="keyword">,</span> ofs<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> p<span class="keyword">-&gt;</span>tot := tot1
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> minus_addback <span class="keyword">(</span><span class="prfexp">fpf</span><span class="keyword">,</span> <span class="prfexp">pf</span> <span class="keyword">|</span> ptbl<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span>
+    ratio &gt;= HASHTABLE_DOUBLE_FACTOR <span class="keyword">then</span> hashtbl_resize_double&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="comment">// end of [if]
+</span><span class="keyword">}</span> <span class="comment">// end of [hashtbl_insert]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">}</span>
+hashtbl_remove
+  <span class="staexp"><span class="keyword">{</span>l<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">,</span> k0<span class="keyword">,</span> res<span class="keyword">)</span> <span class="keyword">=</span> ans <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">var</span> ratio<span class="keyword">:</span> <span class="staexp">double</span> <span class="keyword">=</span> 1.0
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> HASHTBLptr_get_hashtbl <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="keyword">val</span> h <span class="keyword">=</span> hash_key <span class="keyword">(</span>k0<span class="keyword">,</span> p<span class="keyword">-&gt;</span>hash<span class="keyword">)</span>
+  <span class="keyword">val</span> h <span class="keyword">=</span> size1_of_ulint <span class="keyword">(</span>h<span class="keyword">)</span><span class="keyword">;</span> <span class="keyword">val</span> ofs <span class="keyword">=</span> sz1mod <span class="keyword">(</span>h<span class="keyword">,</span> p<span class="keyword">-&gt;</span>sz<span class="keyword">)</span>
+  <span class="keyword">val</span> ans <span class="keyword">=</span> hashtbl_ptr_remove_ofs&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span>
+    <span class="keyword">(</span><span class="prfexp">p<span class="keyword">-&gt;</span>pftbl</span> <span class="keyword">|</span> p<span class="keyword">-&gt;</span>pbeg<span class="keyword">,</span> k0<span class="keyword">,</span> p<span class="keyword">-&gt;</span>eqfn<span class="keyword">,</span> ofs<span class="keyword">,</span> res<span class="keyword">)</span>
+  <span class="comment">// end of [val]
+</span>  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span>
+    <span class="keyword">if</span> <span class="keyword">:</span><span class="keyword">(</span>pf<span class="keyword">:</span> HASHTBL <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">)</span> @ l<span class="keyword">)</span> <span class="keyword">=&gt;</span> ans <span class="keyword">then</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> tot1 <span class="keyword">=</span> p<span class="keyword">-&gt;</span>tot - 1
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ratio := double_of_size tot1 / double_of_size <span class="keyword">(</span>p<span class="keyword">-&gt;</span>sz<span class="keyword">)</span>
+      <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> p<span class="keyword">-&gt;</span>tot := tot1
+    <span class="keyword">in</span>
+      <span class="comment">// nothing
+</span>    <span class="keyword">end</span> <span class="keyword">else</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="comment">// end of [if]
+</span>  <span class="keyword">)</span> <span class="keyword">:</span> <span class="staexp">void</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> minus_addback <span class="keyword">(</span><span class="prfexp">fpf</span><span class="keyword">,</span> <span class="prfexp">pf</span> <span class="keyword">|</span> ptbl<span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span>
+    ratio &lt;= HASHTABLE_HALF_FACTOR <span class="keyword">then</span> hashtbl_resize_half&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="keyword">(</span>ptbl<span class="keyword">)</span>
+  <span class="comment">// end of [if]
+</span><span class="keyword">}</span> <span class="comment">// end of [hashtbl_remove]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">key<span class="keyword">:</span>t0p</span><span class="keyword">;</span><span class="staexp">itm<span class="keyword">:</span>vt0p</span><span class="keyword">}</span>
+hashtbl_ptr_foreach_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">:</span>view<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>tot<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>l_beg<span class="keyword">,</span>l_end<span class="keyword">:</span>addr<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>f<span class="keyword">:</span>eff<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">.&lt;</span>sz<span class="keyword">&gt;.</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pfv<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>v</span></span>
+<span class="keyword">,</span> <span class="prfexp">pf_tbl<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>hashtbl_v <span class="keyword">(</span>key<span class="keyword">,</span> itm<span class="keyword">,</span> sz<span class="keyword">,</span> tot<span class="keyword">,</span> l_beg<span class="keyword">,</span> l_end<span class="keyword">)</span></span></span>
+<span class="keyword">|</span> sz<span class="keyword">:</span> <span class="staexp">size_t sz</span><span class="keyword">,</span> p_beg<span class="keyword">:</span> <span class="staexp">ptr l_beg</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span><span class="keyword">(</span><span class="keyword">!</span>v <span class="keyword">|</span> key<span class="keyword">,</span> <span class="keyword">&amp;</span>itm<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">,</span>f<span class="keyword">&gt;</span> void</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="staexp">f</span><span class="keyword">&gt;</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">begin</span>
+  <span class="keyword">if</span> sz <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> <span class="keyword">let</span>
+    <span class="keyword">prval</span> <span class="prfexp">hashtbl_v_cons <span class="keyword">(</span>pf1_tbl<span class="keyword">,</span> pf2_tbl<span class="keyword">)</span> <span class="keyword">=</span> pf_tbl</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> chain_foreach_clo <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> <span class="keyword">!</span>p_beg<span class="keyword">,</span> f<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="comment">// segfault during typechecking if {v} is not provided!!!
+</span>      hashtbl_ptr_foreach_clo&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span>
+        <span class="keyword">(</span><span class="prfexp">pfv</span><span class="keyword">,</span> <span class="prfexp">pf2_tbl</span> <span class="keyword">|</span> sz-1<span class="keyword">,</span> p_beg+sizeof&lt;<span class="staexp">chain0</span><span class="keyword">&gt;</span><span class="keyword">,</span> f<span class="keyword">)</span>
+    <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf_tbl := hashtbl_v_cons <span class="keyword">(</span>pf1_tbl<span class="keyword">,</span> pf2_tbl<span class="keyword">)</span></span>
+  <span class="keyword">in</span>
+    <span class="comment">// empty
+</span>  <span class="keyword">end</span> <span class="comment">// end of [if]
+</span><span class="keyword">end</span> <span class="comment">// end of [hashtbl_ptr_foreach_clo]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">}</span>
+hashtbl_foreach_clo
+  <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfv</span> <span class="keyword">|</span> ptbl<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="prfexp">pf</span><span class="keyword">,</span> <span class="prfexp">fpf</span> <span class="keyword">|</span> p<span class="keyword">)</span> <span class="keyword">=</span> HASHTBLptr_get_hashtbl <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>ptbl<span class="keyword">)</span>  
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">begin</span>
+    hashtbl_ptr_foreach_clo <span class="staexp"><span class="keyword">{</span>v<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pfv</span><span class="keyword">,</span> <span class="prfexp">p<span class="keyword">-&gt;</span>pftbl</span> <span class="keyword">|</span> p<span class="keyword">-&gt;</span>sz<span class="keyword">,</span> p<span class="keyword">-&gt;</span>pbeg<span class="keyword">,</span> f<span class="keyword">)</span>
+  <span class="keyword">end</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> minus_addback <span class="keyword">(</span><span class="prfexp">fpf</span><span class="keyword">,</span> <span class="prfexp">pf</span> <span class="keyword">|</span> ptbl<span class="keyword">)</span></span>
+<span class="keyword">}</span> <span class="comment">// end of [hashtbl_foreach_clo]
+</span>
+<span class="keyword">implement</span><span class="keyword">{</span><span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">}</span>
+hashtbl_foreach_cloref
+  <span class="keyword">(</span>tbl<span class="keyword">,</span> f<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">val</span> f <span class="keyword">=</span> __cast <span class="keyword">(</span>f<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span> <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="18135"><span class="dyncstdec">__cast
+    <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>key<span class="keyword">,</span> <span class="keyword">&amp;</span>itm<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> void</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">(</span><span class="keyword">!</span>unit_v <span class="keyword">|</span> key<span class="keyword">,</span> <span class="keyword">&amp;</span>itm<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> void</span></span></a>
+  <span class="keyword">}</span> <span class="comment">// end of [val]
+</span>  <span class="keyword">typedef</span> <span class="staexp"><a name="18248"><span class="stacstdec">T <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">!</span>unit_v <span class="keyword">|</span> key<span class="keyword">,</span> <span class="keyword">&amp;</span>itm<span class="keyword">)</span> <span class="keyword">-&lt;</span>clo<span class="keyword">&gt;</span> void</span></a></span>
+  <span class="keyword">val</span> <span class="keyword">[</span><span class="staexp">l<span class="keyword">:</span>addr</span><span class="keyword">]</span> <span class="keyword">(</span><span class="prfexp">pfbox</span> <span class="keyword">|</span> p_f<span class="keyword">)</span> <span class="keyword">=</span> cloref_get_view_ptr <span class="staexp"><span class="keyword">{</span>T<span class="keyword">}</span></span> <span class="keyword">(</span>f<span class="keyword">)</span>
+  <span class="keyword">viewdef</span> <span class="staexp"><a name="18355"><span class="stacstdec">V <span class="keyword">=</span> T @ l</span></a></span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span>pf<span class="keyword">,</span> fpf<span class="keyword">)</span> <span class="keyword">=</span> __assert <span class="keyword">(</span>pfbox<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+    <span class="keyword">extern</span> <span class="keyword">prfun</span> <a name="18427"><span class="dyncstdec"><span class="prfexp">__assert <span class="keyword">(</span>_<span class="keyword">:</span> <span class="staexp">vbox V</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>V<span class="keyword">,</span> V <span class="keyword">-&lt;</span>lin<span class="keyword">,</span>prf<span class="keyword">&gt;</span> void<span class="keyword">)</span></span></span></span></a>
+  <span class="keyword">}</span></span> <span class="comment">// end of [prval]
+</span>  <span class="keyword">prval</span> <span class="prfexp">pf0 <span class="keyword">=</span> unit_v <span class="keyword">(</span><span class="keyword">)</span></span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> hashtbl_foreach_clo&lt;<span class="staexp">key</span><span class="keyword">,</span><span class="staexp">itm</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">{</span>unit_v<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf0</span> <span class="keyword">|</span> tbl<span class="keyword">,</span> <span class="keyword">!</span>p_f<span class="keyword">)</span>
+  <span class="keyword">prval</span> <span class="prfexp">unit_v <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> pf0</span>
+  <span class="keyword">prval</span> <span class="prfexp"><span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fpf <span class="keyword">(</span>pf<span class="keyword">)</span></span>
+<span class="keyword">}</span> <span class="comment">// end of [hashtbl_foreach_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+// some prime numbers
+53, 97, 193, 389, 769, 1543, 3079, 6151, 12289, 24593, 49157, 98317, 196613, 393241, 786433, 1572869, 3145739, 6291469, 12582917, 25165843, 50331653, 100663319, 201326611, 402653189, 805306457, 1610612741
+*)</span>
+
+<span class="keyword">implement</span>
+hashtbl_make <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span>
+  <span class="keyword">(</span>hash<span class="keyword">,</span> eqfn<span class="keyword">)</span> <span class="keyword">=</span> hashtbl_make_hint <span class="staexp"><span class="keyword">{</span>key<span class="keyword">,</span>itm<span class="keyword">}</span></span> <span class="keyword">(</span>hash<span class="keyword">,</span> eqfn<span class="keyword">,</span> 0<span class="keyword">)</span>
+<span class="comment">// end of [hashtbl_make]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+implement{key,itm}
+hashtbl_listize (ptbl) = let
+  typedef keyitm = @(key, itm)
+  var res: List_vt keyitm = list_vt_nil ()
+  viewdef V = List_vt keyitm @ res
+  var !p_clo = @lam (
+    pf: !V | k: key, x: &amp;itm
+  ): void =&lt;clo&gt;
+    (res := list_vt_cons ((k, x), res))
+  // end of [var]
+  val () = hashtbl_foreach_clo&lt;key,itm&gt; {V} (view@ res | ptbl, !p_clo)
+in
+  list_vt_reverse (res) // list-reversing for the shadowing semantics
+end // end of [hashtbl_listize]
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="extern">%{$
+//
+// HX: shortcuts? yes. worth it? probably.
+//
+ats_ptr_type
+atslib_hashtbl_ptr_make__chain
+  (ats_size_type sz) {
+  ats_ptr_type pbeg ;
+/*
+** HX: it is mandatory to initialize with zeros!
+*/
+  pbeg = ATS_CALLOC(sz, sizeof(chain0_ptr)) ;
+  return pbeg ;
+} // end of [atslib_hashtbl_ptr_make__chain]
+
+ats_ptr_type
+atslib_hashtbl_make_hint__chain (
+  ats_clo_ref_type hash
+, ats_clo_ref_type eqfn
+, ats_size_type hint
+) {
+  size_t sz ;
+  HASHTBL_struct *ptbl ;
+  void *pbeg ;
+  ptbl = ATS_MALLOC(sizeof(HASHTBL_struct)) ;
+  sz = (
+    hint &gt; 0 ? hint : HASHTBL_MINSZ
+  ) ;
+  /* zeroing the allocated memory is mandatory! */
+  pbeg = ATS_CALLOC(sz, sizeof(chain0_ptr)) ;
+  ptbl-&gt;atslab_sz = sz ;
+  ptbl-&gt;atslab_tot = 0 ;
+  ptbl-&gt;atslab_pbeg = pbeg ;
+  ptbl-&gt;atslab_hash = hash ;
+  ptbl-&gt;atslab_eqfn = eqfn ;
+  return ptbl ;
+} // end of [atslib_hashtbl_make_hint__chain]
+
+%}</span> <span class="comment">// end of [%{$]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="extern">%{$
+
+ats_int_type
+atslib_hashtbl_free__chain
+  (ats_ptr_type ptbl) {
+  ATS_FREE(((HASHTBL_struct*)ptbl)-&gt;atslab_pbeg) ; ATS_FREE(ptbl) ;
+  return ;
+} // end of [atslib_hashtbl_free__chain]
+
+ats_int_type
+atslib_hashtbl_free_vt__chain
+  (ats_ptr_type ptbl) {
+  if (((HASHTBL_struct*)ptbl)-&gt;atslab_tot != 0)
+    return ats_true_bool ;
+  ATS_FREE(((HASHTBL_struct*)ptbl)-&gt;atslab_pbeg) ; ATS_FREE(ptbl) ;
+  return ats_false_bool ;
+} // end of [atslib_hashtbl_free_vt__chain]
+
+%}</span> <span class="comment">// end of [%{$]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [hashtable_chain.dats] *)</span>
+</pre>
+</body>
+</html>

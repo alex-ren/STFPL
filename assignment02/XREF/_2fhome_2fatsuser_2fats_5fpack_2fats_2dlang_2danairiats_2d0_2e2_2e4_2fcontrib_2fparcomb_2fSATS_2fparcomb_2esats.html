@@ -1,0 +1,381 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2008 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published by the
+** Free Software Foundation; either version 2.1, or (at your option)  any
+** later version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see the  file COPYING.  If not, please write to the
+** Free Software Foundation,  51 Franklin Street, Fifth Floor, Boston, MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">(*
+**
+** An implementation of parsing combinators
+**
+*)</span>
+<span class="comment">//
+</span><span class="comment">// Author: Hongwei Xi (hwxi AT cs DOT bu DOT edu)
+</span><span class="comment">// Time: December, 2008
+</span><span class="comment">//
+</span><span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="1582"><span class="dyncstdec">stream_get_item <span class="keyword">(</span>tks<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>stream t</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">Option_vt <span class="keyword">(</span>t<span class="keyword">)</span></span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">abstype</span> <span class="staexp"><a name="1662"><span class="stacstdec">parser_t</span></a></span> <span class="keyword">(</span>a<span class="keyword">:</span>t@ype<span class="keyword">,</span> t<span class="keyword">:</span>t@ype<span class="keyword">)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="1716"><span class="dyncstdec">lzeta <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>t@ype<span class="keyword">}</span></span><span class="staexp"><span class="keyword">{</span>t<span class="keyword">:</span>t@ype<span class="keyword">}</span></span>
+  <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">lazy <span class="keyword">(</span>parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span><span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="1825"><span class="dyncstdec">any_parser <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> a<span class="keyword">)</span></span></span></a>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="1869"><span class="dyncstdec">anyopt_parser <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>Option a<span class="keyword">,</span> a<span class="keyword">)</span></span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="keyword">}</span> <a name="1938"><span class="dyncstdec">fail_parser <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>t@ype<span class="keyword">}</span></span><span class="staexp"><span class="keyword">{</span>t<span class="keyword">:</span>t@ype<span class="keyword">}</span></span> <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: this one does not consume any tokens
+</span><span class="comment">//
+</span><span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="2082"><span class="dyncstdec">neg_parser <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>unit<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> <span class="keyword">~</span> <span class="keyword">with</span> neg_parser</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> return
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="2220"><span class="dyncstdec">return_parser <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">a</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> return <span class="keyword">with</span> return_parser</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// symintr alt // infix
+</span><span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="2363"><span class="dyncstdec">alt_parser_parser
+  <span class="keyword">(</span>p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> || <span class="keyword">with</span> alt_parser_parser</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// symintr seq // infix
+</span><span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="2552"><span class="dyncstdec">seq_parser_parser <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span><span class="keyword">@(</span>a1<span class="keyword">,</span>a2<span class="keyword">)</span><span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> &amp;&amp; <span class="keyword">with</span> seq_parser_parser</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> wth <span class="comment">// infix
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">;</span><span class="staexp">b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="2755"><span class="dyncstdec">seq1wth_parser_fun <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> wth <span class="keyword">with</span> seq1wth_parser_fun</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">;</span><span class="staexp">b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="2905"><span class="dyncstdec">seq1wth_parser_cloref <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> wth <span class="keyword">with</span> seq1wth_parser_cloref</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3083"><span class="dyncstdec">seq2wth_parser_fun <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq2wth_parser_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3255"><span class="dyncstdec">seq2wth_parser_cloref <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq2wth_parser_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3460"><span class="dyncstdec">seq3wth_parser_fun <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq3wth_parser_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3664"><span class="dyncstdec">seq3wth_parser_cloref <span class="keyword">(</span>
+    p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+  <span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+  <span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+  <span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> b</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq3wth_parser_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>a4<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="3911"><span class="dyncstdec">seq4wth_parser_fun <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p4<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a4<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">,</span> a4<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq4wth_parser_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>a4<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4147"><span class="dyncstdec">seq4wth_parser_cloref <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p4<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a4<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">,</span> a4<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq4wth_parser_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>a4<span class="keyword">,</span>a5<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4416"><span class="dyncstdec">seq5wth_parser_fun <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p4<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a4<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p5<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a5<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">,</span> a4<span class="keyword">,</span> a5<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq5wth_parser_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>a4<span class="keyword">,</span>a5<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4684"><span class="dyncstdec">seq5wth_parser_cloref <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p4<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a4<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p5<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a5<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">,</span> a4<span class="keyword">,</span> a5<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq5wth_parser_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>a4<span class="keyword">,</span>a5<span class="keyword">,</span>a6<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="4985"><span class="dyncstdec">seq6wth_parser_fun <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p4<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a4<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p5<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a5<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p6<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a6<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">,</span> a4<span class="keyword">,</span> a5<span class="keyword">,</span> a6<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq6wth_parser_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>a4<span class="keyword">,</span>a5<span class="keyword">,</span>a6<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5281"><span class="dyncstdec">seq6wth_parser_cloref <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p4<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a4<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p5<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a5<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p6<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a6<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">,</span> a4<span class="keyword">,</span> a5<span class="keyword">,</span> a6<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq6wth_parser_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>a4<span class="keyword">,</span>a5<span class="keyword">,</span>a6<span class="keyword">,</span>a7<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5610"><span class="dyncstdec">seq7wth_parser_fun <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p4<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a4<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p5<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a5<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p6<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a6<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p7<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a7<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">,</span> a4<span class="keyword">,</span> a5<span class="keyword">,</span> a6<span class="keyword">,</span> a7<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq7wth_parser_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>a4<span class="keyword">,</span>a5<span class="keyword">,</span>a6<span class="keyword">,</span>a7<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="5936"><span class="dyncstdec">seq7wth_parser_cloref <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p4<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a4<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p5<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a5<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p6<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a6<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p7<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a7<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">,</span> a4<span class="keyword">,</span> a5<span class="keyword">,</span> a6<span class="keyword">,</span> a7<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq7wth_parser_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>a4<span class="keyword">,</span>a5<span class="keyword">,</span>a6<span class="keyword">,</span>a7<span class="keyword">,</span>a8<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="6295"><span class="dyncstdec">seq8wth_parser_fun <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p4<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a4<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p5<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a5<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p6<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a6<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p7<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a7<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p8<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a8<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">,</span> a4<span class="keyword">,</span> a5<span class="keyword">,</span> a6<span class="keyword">,</span> a7<span class="keyword">,</span> a8<span class="keyword">)</span> <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq8wth_parser_fun]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">,</span>a3<span class="keyword">,</span>a4<span class="keyword">,</span>a5<span class="keyword">,</span>a6<span class="keyword">,</span>a7<span class="keyword">,</span>a8<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="6651"><span class="dyncstdec">seq8wth_parser_cloref <span class="keyword">(</span>
+  p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p3<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a3<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p4<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a4<span class="keyword">,</span> t<span class="keyword">)</span></span>  
+<span class="keyword">,</span> p5<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a5<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p6<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a6<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p7<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a7<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> p8<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a8<span class="keyword">,</span> t<span class="keyword">)</span></span>
+<span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>a1<span class="keyword">,</span> a2<span class="keyword">,</span> a3<span class="keyword">,</span> a4<span class="keyword">,</span> a5<span class="keyword">,</span> a6<span class="keyword">,</span> a7<span class="keyword">,</span> a8<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> b</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [seq8wth_parser_cloref]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">// &lt;&lt; (fst) and &gt;&gt; (snd)
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="7043"><span class="dyncstdec">proj1_parser_parser
+  <span class="keyword">(</span>p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> &lt;&lt; <span class="keyword">with</span> proj1_parser_parser</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a1<span class="keyword">,</span>a2<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="7194"><span class="dyncstdec">proj2_parser_parser
+  <span class="keyword">(</span>p1<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a1<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> p2<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>a2<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> &gt;&gt; <span class="keyword">with</span> proj2_parser_parser</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> sat <span class="comment">// infix
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="7384"><span class="dyncstdec">sat_parser_fun
+  <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span><span class="keyword">fun</span><span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> sat <span class="keyword">with</span> sat_parser_fun</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="7515"><span class="dyncstdec">sat_parser_cloref
+  <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">a <span class="keyword">-&lt;</span>cloref<span class="keyword">&gt;</span> bool</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> sat <span class="keyword">with</span> sat_parser_cloref</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="7676"><span class="dyncstdec">discard_one_parser <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>unit<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="7760"><span class="dyncstdec">discard_many_parser <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>unit<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> ^? ^* ^+ <span class="comment">// postfix
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="7896"><span class="dyncstdec">optional_parser
+  <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>Option a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> ^? <span class="keyword">with</span> optional_parser</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="8017"><span class="dyncstdec">repeat0_parser
+  <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>List a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> ^* <span class="keyword">with</span> repeat0_parser</span>
+
+<span class="keyword">viewtypedef</span> <span class="staexp"><a name="8124"><span class="stacstdec">List1 <span class="keyword">(</span>a<span class="keyword">:</span> t@ype<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">[</span>n<span class="keyword">:</span>int <span class="keyword">|</span> n <span class="keyword">&gt;</span> 0<span class="keyword">]</span> list <span class="keyword">(</span>a<span class="keyword">,</span> n<span class="keyword">)</span></span></a></span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span> <a name="8194"><span class="dyncstdec">repeat1_parser
+  <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>List1 a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="neuexp"><span class="keyword">overload</span> ^+ <span class="keyword">with</span> repeat1_parser</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="8335"><span class="dyncstdec">repeat0_sep_parser
+  <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> sep<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>List a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [repeat0_sep_parser]
+</span>
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">,</span>b<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="8479"><span class="dyncstdec">repeat1_sep_parser
+  <span class="keyword">(</span>p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> sep<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>b<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">parser_t <span class="keyword">(</span>List1 a<span class="keyword">,</span> t<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [repeat1_sep_parser]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span><span class="keyword">{</span><span class="staexp">a<span class="keyword">:</span>t@ype</span><span class="keyword">}</span><span class="keyword">{</span><span class="staexp">t<span class="keyword">:</span>t@ype</span><span class="keyword">}</span>
+<a name="8643"><span class="dyncstdec">apply_parser <span class="keyword">(</span>
+  p<span class="keyword">:</span> <span class="staexp">parser_t <span class="keyword">(</span>a<span class="keyword">,</span> t<span class="keyword">)</span></span><span class="keyword">,</span> tks<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>stream t</span><span class="keyword">,</span> ncur<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>int</span><span class="keyword">,</span> nmax<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>int</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">laz</span><span class="keyword">&gt;</span> <span class="staexp">Option_vt a</span></span></a> <span class="comment">// end of [apply_parser]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [parcomb.sats] *)</span>
+</pre>
+</body>
+</html>

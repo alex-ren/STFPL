@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(*
+** CAS CS525, Spring 2011
+** Instructor: Hongwei Xi
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">exception</span> Fatal <span class="keyword">of</span> <span class="staexp">int</span> <span class="comment">(*errcode*)</span>
+
+<span class="keyword">fun</span> <a name="120"><span class="dyncstdec">abort <span class="staexp"><span class="keyword">{</span>a<span class="keyword">:</span>viewt@ype<span class="keyword">}</span></span> <span class="keyword">(</span>err<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">a</span></span></a>
+
+<span class="keyword">#define</span> <span class="neuexp">ERRORCODE_TYPE_ERROR 1</span>
+<span class="keyword">#define</span> <span class="neuexp">ERRORCODE_OUT_OF_BOUND 2</span>
+<span class="keyword">#define</span> <span class="neuexp">ERRORCODE_FORBIDDEN 100</span>
+
+<span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_DEBUG 10</span>  <span class="comment">// output debug information
+</span><span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_INFO 9</span>  <span class="comment">// 
+</span><span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_ERROR 5</span>  <span class="comment">// impossible to happen
+</span>
+<span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_CUR 10</span>
+
+<span class="keyword">macdef</span> <span class="neuexp">ETRACE <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">,(</span>x<span class="keyword">)</span></span>
+<span class="keyword">macdef</span> <span class="neuexp">ETRACE <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span></span>
+
+<span class="keyword">macdef</span> <span class="neuexp">ETRACE_MSG <span class="keyword">(</span>obj<span class="keyword">,</span> level<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> <span class="keyword">,(</span>level<span class="keyword">)</span> &lt;= ETRACE_LEVEL_CUR <span class="keyword">then</span>
+    print <span class="keyword">,(</span>obj<span class="keyword">)</span> 
+<span class="keyword">in</span> 
+  <span class="keyword">(</span><span class="keyword">)</span>
+<span class="keyword">end</span></span>
+
+<span class="keyword">macdef</span> <span class="neuexp">ETRACE_OPR <span class="keyword">(</span>opr<span class="keyword">,</span> level<span class="keyword">)</span> <span class="keyword">=</span> 
+  <span class="keyword">if</span> <span class="keyword">,(</span>level<span class="keyword">)</span> &lt;= ETRACE_LEVEL_CUR <span class="keyword">then</span> <span class="keyword">,(</span>opr<span class="keyword">)</span></span>
+
+<span class="keyword">macdef</span> <span class="neuexp">ETRACE_MSG_OPR <span class="keyword">(</span>obj<span class="keyword">,</span> level<span class="keyword">,</span> oper<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> <span class="keyword">,(</span>level<span class="keyword">)</span> &lt;= ETRACE_LEVEL_CUR <span class="keyword">then</span>
+    print <span class="keyword">,(</span>obj<span class="keyword">)</span> 
+<span class="keyword">in</span> 
+  <span class="keyword">,(</span>oper<span class="keyword">)</span>
+<span class="keyword">end</span></span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [error.sats] *)</span>
+
+<span class="comment">(* vi: set syntax=sml: *)</span>
+
+</pre>
+</body>
+</html>
