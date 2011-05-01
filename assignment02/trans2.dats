@@ -203,6 +203,7 @@ assume funent_t = funent
 
 implement funent_get_lab (ent) = ent.funent_fun
 implement funent_get_narg (ent) = ent.funent_narg
+implement funent_get_args (ent) = ent.funent_args
 implement funent_get_body (ent) = ent.funent_body
 implement funent_get_ret (ent) = ent.funent_ret
 
@@ -438,6 +439,7 @@ fun aux_exp_fix_lab
   (loc: loc, f: v1ar, v_args: v1arlst, e_body: e1xp, 
    fl: funlab, cloargs: v1arlst, res: &instrlst, init_res: instrlst): valprim = let
 
+  // add new instruction to res
   val cloargs_valprims = v1arlst_2_valprimlst (cloargs)
   val fl_nam = funlab_get_name (fl)
   val f_tmpvar = tmpvar_new (fl_nam)
@@ -451,6 +453,7 @@ fun aux_exp_fix_lab
   val ncloargs = v1arlst_set_env (cloargs, 0)
   val cloargs_valprims2 = v1arlst_2_valprimlst (cloargs)
 
+  // add instructions to init_res
   // treat f specially, build an instruction for it
   var body_res: instrlst = init_res
   val () = instr_add_closure (loc, f_tmpvar, fl, cloargs_valprims2, body_res)
@@ -465,10 +468,11 @@ fun aux_exp_fix_lab
   val vp_ret = aux_exp (e_body, body_res)
   val body_res = instr_reverse (body_res)
 
+  
   val ncloargs = v1arlst_set_tmpvar (cloargs, 0)
   val cloargs_valprims3 = v1arlst_2_valprimlst (cloargs)
-
-  val ent = funent_make (fl, nargs, args_valprims, body_res, vp_ret, cloargs_valprims3)
+  val ent = funent_make (fl, nargs, args_valprims, body_res, 
+                               vp_ret, cloargs_valprims3)
   val () = funent_add (fl, ent)
 
   // Caution: turn it back
@@ -520,7 +524,9 @@ in
 end
 
 (* extern fun aux_exp (e: e1xp, res: &instrlst): valprim *)
-implement aux_exp (e, res) = (
+implement aux_exp (e, res) = let
+  val () = ETRACE_MSG ("trans2_exp\n", ETRACE_LEVEL_DEBUG)
+in (
   case e.e1xp_node of
   | E1XPann (e, _) => aux_exp (e, res)
   | E1XPapp (_, _) => wrapper (e, res)
@@ -562,6 +568,7 @@ implement aux_exp (e, res) = (
       aux_exp_ret (e, res, tmp_ret)
   end
   } // end of [where]
+end
 
 // end of [aux_exp]
 
@@ -624,8 +631,15 @@ fun aux_exp_v1aldeclst_rec_r1 (v1aldecs: v1aldeclst,
     val env_opt = e1xp_node_fun_get_env (e_node)
     val () = (case+ env_opt of
       | Some0 env => let
+        // keep the original content
+        val cloargs_valprims_old = v1arlst_2_valprimlst (env)
+        // set to new ones
         val ncloargs = v1arlst_set_env (env, 0)
         val cloargs_valprims = v1arlst_2_valprimlst (env)
+
+        // set the old one back
+        val () = v1arlst_set_valprimlst (env, cloargs_valprims_old)
+        
         val fl = funlab_make (v)
         val fl_nam = funlab_get_name (fl)
         val f_tmpvar = tmpvar_new (fl_nam)
@@ -708,14 +722,14 @@ fun aux_exp_v1aldeclst_norec (v1aldecs: v1aldeclst, res: &instrlst): void =
       in vp end
     val () = v1ar_set_val (v, vp)
   in
-    aux_exp_v1aldeclst_norec (v1aldecs, res)
+    aux_exp_v1aldeclst_norec (v1aldecs1, res)
   end
   | nil () => ()
 
 fun aux_exp_d1eclst (d1ecs: d1eclst, res: &instrlst): void =
   case+ d1ecs of
   | cons (d1ec, d1ecs1) => let
-    // val () = printf ("aux_exp_d1eclst\n", @())
+    val () = printf ("aux_exp_d1eclst\n", @())
     val+ D1ECval (isrec, v1aldecs) = d1ec.d1ec_node 
 
     val () = (if isrec = true then aux_exp_v1aldeclst_rec (v1aldecs, res)
@@ -727,7 +741,7 @@ fun aux_exp_d1eclst (d1ecs: d1eclst, res: &instrlst): void =
 
 fun aux_exp_ret_let (loc: loc, d1ecs: d1eclst, e1xp: e1xp, 
   res: &instrlst, tmp_ret: tmpvar): valprim = let
-  // val () = printf ("aux_exp_ret_let\n", @())
+  val () = printf ("aux_exp_ret_let\n", @())
   val () = aux_exp_d1eclst (d1ecs, res)
 in
   aux_exp_ret (e1xp, res, tmp_ret)
@@ -835,7 +849,7 @@ trans2_exp (e: e1xp): instrlst
 *)
 implement
 trans2_exp (e) = let
-  // val () = ETRACE_MSG ("trans2_exp\n", ETRACE_LEVEL_DEBUG)
+  val () = ETRACE_MSG ("trans2_exp\n", ETRACE_LEVEL_DEBUG)
 
   var res: instrlst = list0_nil ()
   var env: v1arlst = list0_nil ()

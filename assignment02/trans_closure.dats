@@ -4,6 +4,7 @@ staload "trans_closure.sats"
 staload "trans1.sats"
 staload "symbol.sats"
 staload "error.sats"
+staload "libfunctions.sats"
 
 typedef loc = $Posloc.location_t
 
@@ -110,11 +111,18 @@ in
   | E1XPstr _ => ctx_nil
   | E1XPtup es => trans_clo1_e1xplst (es, Gamma)
   | E1XPvar v => let
-    val r = symenv_lookup (Gamma, v.v1ar_nam)
+    val nam = v.v1ar_nam
+    val r = symenv_lookup (Gamma, nam)
   in
     case+ r of
     | Some0 _ => ctx_nil 
-    | None0 () => symenv_insert (ctx_nil, v.v1ar_nam, v)
+    | None0 () => let
+      val typ_opt = libSymTypFind (nam)  // check library function
+    in
+      case+ typ_opt of
+      | Some0 _ => ctx_nil
+      | None0 () => symenv_insert (ctx_nil, nam, v)
+    end
   end
 //  | E1XPfixclo _ => ETRACE_MSG_OPR ("trans_clo1_e1xp E1XPfixclo is found\n", ETRACE_LEVEL_ERROR,
 //                    abort (ERRORCODE_FORBIDDEN))

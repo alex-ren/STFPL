@@ -148,6 +148,7 @@ fun trans2_exp (e: e1xp): (instrlst, list0 funent_t)
 
 fun funent_get_lab (ent: funent): funlab
 fun funent_get_narg (ent: funent): int
+fun funent_get_args (ent: funent): valprimlst
 fun funent_get_body (ent: funent): instrlst
 fun funent_get_ret (ent: funent): valprim
 

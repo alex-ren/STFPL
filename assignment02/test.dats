@@ -21,7 +21,7 @@ dynload "trans1.dats"
 dynload "trans_closure.dats"
 dynload "trans2.dats"
 dynload "libfunctions.dats"  // after trans2
-// dynload "trans_cpp.dats"
+dynload "trans_cpp.dats"
 
 (* ****** ****** *)
 
@@ -33,7 +33,7 @@ staload "error.sats"
 staload "trans1.sats"
 staload "trans_closure.sats"
 staload "trans2.sats"
-// staload "trans_cpp.sats"
+staload "trans_cpp.sats"
 
 
 (* ****** ****** *)
@@ -79,9 +79,9 @@ main () = () where {
     // val () = print "\n\ntransform to IR ==================================\n\n"
     val (irs, fns) = trans2_exp (prog1)
 
-    // val os = trans_cpp (irs, fns)
-    // val () = print_ostream (os)
-    // val () = print_newline ()
+    val os = trans_cpp (irs, fns)
+    val () = print_ostream (os)
+    val () = print_newline ()
   in end
 } // end of [main]
 
