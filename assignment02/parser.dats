@@ -13,6 +13,7 @@
 staload _(*anonymous*) = "prelude/DATS/array.dats"
 staload _(*anonymous*) = "prelude/SATS/filebas.sats" // for [stdio.cats]?
 staload _(*anonymous*) = "prelude/DATS/list.dats"
+staload "libc/SATS/stdio.sats"
 
 (* ****** ****** *)
 

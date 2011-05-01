@@ -10,6 +10,7 @@ typedef loc = $Posloc.location_t
 macdef location_none = $Posloc.location_none
 macdef prerr_loc = $Posloc.prerr_location
 macdef fprint_location = $Posloc.fprint_location
+macdef print_location = $Posloc.print_location
 
 (* ****** ****** *)
 
@@ -145,8 +146,11 @@ implement prerr_tyerr_pool (pool) = fprint_tyerr_pool (stderr_ref, pool)
 
 implement fprint_tyerr (out, tyerr) = () where {
   // todo cannot print location, should use out
-  // val () = print_location (tyerr.loc)
-  val _ = fprint (out, "???@" + tyerr.msg)
+  // extern fun axiom {m: file_mode} (f: &FILE m): (file_mode_lte (m, w) | void)
+  // val (pf | ()) = axiom (out)
+  // val () = fprint_location (pf | out, tyerr.loc)
+  val () = print_location (tyerr.loc)
+  val _ = fprint (out, "@" + tyerr.msg)
 } 
 
 implement print_tyerr (tyerr: tyerr) = fprint_tyerr (stdout_ref, tyerr)
@@ -170,8 +174,11 @@ trans1_typ (t) = aux (t) where {
         end
         | _ => T1YPbase sym
       end // end of [T0YPbase]  
-    | T0YPfun (t1, t2) => T1YPfun (ref ~1(*don't know the no. of args yet*), 
-                                   aux t1, aux t2)
+    | T0YPfun (t1, t2) => (case+ t1.t0yp_node of
+        | T0YPtup t1yplst => T1YPfun (
+             ref_make_elt<int> (list0_length (t1yplst)), aux t1, aux t2)
+        | _ => T1YPfun (ref_make_elt<int> (1), aux t1, aux t2)
+        ): t1yp
     | T0YPtup (ts) => T1YPtup (list0_map_fun (ts, aux))
   // end of [aux]
 } // end of [trans1_typ]   
@@ -1157,11 +1164,13 @@ implement t1yp_finalize (t) = let
 in
   case+ t1 of
   | T1YPbase (x) => (t1, 0)
-  | T1YPfun (x, args, ret) => let
+  | T1YPfun (nargs, args, ret) => let
     val (args, amb1) = t1yp_finalize (args)
     val (ret, amb2) = t1yp_finalize (ret)
   in
-    (T1YPfun (x, args, ret), amb1 + amb2)
+    if !nargs = ~1 then ETRACE_MSG_OPR ("t1yp_finalize nargs == -1\n", ETRACE_LEVEL_ERROR,
+                    abort (ERRORCODE_FORBIDDEN))
+    else (T1YPfun (nargs, args, ret), amb1 + amb2)
   end
   | T1YPtup (t1yps) => let
     val (t1yps, amb) = t1yp_lst_finalize (t1yps)

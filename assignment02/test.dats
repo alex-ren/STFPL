@@ -64,7 +64,6 @@ main () = () where {
     val () = print_newline ()
 
 
-
     // val () = print "\n\ninterp0 ==================================\n\n"
     // val v = interp0_exp(prog)
     // val () = print_newline ()
@@ -78,7 +77,7 @@ main () = () where {
     // val () = print_newline ()
 
     // val () = print "\n\ntransform to IR ==================================\n\n"
-    // val (irs, fns) = trans2_exp (prog1)
+    val (irs, fns) = trans2_exp (prog1)
 
     // val os = trans_cpp (irs, fns)
     // val () = print_ostream (os)

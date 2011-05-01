@@ -154,6 +154,11 @@ About Type Checking / Inference
   end
   
 
+  **** type error
+  val f: (int, int) -> int = lam (x: (int, int)) => 3
+
+  (int, int) -> int is translate to <<2>>(int, int) -> int
+
 
 
 
