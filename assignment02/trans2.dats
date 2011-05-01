@@ -119,14 +119,6 @@ in
   loop (instrs, nil)
 end
 
-symintr tmpvar_new
-extern fun tmpvar_new_anon (): tmpvar_t
-extern fun tmpvar_new_v1ar (v: v1ar): tmpvar_t
-extern fun tmpvar_new_string (str: string): tmpvar_t
-overload tmpvar_new with tmpvar_new_anon
-overload tmpvar_new with tmpvar_new_v1ar
-overload tmpvar_new with tmpvar_new_string
-
 local  // tmpvar
 assume tmpvar_t = symbol_t
 val tmpvar_count = ref<int> (0)
@@ -134,7 +126,8 @@ val tmpvar_prefix = "__v_": string
 in
 
 implement tmpvar_void = symbol_make_name ("dummy_void")
-val valprim_void = make_valprim (VPtup (tmpvar_void, list0_nil), T2YPtup nil)  // must be put here
+// must be put here
+val valprim_void = make_valprim (VPtup (tmpvar_void, list0_nil), T2YPtup nil)  
 
 implement tmpvar_new_anon () = let
   val i = !tmpvar_count
@@ -389,6 +382,16 @@ in
       ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
 end
 
+fun aux_v1ar_get_fl (v: v1ar): funlab_t = let
+  val vp_opt = v1ar_get_val (v)
+  // todo: add error
+  val- Some0 (vp) = vp_opt
+  val vp_node = vp.valprim_node
+  val- VPclo (_, fl, _) = vp_node
+in
+  fl
+end
+
 (* get the content from v1ar *)
 fun v1arlst_2_valprimlst (cloargs: v1arlst): valprimlst =
   list0_map_cloref<v1ar><valprim> (cloargs, 
@@ -549,8 +552,8 @@ implement aux_exp (e, res) = (
     in
       case+ vp_opt of
       | Some0 vp => vp
-      | None0 () => ETRACE_MSG_OPR ("aux_exp v1ar doesn't have valprim\n", ETRACE_LEVEL_ERROR,
-             abort (ERRORCODE_FORBIDDEN))
+      | None0 () => ETRACE_MSG_OPR ("aux_exp v1ar doesn't have valprim\n", 
+           ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
     end
   end): valprim where {
   fun wrapper (e: e1xp, res: &instrlst): valprim = let
@@ -608,65 +611,85 @@ in
   make_valprim (VPtmp (tmp_ret), ret_typ)
 end
 
-////
-fun aux_exp_v1aldeclst (v1aldecs: v1aldeclst, res: &instrlst): void =
-  case+ v1aldecs of
-  | cons (v1aldec, v1aldecs1) => let
-    val v1ar = v1aldec.v1aldec_var
-    val vpopt = v1ar_get_val (v1ar)
-    val vp = 
-      case+ vpopt of
-      | Some0 vp => 
-        (case+ vp of
-        // if exists sth. then must be funlab
-        | VPfun fl => aux_exp_fun (v1aldec.v1aldec_def, fl)
-        | _ => ETRACE_MSG_OPR (
-          "aux_exp_v1aldeclst var has a valprim which is not VPfun\n",
-          ETRACE_LEVEL_ERROR,
-          abort (ERRORCODE_FORBIDDEN))
-        )
-      | None0 () => aux_exp_ret (v1aldec.v1aldec_def, res, tmpvar_new (v1ar))
-    val () = v1ar_set_val (v1ar, vp)  // vp may be equal to VPfun fl, just let it be
-  in
-    aux_exp_v1aldeclst (v1aldecs1, res)
-  end
-  | nil () => ()
-
-(* generating labels for all the functions *)
+(* generating init instructions for functions *)
+(* initilize the recursively defined closures *)
 (* r1: round 1 *)
-fun aux_exp_v1aldeclst_r1 (v1aldecs: v1aldeclst): void =
+fun aux_exp_v1aldeclst_rec_r1 (v1aldecs: v1aldeclst, 
+  init_res: &instrlst): void =
   case+ v1aldecs of
   | cons (v1aldec, v1aldecs1) => let
     val v = v1aldec.v1aldec_var
     val e = v1aldec.v1aldec_def
     val e_node = e.e1xp_node
-    val () = 
-      if e1xp_node_is_fun (e_node) = true then let
+    val env_opt = e1xp_node_fun_get_env (e_node)
+    val () = (case+ env_opt of
+      | Some0 env => let
+        val ncloargs = v1arlst_set_env (env, 0)
+        val cloargs_valprims = v1arlst_2_valprimlst (env)
+        val fl = funlab_make (v)
+        val fl_nam = funlab_get_name (fl)
+        val f_tmpvar = tmpvar_new (fl_nam)
+        val () = instr_add_closure (v1aldec.v1aldec_loc, f_tmpvar, fl,
+              cloargs_valprims, init_res)
 
-
-  // f is VPfun not VPclo
-  // treat f specially
-  val f_t1yp = f.v1ar_typ
-  val f_t2yp = trans2_typ (f_t1yp)
-  val vp_f = make_valprim (VPfun fl, f_t2yp)
-  val () = v1ar_set_val (f, vp_f)
-
-
-        val fl = funlab_make_name (v)
-        val vp_fun = VPfun (fl)
-        val () = v1ar_set_val (v, vp_fun)
+        val f_fun_typ = v.v1ar_typ
+        val f_clo_typ = trans2_typ (f_fun_typ)
+        val f_clo_node = VPclo (f_tmpvar, fl, cloargs_valprims)
+        val vp_f = make_valprim (f_clo_node, f_clo_typ)
+        val () = v1ar_set_val (v, vp_f)
       in end
-  in
-    aux_exp_v1aldeclst_rec_r1 (v1aldecs1)
-  end  // end of [cons]
+      | None0 () => ()
+    ): void
+    in 
+      aux_exp_v1aldeclst_rec_r1 (v1aldecs1, init_res)
+    end
   | nil () => ()
 
+        
+(* translating each functions *)
+(* r2: round 2 *)
+fun aux_exp_v1aldeclst_rec_r2 (v1aldecs: v1aldeclst, 
+  res: &instrlst, init_res: instrlst): valprimlst =
+  case+ v1aldecs of
+  | cons (v1aldec, v1aldecs1) => let
+    val v = v1aldec.v1aldec_var
+    val e = v1aldec.v1aldec_def
+    val e_node = e.e1xp_node
+    val is_fun = e1xp_node_is_fun (e_node)
+    val vp = (if is_fun = true then let
+        val fl = aux_v1ar_get_fl (v)
+        val vp_fun = aux_exp_fun (e, fl, res, init_res)
+      in
+        vp_fun
+      end else aux_exp_ret (e, res, tmpvar_new (v))
+    ): valprim
+  in
+    cons (vp, aux_exp_v1aldeclst_rec_r2 (v1aldecs1, res, init_res))
+  end
+  | nil () => nil
+
+(* set the recursively defined v1ar by closure value *)
+(* r3: round 3 *)
+fun aux_exp_v1aldeclst_rec_r3 (v1aldecs: v1aldeclst, 
+  valprims: valprimlst): void =
+  case+ (v1aldecs, valprims) of
+  | (cons (v1aldec, v1aldecs1), cons (vp, vps1)) => let
+    val () = v1ar_set_val (v1aldec.v1aldec_var, vp)
+  in
+    aux_exp_v1aldeclst_rec_r3 (v1aldecs1, vps1)
+  end
+  | (nil (), nil ()) => ()
+  | (_, _) => ETRACE_MSG_OPR ("aux_exp_v1aldeclst_rec_r3 length not match\n", 
+           ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+
 fun aux_exp_v1aldeclst_rec (v1aldecs: v1aldeclst, res: &instrlst): void = let
-  // scan for the first round
   // val () = printf ("aux_exp_v1aldeclst_rec\n", @())
-  val () = aux_exp_v1aldeclst_rec_r1 (v1aldecs)
+  var init_res: instrlst = nil
+  val () = aux_exp_v1aldeclst_rec_r1 (v1aldecs, init_res)
+  val vps = aux_exp_v1aldeclst_rec_r2 (v1aldecs, res, init_res)
+  val () = aux_exp_v1aldeclst_rec_r3 (v1aldecs, vps)
 in
-  aux_exp_v1aldeclst (v1aldecs, res)
+  ()
 end
 
 fun aux_exp_v1aldeclst_norec (v1aldecs: v1aldeclst, res: &instrlst): void =
@@ -678,33 +701,23 @@ fun aux_exp_v1aldeclst_norec (v1aldecs: v1aldeclst, res: &instrlst): void =
     val vp = 
       if e1xp_node_is_fun (e_node) = true then let
         val fl = funlab_make_name (v)
-        val vp_fun = aux_exp_fun (e, fl, res)
+        val vp_fun = aux_exp_fun (e, fl, res, nil) // no init instructions
       in vp_fun end
       else let
         val vp = aux_exp_ret (e, res, tmpvar_new (v))
       in vp end
     val () = v1ar_set_val (v, vp)
   in
-    aux_exp_v1aldeclst_norec (valdecs1, res)
+    aux_exp_v1aldeclst_norec (v1aldecs, res)
   end
   | nil () => ()
-
-        
-
-
-  // scan for the first round
-  // val () = printf ("aux_exp_v1aldeclst_norec\n", @())
-  val () = aux_exp_v1aldeclst_r1 (v1aldecs)
-in
-  aux_exp_v1aldeclst (v1aldecs, res)
-end
 
 fun aux_exp_d1eclst (d1ecs: d1eclst, res: &instrlst): void =
   case+ d1ecs of
   | cons (d1ec, d1ecs1) => let
     // val () = printf ("aux_exp_d1eclst\n", @())
     val+ D1ECval (isrec, v1aldecs) = d1ec.d1ec_node 
-    (* no matter it is recursive or not, I decide to treat them as the same *)
+
     val () = (if isrec = true then aux_exp_v1aldeclst_rec (v1aldecs, res)
              else aux_exp_v1aldeclst_norec (v1aldecs, res))
   in
@@ -721,74 +734,71 @@ in
 end
 
 fun aux_exp_ret_proj (loc: loc, e1xp: e1xp, pos: int, 
-  res: &instrlst, tmp_ret: tmpvar): valprim = let
+  res: &instrlst, tmp_ret: tmpvar, t1yp: t1yp): valprim = let
+  val t2yp = trans2_typ (t1yp)
   val vp = aux_exp (e1xp, res)
 
   val () = 
-    (case+ vp of 
-    | VParg _ => instr_add_proj (loc, tmp_ret, vp, pos, res)
+    (case+ vp.valprim_node of  // todo seems unnecessary
+    | VPenv _ => instr_add_proj (loc, tmp_ret, vp, pos, res)
     | VPtmp _ => instr_add_proj (loc, tmp_ret, vp, pos, res)
     | VPtup _ => instr_add_proj (loc, tmp_ret, vp, pos, res)
-    | _ => ETRACE_MSG_OPR ("aux_exp_ret_proj left part is not a tuple\n", ETRACE_LEVEL_ERROR,
-                      abort (ERRORCODE_FORBIDDEN))
+    | _ => ETRACE_MSG_OPR ("aux_exp_ret_proj left part is not a tuple\n", 
+           ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
     )
 in
-  VPtmp (tmp_ret)
-(*  // obsolete code
-  case+ vp of
-  | VPtup (_, vps) => let
-    val vp_opt = list0_nth_opt (vps, pos)
-  in
-    case+ vp_opt of
-    | Some0 vp => let
-      val () = instr_add_move (loc, tmp_ret, vp, res)
-    in
-      VPtmp (tmp_ret)
-    end
-    | None0 () => ETRACE_MSG_OPR ("aux_exp_ret_proj proj out of bound\n", ETRACE_LEVEL_ERROR,
-                    abort (ERRORCODE_FORBIDDEN))
-  end
-*)
+  make_valprim (VPtmp (tmp_ret), t2yp)
 end
 
 fun aux_exp_ret_app (loc: loc, e_fun: e1xp, e_arg: e1xp,
-  res: &instrlst, tmp_ret: tmpvar): valprim = let
-  val vp_f = aux_exp (e_fun, res)
+  res: &instrlst, tmp_ret: tmpvar, t1yp: t1yp): valprim = let
+  // return type
+  val t2yp = trans2_typ (t1yp)
+
+  val vp_clo = aux_exp (e_fun, res)
+  val clo_typ = vp_clo.valprim_typ
+  // todo I am lazy now
+  val- T2YPclo (nargs, _, _) = clo_typ
+
   val vp_arg = aux_exp (e_arg, res)
 
-  (* treat all functioins as unary functions *)
-  val (vp_args, iswrapper) = (case+ vp_arg of
-              | VPtup (_, vps) => (vps, false)
-              | _ => (cons (vp_arg, nil), true)
-              ): (valprimlst, bool)
-  val () = instr_add_call (loc, tmp_ret, vp_f, vp_args, iswrapper, res)
+  val vp_args = (if nargs = 2 (*env has been counted in*) 
+         then cons (vp_arg, nil) else 
+           case+ vp_arg.valprim_node of
+           | VPtup (_, vp_args) => vp_args
+           | _ => ETRACE_MSG_OPR ("aux_exp_ret_app argument is not tuple\n", 
+           ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+           ): valprimlst
+  val () = instr_add_call (loc, tmp_ret, vp_clo, vp_args, res)
 in
-  VPtmp (tmp_ret)
+  make_valprim (VPtmp (tmp_ret), t2yp)
 end
 
 fun aux_exp_ret_tuple (loc: loc, e1xps: e1xplst,
-  res: &instrlst, tmp_ret: tmpvar): valprim = let
+  res: &instrlst, tmp_ret: tmpvar, t1yp: t1yp): valprim = let
+  val t2yp = trans2_typ (t1yp)
   val vps = auxlst_exp (e1xps, res)
   val () = instr_add_tup (loc, tmp_ret, vps, res)
 in
-  VPtup (tmp_ret, vps)
+  make_valprim (VPtup (tmp_ret, vps), t2yp)
 end
 
 implement
 aux_exp_ret (e, res, ret) = let
   val loc = e.e1xp_loc
+  val typ = e.e1xp_typ
   // val () = ETRACE_MSG ("aux_exp_ret\n", ETRACE_LEVEL_DEBUG)
 in
   case e.e1xp_node of
   | E1XPann (e, _) => aux_exp_ret (e, res, ret)
-  | E1XPapp (e_fun, e_arg) => aux_exp_ret_app (loc, e_fun, e_arg, res, ret)
+  | E1XPapp (e_fun, e_arg) => aux_exp_ret_app (loc, e_fun, e_arg, res, ret, typ)
   | E1XPbool _ => aux_exp (e, res)
-  | E1XPfix (_, _, _) => ETRACE_MSG_OPR ("aux_exp_ret shouldn't handle E1XPfix\n", 
+  | E1XPfix (_, _, _, _) => ETRACE_MSG_OPR ("aux_exp_ret shouldn't handle E1XPfix\n", 
                     ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
   | E1XPif (e_test, e_then, oe_else) => 
     aux_exp_ret_if (loc, e_test, e_then, oe_else, res, ret)
   | E1XPint _ => aux_exp (e, res)
-  | E1XPlam (_, _) => ETRACE_MSG_OPR ("aux_exp_ret shouldn't handle E1XPlam\n", 
+  | E1XPlam (_, _, _) => ETRACE_MSG_OPR ("aux_exp_ret shouldn't handle E1XPlam\n", 
                     ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
   | E1XPlet (d1ecs, e1xp) => aux_exp_ret_let (loc, d1ecs, e1xp, res, ret)
   | E1XPopr (opr, exps) => let
@@ -799,10 +809,10 @@ in
   | E1XPproj (e1xp, pos) => let
     // val () = printf ("aux_proj\n", @())
   in
-    aux_exp_ret_proj (loc, e1xp, pos, res, ret)
+    aux_exp_ret_proj (loc, e1xp, pos, res, ret, typ)
   end
   | E1XPstr _ => aux_exp (e, res)
-  | E1XPtup e1xps => aux_exp_ret_tuple (loc, e1xps, res, ret)
+  | E1XPtup e1xps => aux_exp_ret_tuple (loc, e1xps, res, ret, typ)
   | E1XPvar _ => aux_exp (e, res)
 end
 
@@ -813,14 +823,10 @@ implement aux_exp_fun (e, fl, res, init_res) =
   | E1XPann (e1, _) => aux_exp_fun (e1, fl, res, init_res)
   | E1XPfix (f, args, body, ref_env) => 
     aux_exp_fix_lab (e.e1xp_loc, f, args, body, fl, !ref_env, res, init_res)
-  | E1XPlam (args, body) => 
+  | E1XPlam (args, body, ref_env) => 
     aux_exp_lam_lab (e.e1xp_loc, args, body, fl, !ref_env, res, init_res)
   | _ => ETRACE_MSG_OPR ("aux_exp_fun handle non-function\n", ETRACE_LEVEL_ERROR,
                     abort (ERRORCODE_FORBIDDEN))
-
-fun aux_exp_fix_lab
-  (loc: loc, f: v1ar, v_args: v1arlst, e_body: e1xp, 
-   fl: funlab, cloargs: v1arlst, res: &instrlst): valprim = let
 (* ****** ****** *)
 
 
@@ -833,7 +839,7 @@ trans2_exp (e) = let
 
   var res: instrlst = list0_nil ()
   var env: v1arlst = list0_nil ()
-  val v = aux_exp (e, res, env)
+  val v = aux_exp (e, res)
   (* reverse the main let *)
   val res = instr_reverse (res)
 

@@ -144,8 +144,9 @@ implement print_tyerr_pool (pool) = fprint_tyerr_pool (stdout_ref, pool)
 implement prerr_tyerr_pool (pool) = fprint_tyerr_pool (stderr_ref, pool)
 
 implement fprint_tyerr (out, tyerr) = () where {
-  val () = fprint_location (out, tyerr.loc)
-  val _ = fprint (out, "@" + tyerr.msg)
+  // todo cannot print location, should use out
+  // val () = print_location (tyerr.loc)
+  val _ = fprint (out, "???@" + tyerr.msg)
 } 
 
 implement print_tyerr (tyerr: tyerr) = fprint_tyerr (stdout_ref, tyerr)
@@ -1087,6 +1088,14 @@ implement e1xp_node_is_fun (e_node) =
   | E1XPfix (_, _, _, _) => true
   | E1XPlam (_, _, _) => true
   | _ => false
+
+(* fun e1xp_node_fun_get_env (e_node: e1xp_node): option0 v1arlst *)
+implement e1xp_node_fun_get_env (e_node) =
+  case+ e_node of
+  | E1XPann (e1, _) => e1xp_node_fun_get_env (e1.e1xp_node)
+  | E1XPfix (_, _, _, env_ref) => Some0 !env_ref
+  | E1XPlam (_, _, env_ref) => Some0 !env_ref
+  | _ => None0
 
 implement typcheck (Gamma, e0, t1) = let
   val (e1, tyerrs) = oftype (Gamma, e0)

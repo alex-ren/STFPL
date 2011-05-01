@@ -114,8 +114,11 @@ and v1aldeclst = list0 (v1aldec)
 
 (* test the node is a first level function *)
 fun e0xp_node_is_fun (e_node: $Absyn.e0xp_node): option0 t1yp
+
 (* test the node is a first level function *)
 fun e1xp_node_is_fun (e_node: e1xp_node): bool
+
+fun e1xp_node_fun_get_env (e_node: e1xp_node): option0 v1arlst
 
 (* ****** ****** *)
 

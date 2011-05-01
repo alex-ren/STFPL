@@ -19,7 +19,7 @@ dynload "interp0.dats"
 dynload "interp1.dats"
 dynload "trans1.dats"
 dynload "trans_closure.dats"
-// dynload "trans2.dats"
+dynload "trans2.dats"
 dynload "libfunctions.dats"  // after trans2
 // dynload "trans_cpp.dats"
 
@@ -32,7 +32,7 @@ staload "interp1.sats"
 staload "error.sats"
 staload "trans1.sats"
 staload "trans_closure.sats"
-// staload "trans2.sats"
+staload "trans2.sats"
 // staload "trans_cpp.sats"
 
 

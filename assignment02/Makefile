@@ -82,8 +82,8 @@ SOURCES := \
   libfunctions.sats \
   libfunctions.dats \
   test.dats \
-#   trans2.sats \
-#   trans2.dats \
+  trans2.sats \
+  trans2.dats \
 #   trans_cpp.sats \
 #   trans_cpp.dats \
 

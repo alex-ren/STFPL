@@ -32,6 +32,14 @@ overload fprint with fprint_tmpvar
 fun print_tmpvar (x: tmpvar): void
 overload print with print_tmpvar
 
+symintr tmpvar_new
+fun tmpvar_new_anon (): tmpvar_t
+fun tmpvar_new_v1ar (v: $Trans1.v1ar): tmpvar_t
+fun tmpvar_new_string (str: string): tmpvar_t
+overload tmpvar_new with tmpvar_new_anon
+overload tmpvar_new with tmpvar_new_v1ar
+overload tmpvar_new with tmpvar_new_string
+
 (* ****** ****** *)
 
 (* desc: type for function label *)
