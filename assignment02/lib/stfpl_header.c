@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <stdio.h>
+
+/* ********************* ******************** */
 
 typedef struct struct_node node_t;
 typedef node_t * node;
@@ -16,6 +19,8 @@ typedef struct struct_llist {
     node m_last;
 } llist_t;
 typedef llist_t *llist;
+
+/* ********************* ******************** */
 
 llist llist_create()
 {
@@ -59,7 +64,41 @@ any llist_get_item(llist xs, int pos)
     assert(n != 0);
     return n->m_item;
 }
+
+llist llist_tail (llist xs)
+{
+    assert(0 != xs->m_first);
+    node first = xs->m_first->m_next;
+    node last = 0;
+
+    if (xs->m_first == xs->m_last)
+    {
+        last = 0;
+    }
+    else
+    {
+        last = xs->m_last;
+    }
+
+    llist p = malloc(sizeof(llist_t));
+    p->m_first = first;
+    p->m_last = last;
+
+    return p;
+}
         
+bool llist_is_empty(llist xs)
+{
+    if (0 == xs->m_first)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 /* ********************* ******************** */
 
 struct struct_tuple {
@@ -81,6 +120,8 @@ struct struct_closure {
 };
 
 /* ********************* ******************** */
+
+void env_add(env, any);
 
 env env_create ()
 {
@@ -107,45 +148,6 @@ any env_get (env env, int pos)
 
 /* ********************* ******************** */
 
-tuple tuple_create ()
-{
-    tuple p = malloc(sizeof(tuple_t));
-    llist_init(&p->m_list);
-
-    return p;
-}
-
-void tuple_add (tuple tuple, any item)
-{
-    llist_push_back(&tuple->m_list, item);
-}
-    
-any tuple_get (tuple tuple, int pos)
-{
-    return llist_get_item(&tuple->m_list, pos);
-}
-
-/* ********************* ******************** */
-list list_create ()
-{
-    list p = malloc(sizeof(list_t));
-    llist_init(&p->m_list);
-
-    return p;
-}
-
-void list_add (list list, any item)
-{
-    llist_push_back(&list->m_list, item);
-}
-    
-any list_get (list list, int pos)
-{
-    return llist_get_item(&list->m_list, pos);
-}
-
-/* ********************* ******************** */
-
 closure closure_create()
 {
     closure p = malloc(sizeof(closure_t));
@@ -157,6 +159,7 @@ closure closure_create()
 
 any closure_get_fun(closure closure)
 {
+    // printf("========closure_get_fun\n");
     return closure->m_fun;
 }
 
@@ -177,11 +180,160 @@ void closure_add_env(closure closure, any item)
 
 /* ********************* ******************** */
 
-char * string_add(char *to, char *from)
+tuple tuple_create ()
+{
+    tuple p = malloc(sizeof(tuple_t));
+    llist_init(&p->m_list);
+
+    return p;
+}
+
+void tuple_add (tuple tuple, any item)
+{
+    llist_push_back(&tuple->m_list, item);
+}
+    
+any tuple_get (tuple tuple, int pos)
+{
+    return llist_get_item(&tuple->m_list, pos);
+}
+
+/* ********************* ******************** */
+
+void   fun_list_cons(any, list);
+list   fun_list_nil();
+any    fun_list_head(list);
+list   fun_list_tail(list);
+bool   fun_list_is_empty(list);
+
+void   closure_list_cons(env, any, list);
+list   closure_list_nil(env);
+any    closure_list_head(env, list);
+list   closure_list_tail(env, list);
+bool   closure_list_is_empty(env, list);
+
+void fun_list_cons(any item, list xs)
+{
+    llist_push_back(&xs->m_list, item);
+}
+
+void closure_list_cons(env env, any item, list xs)
+{
+    fun_list_cons(item, xs);
+}
+
+list fun_list_nil()
+{
+    list p = malloc(sizeof(list_t));
+    llist_init(&p->m_list);
+
+    return p;
+}
+
+list closure_list_nil(env env)
+{
+    return fun_list_nil();
+}
+
+any fun_list_head(list xs)
+{
+    return llist_get_item(&xs->m_list, 0);
+}
+
+any closure_list_head(env env, list xs)
+{
+    return fun_list_head(xs);
+}
+
+list fun_list_tail(list xs)
+{
+    llist p = llist_tail(&xs->m_list);
+    list ys = malloc(sizeof(list_t));
+
+    ys->m_list = *p;
+    free(p);
+    return ys;
+}
+
+list closure_list_tail(env env, list xs)
+{
+    return fun_list_tail(xs);
+}
+
+bool fun_list_is_empty(list xs)
+{
+    return llist_is_empty(&xs->m_list);
+}
+
+bool closure_list_is_empty(env env, list xs)
+{
+    return fun_list_is_empty(xs);
+}
+
+/* ********************* ******************** */
+
+string fun_string_add(string, string);
+string closure_string_add(env, string, string);
+
+string fun_string_add(string to, string from)
 {
     return strcat(to, from);
 }
-    
+
+string closure_string_add(env env, string to, string from)
+{
+    return fun_string_add(to, from);
+}
+
+/* ********************* ******************** */
+
+closure list_cons     = 0;
+closure list_nil      = 0;
+closure list_head     = 0;
+closure list_tail     = 0;
+closure list_is_empty = 0;
+
+closure string_add    = 0;
+
+/* ********** ************ */
+
+void init_lib()
+{
+    list_cons     = closure_create();
+    list_nil      = closure_create();
+    list_head     = closure_create();
+    list_tail     = closure_create();
+    list_is_empty = closure_create();
+    string_add    = closure_create();
+
+    closure_put_fun(list_cons,     (void*)closure_list_cons);
+    closure_put_fun(list_nil,      (void*)closure_list_nil);
+    closure_put_fun(list_head,     (void*)closure_list_head);
+    closure_put_fun(list_tail,     (void*)closure_list_tail);
+    closure_put_fun(list_is_empty, (void*)closure_list_is_empty);
+    closure_put_fun(string_add,    (void*)closure_string_add);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

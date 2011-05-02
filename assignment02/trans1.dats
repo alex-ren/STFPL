@@ -146,10 +146,8 @@ implement prerr_tyerr_pool (pool) = fprint_tyerr_pool (stderr_ref, pool)
 
 implement fprint_tyerr (out, tyerr) = () where {
   // todo cannot print location, should use out
-  // extern fun axiom {m: file_mode} (f: &FILE m): (file_mode_lte (m, w) | void)
-  // val (pf | ()) = axiom (out)
-  // val () = fprint_location (pf | out, tyerr.loc)
-  val () = print_location (tyerr.loc)
+  val () = fprint_location (out, tyerr.loc)
+  // val () = print_location (tyerr.loc)
   val _ = fprint (out, "@" + tyerr.msg)
 } 
 
@@ -991,16 +989,35 @@ fun oftype_app (Gamma: ctx, loc: loc, f: e0xp, args: e0xp): (e1xp, tyerr_pool) =
   val e1xp_fun = t1yp_normalize (f.e1xp_typ)
 in
   case+ e1xp_fun of
-  | T1YPfun (_, paras_typ, ret_typ) => let
-    val (args, tyerrs_args) = typcheck (Gamma, args, paras_typ)
-    val tyerrs = tyerr_pool_append (tyerrs_f, tyerrs_args)
-    val e1xp = e1xp_make_app (loc, f, args, ret_typ)
-  in
-    (e1xp, tyerrs)
-  end
+  | T1YPfun (nargs_ref, paras_typ, ret_typ) =>
+    if !nargs_ref <> 1 then (case+ args.e0xp_node of
+        | E0XPtup (_) => let
+          val (args, tyerrs_args) = typcheck (Gamma, args, paras_typ)
+          val tyerrs = tyerr_pool_append (tyerrs_f, tyerrs_args)
+          val e1xp = e1xp_make_app (loc, f, args, ret_typ)
+        in
+          (e1xp, tyerrs)
+        end
+        | _ => let
+          val errmsg = "function takes multiple arguments": string
+          val args = e1xp_make_int (loc, ~1)  // fake an e1xp
+          val e1xp = e1xp_make_app (loc, f, args, ret_typ)
+          val tyerrs = tyerr_pool_add_tail (tyerrs_f, loc, errmsg)
+        in
+          (e1xp, tyerrs)
+        end
+        ): (e1xp, tyerr_pool)
+    else let
+       val (args, tyerrs_args) = typcheck (Gamma, args, paras_typ)
+       val tyerrs = tyerr_pool_append (tyerrs_f, tyerrs_args)
+       val e1xp = e1xp_make_app (loc, f, args, ret_typ)
+    in
+       (e1xp, tyerrs)
+    end
+
   | T1YPvar (t1var) => let
-    val () = prerr ": ============================\n"
-    val () = prerr ": You should not see me.\n"
+     //  ETRACE_MSG_OPR ("oftype_app: type is not fun\n", ETRACE_LEVEL_ERROR, 
+     //        abort (ERRORCODE_FORBIDDEN))
     val (args, tyerrs_args) = oftype (Gamma, args)
     val tyerrs = tyerr_pool_append (tyerrs_f, tyerrs_args)
     val ret_typ = T1YPvar (t1Var_new ())

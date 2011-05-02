@@ -17,14 +17,14 @@ fun abort {a:viewt@ype} (err: int):<!exn> a
 #define ETRACE_LEVEL_INFO 9  // 
 #define ETRACE_LEVEL_ERROR 5  // impossible to happen
 
-#define ETRACE_LEVEL_CUR 10
+#define ETRACE_LEVEL_CUR 9
 
 macdef ETRACE (x) = ,(x)
 macdef ETRACE (x) = ()
 
 macdef ETRACE_MSG (obj, level) = let
   val () = if ,(level) <= ETRACE_LEVEL_CUR then
-    print ,(obj) 
+    fprint (stderr_ref, ,(obj))
 in 
   ()
 end
@@ -34,7 +34,7 @@ macdef ETRACE_OPR (opr, level) =
 
 macdef ETRACE_MSG_OPR (obj, level, oper) = let
   val () = if ,(level) <= ETRACE_LEVEL_CUR then
-    print ,(obj) 
+    fprint (stderr_ref, ,(obj))
 in 
   ,(oper)
 end

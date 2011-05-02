@@ -43,12 +43,12 @@ val label_LIST_TAIL     = funlab_allocate symbol_LIST_TAIL
 val label_STRING_ADD    = funlab_allocate symbol_STRING_ADD
 
 
-val tmpvar_LIST_CONS     = tmpvar_new string_LIST_CONS
-val tmpvar_LIST_NIL      = tmpvar_new string_LIST_NIL
-val tmpvar_LIST_IS_EMPTY = tmpvar_new string_LIST_IS_EMPTY
-val tmpvar_LIST_HEAD     = tmpvar_new string_LIST_HEAD
-val tmpvar_LIST_TAIL     = tmpvar_new string_LIST_TAIL
-val tmpvar_STRING_ADD    = tmpvar_new string_STRING_ADD
+val tmpvar_LIST_CONS     = tmpvar_new_string_name string_LIST_CONS
+val tmpvar_LIST_NIL      = tmpvar_new_string_name string_LIST_NIL
+val tmpvar_LIST_IS_EMPTY = tmpvar_new_string_name string_LIST_IS_EMPTY
+val tmpvar_LIST_HEAD     = tmpvar_new_string_name string_LIST_HEAD
+val tmpvar_LIST_TAIL     = tmpvar_new_string_name string_LIST_TAIL
+val tmpvar_STRING_ADD    = tmpvar_new_string_name string_STRING_ADD
 
 
 val t2yp_list = T2YPlist (T2YPvar)

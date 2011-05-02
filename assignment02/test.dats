@@ -57,15 +57,14 @@ main () = () where {
   val () = fprint (stderr_ref, "\n")
   
   val () = if err <> 0 then let
-    val () = print "Type error exists, compiler exits\n"
+    val () = fprint (stderr_ref, "Type error exists, compiler exits\n")
   in end else let
     
     val () = fprint (stderr_ref, 
         "\n\nafter closure formation ==================================\n\n")
     val prog_clo = trans_closure (prog1)
     val () = fprint_e1xp (stderr_ref, prog_clo)
-  val () = fprint (stderr_ref, "\n")
-
+    val () = fprint (stderr_ref, "\n")
 
     // val () = fprint (stderr_ref, 
     //   "\n\ninterp0 ==================================\n\n")
@@ -84,10 +83,10 @@ main () = () where {
     val () = fprint (stderr_ref, 
           "\n\ntransform to IR ==================================\n\n")
     val (irs, fns) = trans2_exp (prog1)
-    val () = fprint (stderr_ref, 
-        "\n\nmain function ==================================\n\n")
-    val () = fprint_instrlst (stderr_ref, irs)
-    val () = fprint (stderr_ref, "\n")
+    // val () = fprint (stderr_ref, 
+    //  "\n\nmain function ==================================\n\n")
+    // val () = fprint_instrlst (stderr_ref, irs)
+    // val () = fprint (stderr_ref, "\n")
 
     val os = trans_cpp (irs, fns)
     val () = print_ostream (os)

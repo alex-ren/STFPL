@@ -42,14 +42,14 @@
 </span><span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_INFO 9</span>  <span class="comment">// 
 </span><span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_ERROR 5</span>  <span class="comment">// impossible to happen
 </span>
-<span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_CUR 10</span>
+<span class="keyword">#define</span> <span class="neuexp">ETRACE_LEVEL_CUR 9</span>
 
 <span class="keyword">macdef</span> <span class="neuexp">ETRACE <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">,(</span>x<span class="keyword">)</span></span>
 <span class="keyword">macdef</span> <span class="neuexp">ETRACE <span class="keyword">(</span>x<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">)</span></span>
 
 <span class="keyword">macdef</span> <span class="neuexp">ETRACE_MSG <span class="keyword">(</span>obj<span class="keyword">,</span> level<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> <span class="keyword">,(</span>level<span class="keyword">)</span> &lt;= ETRACE_LEVEL_CUR <span class="keyword">then</span>
-    print <span class="keyword">,(</span>obj<span class="keyword">)</span> 
+    fprint <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> <span class="keyword">,(</span>obj<span class="keyword">)</span><span class="keyword">)</span>
 <span class="keyword">in</span> 
   <span class="keyword">(</span><span class="keyword">)</span>
 <span class="keyword">end</span></span>
@@ -59,7 +59,7 @@
 
 <span class="keyword">macdef</span> <span class="neuexp">ETRACE_MSG_OPR <span class="keyword">(</span>obj<span class="keyword">,</span> level<span class="keyword">,</span> oper<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> <span class="keyword">,(</span>level<span class="keyword">)</span> &lt;= ETRACE_LEVEL_CUR <span class="keyword">then</span>
-    print <span class="keyword">,(</span>obj<span class="keyword">)</span> 
+    fprint <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> <span class="keyword">,(</span>obj<span class="keyword">)</span><span class="keyword">)</span>
 <span class="keyword">in</span> 
   <span class="keyword">,(</span>oper<span class="keyword">)</span>
 <span class="keyword">end</span></span>

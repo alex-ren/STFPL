@@ -36,6 +36,7 @@ symintr tmpvar_new
 fun tmpvar_new_anon (): tmpvar_t
 fun tmpvar_new_v1ar (v: $Trans1.v1ar): tmpvar_t
 fun tmpvar_new_string (str: string): tmpvar_t
+fun tmpvar_new_string_name (str: string): tmpvar_t
 overload tmpvar_new with tmpvar_new_anon
 overload tmpvar_new with tmpvar_new_v1ar
 overload tmpvar_new with tmpvar_new_string
@@ -118,7 +119,7 @@ overload fprint with fprint_valprimlst
 (* ****** ****** *)
 
 datatype instr_node =
-  | INSTRcall of (tmpvar, valprim, valprimlst) // fun call
+  | INSTRcall of (tmpvar, valprim, valprimlst, t2yp(*return type*)) // fun call
   // conditional  // no return val, so no tmpvar
   | INSTRcond of (tmpvar, t2yp, valprim, instrlst, instrlst) 
   | INSTRmove_val of (tmpvar(*x*), valprim(*v*)) // x := v

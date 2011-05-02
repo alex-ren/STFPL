@@ -4,7 +4,7 @@ let
   val foo3 = lam (x) => x + 1
   
   val t = if false then (100, 200) else (33, 44)
-  val y = foo2 (t)
+  val y = foo2 (t.0, t.1)
   val _ = print ("should see \n45\n")
   val _ = print_int (foo (t))
   val _ = print ("\n")

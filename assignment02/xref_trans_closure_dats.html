@@ -31,7 +31,7 @@
 <span class="keyword">staload</span> <span class="staexp">"error.sats"</span>
 <span class="keyword">staload</span> <span class="staexp">"libfunctions.sats"</span>
 
-<span class="keyword">typedef</span> <span class="staexp"><a name="133"><span class="stacstdec">loc <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fcontrib_2fparcomb_2fSATS_2fposloc_2esats.html#3228"><span class="stacstuse">$Posloc<span class="keyword">.</span>location_t</span></a></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="133"><span class="stacstdec">loc <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fcontrib_2fparcomb_2fSATS_2fposloc_2esats.html#3210"><span class="stacstuse">$Posloc<span class="keyword">.</span>location_t</span></a></span></a></span>
 
 <span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "symbol.dats"</span>
 
@@ -50,36 +50,36 @@
 <span class="keyword">#define</span> <span class="neuexp">None0 option0_none</span>
 
 <span class="comment">(* ****** ****** *)</span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="579"><span class="stacstdec">ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1634"><span class="stacstuse">symenv_t</span></a> <span class="keyword">(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span></a></span>
-<span class="keyword">val</span> ctx_nil <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1668"><span class="dyncstuse">symenv_make</span></a> <span class="keyword">(</span><span class="keyword">)</span> <span class="comment">// empty context
+<span class="keyword">typedef</span> <span class="staexp"><a name="579"><span class="stacstdec">ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1634"><span class="stacstuse">symenv_t</span></a> <span class="keyword">(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span></a></span>
+<span class="keyword">val</span> ctx_nil <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1668"><span class="dyncstuse">symenv_make</span></a> <span class="keyword">(</span><span class="keyword">)</span> <span class="comment">// empty context
 </span>
 
-<span class="keyword">fun</span> ctx2v1arlst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2482"><span class="stacstuse">v1arlst</span></a></span> <span class="keyword">=</span> <span class="keyword">let</span>
-  <span class="keyword">val</span> s <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2135"><span class="dyncstuse">symenv_listize</span></a> <span class="keyword">(</span>Gamma<span class="keyword">)</span>
-  <span class="keyword">val</span> symlst <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;&lt;</span><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;</span> <span class="keyword">(</span>s<span class="keyword">,</span> <span class="keyword">lam</span> x <span class="keyword">=&gt;</span> x<span class="keyword">.</span>1<span class="keyword">)</span>
+<span class="keyword">fun</span> ctx2v1arlst <span class="keyword">(</span>Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2482"><span class="stacstuse">v1arlst</span></a></span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> s <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2135"><span class="dyncstuse">symenv_listize</span></a> <span class="keyword">(</span>Gamma<span class="keyword">)</span>
+  <span class="keyword">val</span> symlst <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;&lt;</span><span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;</span> <span class="keyword">(</span>s<span class="keyword">,</span> <span class="keyword">lam</span> x <span class="keyword">=&gt;</span> x<span class="keyword">.</span>1<span class="keyword">)</span>
 <span class="keyword">in</span>
   symlst
 <span class="keyword">end</span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="827"><span class="dyncstdec">trans_clo1_d1eclst <span class="keyword">(</span>decs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2579"><span class="stacstuse">d1eclst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="comment">(*new gamma*)</span><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="comment">(*esc*)</span><span class="keyword">)</span></span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="917"><span class="dyncstdec">trans_clo1_d1ec <span class="keyword">(</span>dec<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2510"><span class="stacstuse">d1ec</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="827"><span class="dyncstdec">trans_clo1_d1eclst <span class="keyword">(</span>decs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2579"><span class="stacstuse">d1eclst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="comment">(*new gamma*)</span><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="comment">(*esc*)</span><span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="917"><span class="dyncstdec">trans_clo1_d1ec <span class="keyword">(</span>dec<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2510"><span class="stacstuse">d1ec</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="981"><span class="dyncstdec">trans_clo1_v1aldeclst <span class="keyword">(</span>valdecs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2700"><span class="stacstuse">v1aldeclst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1060"><span class="dyncstdec">trans_clo1_v1aldeclst_rec <span class="keyword">(</span>valdecs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2700"><span class="stacstuse">v1aldeclst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="981"><span class="dyncstdec">trans_clo1_v1aldeclst <span class="keyword">(</span>valdecs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2700"><span class="stacstuse">v1aldeclst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1060"><span class="dyncstdec">trans_clo1_v1aldeclst_rec <span class="keyword">(</span>valdecs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2700"><span class="stacstuse">v1aldeclst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1144"><span class="dyncstdec">trans_clo1_v1aldec <span class="keyword">(</span>valdec<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2607"><span class="stacstuse">v1aldec</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1216"><span class="dyncstdec">trans_clo1_v1aldec_rec <span class="keyword">(</span>valdec<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2607"><span class="stacstuse">v1aldec</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1144"><span class="dyncstdec">trans_clo1_v1aldec <span class="keyword">(</span>valdec<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2607"><span class="stacstuse">v1aldec</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1216"><span class="dyncstdec">trans_clo1_v1aldec_rec <span class="keyword">(</span>valdec<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2607"><span class="stacstuse">v1aldec</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1293"><span class="dyncstdec">trans_clo1_e1xp <span class="keyword">(</span>exp<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2022"><span class="stacstuse">e1xp</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1349"><span class="dyncstdec">trans_clo1_e1xplst <span class="keyword">(</span>exps<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2182"><span class="stacstuse">e1xplst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1293"><span class="dyncstdec">trans_clo1_e1xp <span class="keyword">(</span>exp<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2022"><span class="stacstuse">e1xp</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1349"><span class="dyncstdec">trans_clo1_e1xplst <span class="keyword">(</span>exps<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2182"><span class="stacstuse">e1xplst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1413"><span class="dyncstdec">trans_clo1_valdecs <span class="keyword">(</span>valdecs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2700"><span class="stacstuse">v1aldeclst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1489"><span class="dyncstdec">trans_clo1_e1xplst <span class="keyword">(</span>exps<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2182"><span class="stacstuse">e1xplst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1413"><span class="dyncstdec">trans_clo1_valdecs <span class="keyword">(</span>valdecs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2700"><span class="stacstuse">v1aldeclst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a><span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="1489"><span class="dyncstdec">trans_clo1_e1xplst <span class="keyword">(</span>exps<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2182"><span class="stacstuse">e1xplst</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span></span></a>
 
 <span class="comment">(* the return type is ctx,
   but actually we just need a list of symbols
 *)</span>
-<span class="keyword">fun</span> trans_clo1_e1xp <span class="keyword">(</span>exp<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2022"><span class="stacstuse">e1xp</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="keyword">fun</span> trans_clo1_e1xp <span class="keyword">(</span>exp<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2022"><span class="stacstuse">e1xp</span></a></span><span class="keyword">,</span> Gamma<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> exp_node <span class="keyword">=</span> exp<span class="keyword">.</span>e1xp_node
 <span class="keyword">in</span>
   <span class="keyword">case+</span> exp_node <span class="keyword">of</span>
@@ -88,19 +88,19 @@
     <span class="keyword">val</span> esc1 <span class="keyword">=</span> trans_clo1_e1xp <span class="keyword">(</span>f<span class="keyword">,</span> Gamma<span class="keyword">)</span>
     <span class="keyword">val</span> esc2 <span class="keyword">=</span> trans_clo1_e1xp <span class="keyword">(</span>args<span class="keyword">,</span> Gamma<span class="keyword">)</span>
   <span class="keyword">in</span>
-    <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc1<span class="keyword">,</span> esc2<span class="keyword">)</span>
+    <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc1<span class="keyword">,</span> esc2<span class="keyword">)</span>
   <span class="keyword">end</span>
   <span class="keyword">|</span> E1XPbool _ <span class="keyword">=&gt;</span> ctx_nil
   <span class="keyword">|</span> E1XPfix <span class="keyword">(</span>f<span class="keyword">,</span> args<span class="keyword">,</span> body<span class="keyword">,</span> ref_esc<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
     <span class="comment">// put f into ctx
-</span>    <span class="keyword">val</span> new_gamma <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1783"><span class="dyncstuse">symenv_insert</span></a> <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> f<span class="keyword">.</span>v1ar_nam<span class="keyword">,</span> f<span class="keyword">)</span>
-    <span class="keyword">val</span> sym_args <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;&lt;</span> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
+</span>    <span class="keyword">val</span> new_gamma <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1783"><span class="dyncstuse">symenv_insert</span></a> <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> f<span class="keyword">.</span>v1ar_nam<span class="keyword">,</span> f<span class="keyword">)</span>
+    <span class="keyword">val</span> sym_args <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;&lt;</span> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
       args<span class="keyword">,</span> <span class="keyword">lam</span> x <span class="keyword">=&gt;</span> <span class="keyword">(</span>x<span class="keyword">.</span>v1ar_nam<span class="keyword">,</span> x<span class="keyword">)</span><span class="keyword">)</span>
-    <span class="keyword">val</span> new_gamma <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1862"><span class="dyncstuse">symenv_inserts</span></a> <span class="keyword">(</span>new_gamma<span class="keyword">,</span> sym_args<span class="keyword">)</span>
+    <span class="keyword">val</span> new_gamma <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1862"><span class="dyncstuse">symenv_inserts</span></a> <span class="keyword">(</span>new_gamma<span class="keyword">,</span> sym_args<span class="keyword">)</span>
     <span class="keyword">val</span> esc <span class="keyword">=</span> trans_clo1_e1xp <span class="keyword">(</span>body<span class="keyword">,</span> new_gamma<span class="keyword">)</span>
     <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>ref_esc := ctx2v1arlst <span class="keyword">(</span>esc<span class="keyword">)</span>
   <span class="keyword">in</span>
-    <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2061"><span class="dyncstuse">symenv_sub</span></a> <span class="keyword">(</span>esc<span class="keyword">,</span> Gamma<span class="keyword">)</span>
+    <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2061"><span class="dyncstuse">symenv_sub</span></a> <span class="keyword">(</span>esc<span class="keyword">,</span> Gamma<span class="keyword">)</span>
   <span class="keyword">end</span>
   <span class="keyword">|</span> E1XPif <span class="keyword">(</span>e_if<span class="keyword">,</span> e_then<span class="keyword">,</span> eo_else<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
     <span class="keyword">val</span> esc1 <span class="keyword">=</span> trans_clo1_e1xp <span class="keyword">(</span>e_if<span class="keyword">,</span> Gamma<span class="keyword">)</span>
@@ -109,44 +109,44 @@
                  <span class="keyword">|</span> Some0 e_else <span class="keyword">=&gt;</span> trans_clo1_e1xp <span class="keyword">(</span>e_else<span class="keyword">,</span> Gamma<span class="keyword">)</span>
                  <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> ctx_nil
                  <span class="keyword">)</span>
-    <span class="keyword">val</span> esc <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc1<span class="keyword">,</span> esc2<span class="keyword">)</span>
-    <span class="keyword">val</span> esc <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc<span class="keyword">,</span> esc3<span class="keyword">)</span>
+    <span class="keyword">val</span> esc <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc1<span class="keyword">,</span> esc2<span class="keyword">)</span>
+    <span class="keyword">val</span> esc <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc<span class="keyword">,</span> esc3<span class="keyword">)</span>
   <span class="keyword">in</span>
     esc
   <span class="keyword">end</span>
   <span class="keyword">|</span> E1XPint _ <span class="keyword">=&gt;</span> ctx_nil
   <span class="keyword">|</span> E1XPlam <span class="keyword">(</span>args<span class="keyword">,</span> body<span class="keyword">,</span> ref_esc<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-    <span class="keyword">val</span> sym_args <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;&lt;</span> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
+    <span class="keyword">val</span> sym_args <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;&lt;</span> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
       args<span class="keyword">,</span> <span class="keyword">lam</span> x <span class="keyword">=&gt;</span> <span class="keyword">(</span>x<span class="keyword">.</span>v1ar_nam<span class="keyword">,</span> x<span class="keyword">)</span><span class="keyword">)</span>
-    <span class="keyword">val</span> new_gamma <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1862"><span class="dyncstuse">symenv_inserts</span></a> <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> sym_args<span class="keyword">)</span>
+    <span class="keyword">val</span> new_gamma <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1862"><span class="dyncstuse">symenv_inserts</span></a> <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> sym_args<span class="keyword">)</span>
     <span class="keyword">val</span> esc <span class="keyword">=</span> trans_clo1_e1xp <span class="keyword">(</span>body<span class="keyword">,</span> new_gamma<span class="keyword">)</span>
     <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>ref_esc := ctx2v1arlst <span class="keyword">(</span>esc<span class="keyword">)</span>
   <span class="keyword">in</span>
-    <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2061"><span class="dyncstuse">symenv_sub</span></a> <span class="keyword">(</span>esc<span class="keyword">,</span> Gamma<span class="keyword">)</span>
+    <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2061"><span class="dyncstuse">symenv_sub</span></a> <span class="keyword">(</span>esc<span class="keyword">,</span> Gamma<span class="keyword">)</span>
   <span class="keyword">end</span>
   <span class="keyword">|</span> E1XPlet <span class="keyword">(</span>decs<span class="keyword">,</span> e<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-    <span class="keyword">val</span> <span class="keyword">(</span>Gamma1<span class="keyword">,</span> esc1<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#827"><span class="dyncstuse">trans_clo1_d1eclst</span></a> <span class="keyword">(</span>decs<span class="keyword">,</span> Gamma<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>Gamma1<span class="keyword">,</span> esc1<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#827"><span class="dyncstuse">trans_clo1_d1eclst</span></a> <span class="keyword">(</span>decs<span class="keyword">,</span> Gamma<span class="keyword">)</span>
     <span class="keyword">val</span> esc2 <span class="keyword">=</span> trans_clo1_e1xp <span class="keyword">(</span>e<span class="keyword">,</span> Gamma1<span class="keyword">)</span>
   <span class="keyword">in</span>
-    <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc1<span class="keyword">,</span> esc2<span class="keyword">)</span>
+    <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc1<span class="keyword">,</span> esc2<span class="keyword">)</span>
   <span class="keyword">end</span>
   <span class="keyword">|</span> E1XPopr <span class="keyword">(</span>opr<span class="keyword">,</span> es<span class="keyword">)</span> <span class="keyword">=&gt;</span>
-      <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1489"><span class="dyncstuse">trans_clo1_e1xplst</span></a> <span class="keyword">(</span>es<span class="keyword">,</span> Gamma<span class="keyword">)</span>
+      <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1489"><span class="dyncstuse">trans_clo1_e1xplst</span></a> <span class="keyword">(</span>es<span class="keyword">,</span> Gamma<span class="keyword">)</span>
   <span class="keyword">|</span> E1XPproj <span class="keyword">(</span>e<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> trans_clo1_e1xp <span class="keyword">(</span>e<span class="keyword">,</span> Gamma<span class="keyword">)</span>
   <span class="keyword">|</span> E1XPstr _ <span class="keyword">=&gt;</span> ctx_nil
-  <span class="keyword">|</span> E1XPtup es <span class="keyword">=&gt;</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1489"><span class="dyncstuse">trans_clo1_e1xplst</span></a> <span class="keyword">(</span>es<span class="keyword">,</span> Gamma<span class="keyword">)</span>
+  <span class="keyword">|</span> E1XPtup es <span class="keyword">=&gt;</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1489"><span class="dyncstuse">trans_clo1_e1xplst</span></a> <span class="keyword">(</span>es<span class="keyword">,</span> Gamma<span class="keyword">)</span>
   <span class="keyword">|</span> E1XPvar v <span class="keyword">=&gt;</span> <span class="keyword">let</span>
     <span class="keyword">val</span> nam <span class="keyword">=</span> v<span class="keyword">.</span>v1ar_nam
-    <span class="keyword">val</span> r <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1711"><span class="dyncstuse">symenv_lookup</span></a> <span class="keyword">(</span>Gamma<span class="keyword">,</span> nam<span class="keyword">)</span>
+    <span class="keyword">val</span> r <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1711"><span class="dyncstuse">symenv_lookup</span></a> <span class="keyword">(</span>Gamma<span class="keyword">,</span> nam<span class="keyword">)</span>
   <span class="keyword">in</span>
     <span class="keyword">case+</span> r <span class="keyword">of</span>
     <span class="keyword">|</span> Some0 _ <span class="keyword">=&gt;</span> ctx_nil 
     <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-      <span class="keyword">val</span> typ_opt <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2flibfunctions_2esats.html#1526"><span class="dyncstuse">libSymTypFind</span></a> <span class="keyword">(</span>nam<span class="keyword">)</span>  <span class="comment">// check library function
+      <span class="keyword">val</span> typ_opt <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2flibfunctions_2esats.html#1526"><span class="dyncstuse">libSymTypFind</span></a> <span class="keyword">(</span>nam<span class="keyword">)</span>  <span class="comment">// check library function
 </span>    <span class="keyword">in</span>
       <span class="keyword">case+</span> typ_opt <span class="keyword">of</span>
       <span class="keyword">|</span> Some0 _ <span class="keyword">=&gt;</span> ctx_nil
-      <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1783"><span class="dyncstuse">symenv_insert</span></a> <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> nam<span class="keyword">,</span> v<span class="keyword">)</span>
+      <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1783"><span class="dyncstuse">symenv_insert</span></a> <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> nam<span class="keyword">,</span> v<span class="keyword">)</span>
     <span class="keyword">end</span>
   <span class="keyword">end</span>
 <span class="comment">//  | E1XPfixclo _ =&gt; ETRACE_MSG_OPR ("trans_clo1_e1xp E1XPfixclo is found\n", ETRACE_LEVEL_ERROR,
@@ -156,42 +156,42 @@
 </span><span class="keyword">end</span>
 
 <span class="comment">(* extern fun trans_clo1_e1xplst (exps: e1xplst, Gamma: ctx): ctx *)</span>
-<span class="keyword">implement</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1489"><span class="dyncstimp">trans_clo1_e1xplst</span></a> <span class="keyword">(</span>exps<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
-  <span class="keyword">val</span> gamma1 <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fSATS_2flist0_2esats.html#3829"><span class="dyncstuse">list0_fold_left&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">&gt;&lt;</span><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2022"><span class="stacstuse">e1xp</span></a></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
-    <span class="keyword">lam</span> <span class="keyword">(</span>init<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=&gt;</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>init<span class="keyword">,</span> trans_clo1_e1xp <span class="keyword">(</span>x<span class="keyword">,</span> Gamma<span class="keyword">)</span><span class="keyword">)</span><span class="keyword">,</span> ctx_nil<span class="keyword">,</span> exps<span class="keyword">)</span>
+<span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1489"><span class="dyncstimp">trans_clo1_e1xplst</span></a> <span class="keyword">(</span>exps<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> gamma1 <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2flist0_2esats.html#3829"><span class="dyncstuse">list0_fold_left&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">&gt;&lt;</span><span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2022"><span class="stacstuse">e1xp</span></a></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
+    <span class="keyword">lam</span> <span class="keyword">(</span>init<span class="keyword">,</span> x<span class="keyword">)</span> <span class="keyword">=&gt;</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>init<span class="keyword">,</span> trans_clo1_e1xp <span class="keyword">(</span>x<span class="keyword">,</span> Gamma<span class="keyword">)</span><span class="keyword">)</span><span class="keyword">,</span> ctx_nil<span class="keyword">,</span> exps<span class="keyword">)</span>
 <span class="keyword">in</span>
   gamma1
 <span class="keyword">end</span>
 
 <span class="comment">(* extern fun trans_clo1_d1eclst (decs: d1eclst, Gamma: ctx): (ctx, ctx) *)</span>
-<span class="keyword">implement</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#827"><span class="dyncstimp">trans_clo1_d1eclst</span></a> <span class="keyword">(</span>decs<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span>
+<span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#827"><span class="dyncstimp">trans_clo1_d1eclst</span></a> <span class="keyword">(</span>decs<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span>
   <span class="keyword">case+</span> decs <span class="keyword">of</span>
   <span class="keyword">|</span> cons <span class="keyword">(</span>dec<span class="keyword">,</span> decs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-    <span class="keyword">val</span> <span class="keyword">(</span>gamma1<span class="keyword">,</span> esc1<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#917"><span class="dyncstuse">trans_clo1_d1ec</span></a> <span class="keyword">(</span>dec<span class="keyword">,</span> Gamma<span class="keyword">)</span>
-    <span class="keyword">val</span> <span class="keyword">(</span>gamma2<span class="keyword">,</span> esc2<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#827"><span class="dyncstuse">trans_clo1_d1eclst</span></a> <span class="keyword">(</span>decs1<span class="keyword">,</span> gamma1<span class="keyword">)</span>
-    <span class="keyword">val</span> esc <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc1<span class="keyword">,</span> esc2<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>gamma1<span class="keyword">,</span> esc1<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#917"><span class="dyncstuse">trans_clo1_d1ec</span></a> <span class="keyword">(</span>dec<span class="keyword">,</span> Gamma<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>gamma2<span class="keyword">,</span> esc2<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#827"><span class="dyncstuse">trans_clo1_d1eclst</span></a> <span class="keyword">(</span>decs1<span class="keyword">,</span> gamma1<span class="keyword">)</span>
+    <span class="keyword">val</span> esc <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc1<span class="keyword">,</span> esc2<span class="keyword">)</span>
   <span class="keyword">in</span>
     <span class="keyword">(</span>gamma2<span class="keyword">,</span> esc<span class="keyword">)</span>
   <span class="keyword">end</span>
   <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>Gamma<span class="keyword">,</span> ctx_nil<span class="keyword">)</span>
 
 <span class="comment">(* extern fun trans_clo1_d1ec (dec: d1ec, Gamma: ctx): (ctx, ctx) *)</span>
-<span class="keyword">implement</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#917"><span class="dyncstimp">trans_clo1_d1ec</span></a> <span class="keyword">(</span>dec<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#917"><span class="dyncstimp">trans_clo1_d1ec</span></a> <span class="keyword">(</span>dec<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> loc <span class="keyword">=</span> dec<span class="keyword">.</span>d1ec_loc
   <span class="keyword">val</span> dnode <span class="keyword">=</span> dec<span class="keyword">.</span>d1ec_node
   <span class="keyword">val+</span> D1ECval <span class="keyword">(</span>isrec<span class="keyword">,</span> valdecs<span class="keyword">)</span> <span class="keyword">=</span> dnode
 <span class="keyword">in</span>
-  <span class="keyword">if</span> isrec <span class="keyword">then</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1060"><span class="dyncstuse">trans_clo1_v1aldeclst_rec</span></a> <span class="keyword">(</span>valdecs<span class="keyword">,</span> Gamma<span class="keyword">)</span>
-           <span class="keyword">else</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#981"><span class="dyncstuse">trans_clo1_v1aldeclst</span></a> <span class="keyword">(</span>valdecs<span class="keyword">,</span> Gamma<span class="keyword">)</span>
+  <span class="keyword">if</span> isrec <span class="keyword">then</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1060"><span class="dyncstuse">trans_clo1_v1aldeclst_rec</span></a> <span class="keyword">(</span>valdecs<span class="keyword">,</span> Gamma<span class="keyword">)</span>
+           <span class="keyword">else</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#981"><span class="dyncstuse">trans_clo1_v1aldeclst</span></a> <span class="keyword">(</span>valdecs<span class="keyword">,</span> Gamma<span class="keyword">)</span>
 <span class="keyword">end</span>
 
 <span class="comment">(* extern fun trans_clo1_v1aldeclst (valdecs: v1aldeclst, Gamma: ctx): (ctx, ctx) *)</span>
-<span class="keyword">implement</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#981"><span class="dyncstimp">trans_clo1_v1aldeclst</span></a> <span class="keyword">(</span>valdecs<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span>
+<span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#981"><span class="dyncstimp">trans_clo1_v1aldeclst</span></a> <span class="keyword">(</span>valdecs<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span>
   <span class="keyword">case+</span> valdecs <span class="keyword">of</span>
   <span class="keyword">|</span> cons <span class="keyword">(</span>valdec<span class="keyword">,</span> valdecs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
-    <span class="keyword">val</span> <span class="keyword">(</span>gamma1<span class="keyword">,</span> esc1<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1144"><span class="dyncstuse">trans_clo1_v1aldec</span></a> <span class="keyword">(</span>valdec<span class="keyword">,</span> Gamma<span class="keyword">)</span>
-    <span class="keyword">val</span> <span class="keyword">(</span>gamma2<span class="keyword">,</span> esc2<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#981"><span class="dyncstuse">trans_clo1_v1aldeclst</span></a> <span class="keyword">(</span>valdecs1<span class="keyword">,</span> gamma1<span class="keyword">)</span>
-    <span class="keyword">val</span> esc <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc1<span class="keyword">,</span> esc2<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>gamma1<span class="keyword">,</span> esc1<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1144"><span class="dyncstuse">trans_clo1_v1aldec</span></a> <span class="keyword">(</span>valdec<span class="keyword">,</span> Gamma<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>gamma2<span class="keyword">,</span> esc2<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#981"><span class="dyncstuse">trans_clo1_v1aldeclst</span></a> <span class="keyword">(</span>valdecs1<span class="keyword">,</span> gamma1<span class="keyword">)</span>
+    <span class="keyword">val</span> esc <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>esc1<span class="keyword">,</span> esc2<span class="keyword">)</span>
   <span class="keyword">in</span>
     <span class="keyword">(</span>gamma2<span class="keyword">,</span> esc<span class="keyword">)</span>
   <span class="keyword">end</span>
@@ -199,13 +199,13 @@
 
 
 <span class="comment">(* extern fun trans_clo1_v1aldeclst_rec (valdecs: v1aldeclst, Gamma: ctx): (ctx, ctx) *)</span>
-<span class="keyword">implement</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1060"><span class="dyncstimp">trans_clo1_v1aldeclst_rec</span></a> <span class="keyword">(</span>valdecs<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
-  <span class="keyword">fun</span> collect_var <span class="keyword">(</span>valdecs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2700"><span class="stacstuse">v1aldeclst</span></a></span><span class="keyword">,</span> ctx<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span> <span class="keyword">=</span> 
+<span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1060"><span class="dyncstimp">trans_clo1_v1aldeclst_rec</span></a> <span class="keyword">(</span>valdecs<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> collect_var <span class="keyword">(</span>valdecs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2700"><span class="stacstuse">v1aldeclst</span></a></span><span class="keyword">,</span> ctx<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#579"><span class="stacstuse">ctx</span></a></span> <span class="keyword">=</span> 
     <span class="keyword">case+</span> valdecs <span class="keyword">of</span>
     <span class="keyword">|</span> cons <span class="keyword">(</span>valdec<span class="keyword">,</span> valdecs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
       <span class="keyword">val</span> v <span class="keyword">=</span> valdec<span class="keyword">.</span>v1aldec_var
       <span class="keyword">val</span> nam <span class="keyword">=</span> v<span class="keyword">.</span>v1ar_nam
-      <span class="keyword">val</span> ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1783"><span class="dyncstuse">symenv_insert</span></a> <span class="keyword">(</span>ctx<span class="keyword">,</span> nam<span class="keyword">,</span> v<span class="keyword">)</span>
+      <span class="keyword">val</span> ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1783"><span class="dyncstuse">symenv_insert</span></a> <span class="keyword">(</span>ctx<span class="keyword">,</span> nam<span class="keyword">,</span> v<span class="keyword">)</span>
     <span class="keyword">in</span>
       collect_var <span class="keyword">(</span>valdecs1<span class="keyword">,</span> ctx<span class="keyword">)</span>
     <span class="keyword">end</span>
@@ -213,35 +213,35 @@
 
   <span class="keyword">val</span> vars_ctx <span class="keyword">=</span> collect_var <span class="keyword">(</span>valdecs<span class="keyword">,</span> ctx_nil<span class="keyword">)</span>
   
-  <span class="keyword">val</span> Gamma1 <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>Gamma<span class="keyword">,</span> vars_ctx<span class="keyword">)</span>
+  <span class="keyword">val</span> Gamma1 <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1967"><span class="dyncstuse">symenv_merge</span></a> <span class="keyword">(</span>Gamma<span class="keyword">,</span> vars_ctx<span class="keyword">)</span>
  
   <span class="comment">(* this esc is the env for the list of valdec *)</span>
   <span class="comment">(* These two Gamma1's should be same *)</span>
-  <span class="keyword">val</span> <span class="keyword">(</span>Gamma1<span class="keyword">,</span> esc<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#981"><span class="dyncstuse">trans_clo1_v1aldeclst</span></a> <span class="keyword">(</span>valdecs<span class="keyword">,</span> Gamma1<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>Gamma1<span class="keyword">,</span> esc<span class="keyword">)</span> <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#981"><span class="dyncstuse">trans_clo1_v1aldeclst</span></a> <span class="keyword">(</span>valdecs<span class="keyword">,</span> Gamma1<span class="keyword">)</span>
 
-  <span class="keyword">fun</span> closure_reset_env <span class="keyword">(</span>e1xp<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2022"><span class="stacstuse">e1xp</span></a></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fbasics_5fsta_2esats.html#16468"><span class="stacstuse">void</span></a></span> <span class="keyword">=</span>
+  <span class="keyword">fun</span> closure_reset_env <span class="keyword">(</span>e1xp<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2022"><span class="stacstuse">e1xp</span></a></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp"><a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fbasics_5fsta_2esats.html#16468"><span class="stacstuse">void</span></a></span> <span class="keyword">=</span>
     <span class="keyword">case+</span>  e1xp<span class="keyword">.</span>e1xp_node <span class="keyword">of</span>
     <span class="keyword">|</span> E1XPann <span class="keyword">(</span>e1<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> closure_reset_env <span class="keyword">(</span>e1<span class="keyword">)</span>
     <span class="keyword">|</span> E1XPfix <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> _<span class="keyword">,</span> env_ref<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
       <span class="keyword">val</span> env <span class="keyword">=</span> <span class="keyword">!</span>env_ref
-      <span class="keyword">val</span> env <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;&lt;</span> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
+      <span class="keyword">val</span> env <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;&lt;</span> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
           env<span class="keyword">,</span> <span class="keyword">lam</span> x <span class="keyword">=&gt;</span> <span class="keyword">@(</span>x<span class="keyword">.</span>v1ar_nam<span class="keyword">,</span> x<span class="keyword">)</span><span class="keyword">)</span>
-      <span class="keyword">val</span> env_ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1862"><span class="dyncstuse">symenv_inserts</span></a> <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> env<span class="keyword">)</span>
-      <span class="keyword">val</span> env1_ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2061"><span class="dyncstuse">symenv_sub</span></a> <span class="keyword">(</span>env_ctx<span class="keyword">,</span> vars_ctx<span class="keyword">)</span>
-      <span class="keyword">val</span> env1 <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2135"><span class="dyncstuse">symenv_listize</span></a> <span class="keyword">(</span>env1_ctx<span class="keyword">)</span>
-      <span class="keyword">val</span> env1 <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;&lt;</span><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
+      <span class="keyword">val</span> env_ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1862"><span class="dyncstuse">symenv_inserts</span></a> <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> env<span class="keyword">)</span>
+      <span class="keyword">val</span> env1_ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2061"><span class="dyncstuse">symenv_sub</span></a> <span class="keyword">(</span>env_ctx<span class="keyword">,</span> vars_ctx<span class="keyword">)</span>
+      <span class="keyword">val</span> env1 <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2135"><span class="dyncstuse">symenv_listize</span></a> <span class="keyword">(</span>env1_ctx<span class="keyword">)</span>
+      <span class="keyword">val</span> env1 <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;&lt;</span><span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
            env1<span class="keyword">,</span> <span class="keyword">lam</span> x <span class="keyword">=&gt;</span> x<span class="keyword">.</span>1<span class="keyword">)</span>
     <span class="keyword">in</span>
       <span class="keyword">!</span>env_ref := env1
     <span class="keyword">end</span>
     <span class="keyword">|</span> E1XPlam <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> env_ref<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
       <span class="keyword">val</span> env <span class="keyword">=</span> <span class="keyword">!</span>env_ref
-      <span class="keyword">val</span> env <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;&lt;</span> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
+      <span class="keyword">val</span> env <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;&lt;</span> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
           env<span class="keyword">,</span> <span class="keyword">lam</span> x <span class="keyword">=&gt;</span> <span class="keyword">@(</span>x<span class="keyword">.</span>v1ar_nam<span class="keyword">,</span> x<span class="keyword">)</span><span class="keyword">)</span>
-      <span class="keyword">val</span> env_ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1862"><span class="dyncstuse">symenv_inserts</span></a> <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> env<span class="keyword">)</span>
-      <span class="keyword">val</span> env1_ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2061"><span class="dyncstuse">symenv_sub</span></a> <span class="keyword">(</span>env_ctx<span class="keyword">,</span> vars_ctx<span class="keyword">)</span>
-      <span class="keyword">val</span> env1 <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2135"><span class="dyncstuse">symenv_listize</span></a> <span class="keyword">(</span>env1_ctx<span class="keyword">)</span>
-      <span class="keyword">val</span> env1 <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;&lt;</span><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
+      <span class="keyword">val</span> env_ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1862"><span class="dyncstuse">symenv_inserts</span></a> <span class="keyword">(</span>ctx_nil<span class="keyword">,</span> env<span class="keyword">)</span>
+      <span class="keyword">val</span> env1_ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2061"><span class="dyncstuse">symenv_sub</span></a> <span class="keyword">(</span>env_ctx<span class="keyword">,</span> vars_ctx<span class="keyword">)</span>
+      <span class="keyword">val</span> env1 <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2135"><span class="dyncstuse">symenv_listize</span></a> <span class="keyword">(</span>env1_ctx<span class="keyword">)</span>
+      <span class="keyword">val</span> env1 <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2flist0_2esats.html#4772"><span class="dyncstuse">list0_map_fun&lt;</span></a> <span class="staexp"><span class="keyword">@(</span><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#88"><span class="stacstuse">symbol_t</span></a><span class="keyword">,</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a><span class="keyword">)</span></span><span class="keyword">&gt;&lt;</span><span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2299"><span class="stacstuse">v1ar</span></a></span><span class="keyword">&gt;</span> <span class="keyword">(</span>
            env1<span class="keyword">,</span> <span class="keyword">lam</span> x <span class="keyword">=&gt;</span> x<span class="keyword">.</span>1<span class="keyword">)</span>
     <span class="keyword">in</span>
       <span class="keyword">!</span>env_ref := env1
@@ -249,7 +249,7 @@
     <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>
 
   <span class="comment">(* All the v1aldec_rec in the list have the same env. *)</span>
-  <span class="keyword">val</span> _ <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fSATS_2flist0_2esats.html#4848"><span class="dyncstuse">list0_map_cloref&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2607"><span class="stacstuse">v1aldec</span></a></span><span class="keyword">&gt;&lt;</span><span class="staexp"><a href="XREF/_2fhome_2fatsuser_2fats_5fpack_2fats_2dlang_2danairiats_2d0_2e2_2e4_2fprelude_2fbasics_5fsta_2esats.html#15585"><span class="stacstuse">int</span></a></span><span class="keyword">&gt;</span>  <span class="comment">// todo use void instead of int
+  <span class="keyword">val</span> _ <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2flist0_2esats.html#4848"><span class="dyncstuse">list0_map_cloref&lt;</span></a><span class="staexp"><a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans1_2esats.html#2607"><span class="stacstuse">v1aldec</span></a></span><span class="keyword">&gt;&lt;</span><span class="staexp"><a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fbasics_5fsta_2esats.html#15585"><span class="stacstuse">int</span></a></span><span class="keyword">&gt;</span>  <span class="comment">// todo use void instead of int
 </span>    <span class="keyword">(</span>valdecs<span class="keyword">,</span> <span class="keyword">lam</span> valdec <span class="keyword">=&gt;</span> <span class="keyword">let</span> 
                   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> closure_reset_env <span class="keyword">(</span>valdec<span class="keyword">.</span>v1aldec_def<span class="keyword">)</span> 
                 <span class="keyword">in</span> 0 <span class="keyword">end</span>
@@ -259,303 +259,25 @@
 <span class="keyword">end</span>
 
 <span class="comment">(* extern fun trans_clo1_v1aldec (valdec: v1aldec, Gamma: ctx): (ctx, ctx) *)</span>
-<span class="keyword">implement</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1144"><span class="dyncstimp">trans_clo1_v1aldec</span></a> <span class="keyword">(</span>valdec<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2edats.html#1144"><span class="dyncstimp">trans_clo1_v1aldec</span></a> <span class="keyword">(</span>valdec<span class="keyword">,</span> Gamma<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> v <span class="keyword">=</span> valdec<span class="keyword">.</span>v1aldec_var
   <span class="keyword">val</span> e <span class="keyword">=</span> valdec<span class="keyword">.</span>v1aldec_def
 
   <span class="keyword">val</span> esc <span class="keyword">=</span> trans_clo1_e1xp <span class="keyword">(</span>e<span class="keyword">,</span> Gamma<span class="keyword">)</span>
 
   <span class="keyword">val</span> nam <span class="keyword">=</span> v<span class="keyword">.</span>v1ar_nam
-  <span class="keyword">val</span> gamma <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1783"><span class="dyncstuse">symenv_insert</span></a> <span class="keyword">(</span>Gamma<span class="keyword">,</span> nam<span class="keyword">,</span> v<span class="keyword">)</span>
+  <span class="keyword">val</span> gamma <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#1783"><span class="dyncstuse">symenv_insert</span></a> <span class="keyword">(</span>Gamma<span class="keyword">,</span> nam<span class="keyword">,</span> v<span class="keyword">)</span>
 <span class="keyword">in</span>
   <span class="keyword">(</span>gamma<span class="keyword">,</span> esc<span class="keyword">)</span>
 <span class="keyword">end</span>
 
-<span class="comment">(*
-// (* *********** ************** *************** *)
-// extern fun trans_clo2_e1xp_fix (f: v1ar, args: v1arlst, body: e1xp, 
-//   esc: v1arlst, Gamma: ctx, env: v1arlst): e1xp_node
-// 
-// extern fun trans_clo2_e1xp_lam (args: v1arlst, body: e1xp, 
-//   esc: v1arlst, Gamma: ctx, env: v1arlst): e1xp_node
-// 
-// extern fun trans_clo2_d1eclst (decs: d1eclst, 
-//   Gamma: ctx, env: v1arlst): (ctx(*new gamma*), d1eclst)
-// extern fun trans_clo2_d1ec (dec: d1ec, 
-//   Gamma: ctx, env: v1arlst): (ctx, d1ec)
-// 
-// extern fun trans_clo2_v1aldeclst (valdecs: v1aldeclst, 
-//   Gamma: ctx, env: v1arlst): (ctx, v1aldeclst)
-// extern fun trans_clo2_v1aldeclst_rec (valdecs: v1aldeclst, 
-//   Gamma: ctx, env: v1arlst): (ctx, v1aldeclst)
-// 
-// extern fun trans_clo2_v1aldec (valdec: v1aldec, 
-//   Gamma: ctx, env: v1arlst): (ctx, v1aldec)
-// extern fun trans_clo2_v1aldec_rec (valdec: v1aldec, 
-//   Gamma: ctx, env: v1arlst): v1aldec
-// 
-// extern fun trans_clo2_e1xplst (exps: e1xplst,
-//   Gamma: ctx, env: v1arlst): e1xplst
-// 
-// (* var list for the closure environment *)
-// (* Gamma: from function arguments and var declaration
-//    env: the closure info
-// *)
-// (* reconstruct the tree, semantically same v1ar's are actually the same. *)
-// fun trans_clo2_e1xp (exp: e1xp, Gamma: ctx, env: v1arlst): e1xp = let
-//   val loc = exp.e1xp_loc
-//   val node = exp.e1xp_node
-//   val typ = exp.e1xp_typ
-// in
-//   case+ node of
-//   | E1XPann (e, t) =&gt; let
-//     val e = trans_clo2_e1xp (e, Gamma, env)
-//     val exp_node = E1XPann (e, e.e1xp_typ)
-//   in
-//     e1xp_make (loc, exp_node, e.e1xp_typ)
-//   end
-//   | E1XPapp (f, args) =&gt; let
-//     val f = trans_clo2_e1xp (f, Gamma, env)
-//     val args = trans_clo2_e1xp (args, Gamma, env)
-//     val exp_node = E1XPapp (f, args)
-//   in
-//     e1xp_make (loc, exp_node, typ)
-//   end
-//   | E1XPbool _ =&gt; e1xp_make (loc, node, typ)
-//   | E1XPfix (f, args, body, ref_esc) =&gt; 
-//     e1xp_make (loc, trans_clo2_e1xp_fix (f, args, body, !ref_esc, Gamma, env), typ)
-//   | E1XPif (e_if, e_then, eo_else) =&gt; let
-//     val e_if = trans_clo2_e1xp (e_if, Gamma, env)
-//     val e_then = trans_clo2_e1xp (e_then, Gamma, env)
-//     val eo_else = (case+ eo_else of
-//                  | Some0 e_else =&gt; Some0 (trans_clo2_e1xp (e_else, Gamma, env))
-//                  | None0 () =&gt; None0 ()
-//                  ): (option0 e1xp)
-//     val exp_node = E1XPif (e_if, e_then, eo_else)
-//   in
-//     e1xp_make (loc, exp_node, typ)
-//   end
-//   | E1XPint _ =&gt; e1xp_make (loc, node, typ)
-//   | E1XPlam (args, body, ref_esc) =&gt;
-//     e1xp_make (loc, trans_clo2_e1xp_lam (args, body, !ref_esc, Gamma, env), typ)
-//   | E1XPlet (decs, e) =&gt; let
-//     val (gamma, decs1) = trans_clo2_d1eclst (decs, Gamma, env)
-//     val e1 = trans_clo2_e1xp (e, gamma, env)
-//   in
-//     e1xp_make (loc, E1XPlet (decs1, e1), typ)
-//   end
-//   | E1XPopr (opr, es) =&gt;
-//       e1xp_make (loc, 
-//                  E1XPopr (opr, trans_clo2_e1xplst (es, Gamma, env)), 
-//                  typ)
-//   | E1XPproj (e, i) =&gt; let
-//     val e = trans_clo2_e1xp (e, Gamma, env)
-//     val exp_node = E1XPproj (e, i)
-//   in
-//     e1xp_make (loc, exp_node, typ)
-//   end
-//   | E1XPstr _ =&gt; e1xp_make (loc, node, typ)
-//   | E1XPtup es =&gt; let
-//     val es = trans_clo2_e1xplst (es, Gamma, env)
-//   in
-//     e1xp_make (loc, E1XPtup es, typ)
-//   end
-//   | E1XPvar v =&gt; let  // todo is this necessary?
-//     val vo1 = symenv_lookup (Gamma, v.v1ar_nam)
-//   in
-//     case+ vo1 of
-//     | Some0 v1 =&gt; e1xp_make (loc, E1XPvar v1, typ)
-//     | None0 () =&gt; let
-//       val vo2 = list0_find_cloref&lt;v1ar&gt; (env, lam x =&gt; x.v1ar_nam = v.v1ar_nam)
-//     in
-//       case+ vo2 of
-//       | Some0 v2 =&gt; e1xp_make (loc, E1XPvar v2, typ)
-//       | None0 () =&gt; ETRACE_MSG_OPR ("trans_clo2_e1xp var not found\n", 
-//           ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
-//     end
-//   end
-//   | E1XPfixclo _ =&gt; ETRACE_MSG_OPR ("trans_clo2_e1xp E1XPfixclo is found\n", 
-//           ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
-//   | E1XPlamclo _ =&gt; ETRACE_MSG_OPR ("trans_clo2_e1xp E1XPlamclo is found\n", 
-//           ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
-// end
-// 
-// (* extern fun trans_clo2_e1xp_fix (f: v1ar, args: v1arlst, body: e1xp, 
-//   esc: v1arlst, Gamma: ctx, env: v1arlst, loc: loc): e1xp
-// *)
-// implement trans_clo2_e1xp_fix (f, args, body, esc, Gamma, env) = let
-//   // put f into env
-//   val env' = f :: env
-//   (* find the v1ar in the Gamma or env based on name *)
-//   fun helper (v: v1ar):&lt;cloref1&gt; v1ar = let
-//     val vopt1 = symenv_lookup (Gamma, v.v1ar_nam)
-//   in
-//     case+ vopt1 of
-//     | Some0 v1 =&gt; v1
-//     | None0 () =&gt; let
-//       val vopt2 = list0_find_cloref&lt;v1ar&gt; (env', lam x =&gt; x.v1ar_nam = v.v1ar_nam)
-//     in
-//       case+ vopt2 of
-//       | Some0 v2 =&gt; v2
-//       | None0 () =&gt; ETRACE_MSG_OPR ("trans_clo1_e1xp_fix var not found\n", ETRACE_LEVEL_ERROR,
-//                   abort (ERRORCODE_FORBIDDEN))
-//     end
-//   end
-// 
-//   val env1 = list0_map_cloref&lt;v1ar&gt;&lt;v1ar&gt; (esc, helper)  // f maybe inside env1
-// 
-//   val Gamma1 = symenv_inserts (ctx_nil, 
-//     list0_map_fun&lt;v1ar&gt;&lt;(symbol_t, v1ar)&gt; (args, lam x =&gt; (x.v1ar_nam, x)))
-// 
-//   val body_exp = trans_clo2_e1xp (body, Gamma1, env1)
-// 
-//   val exp_node = E1XPfixclo (f, args, body_exp, env1)
-// in
-//   exp_node
-// end
-// 
-// (* extern fun trans_clo2_e1xp_lam (args: v1arlst, body: e1xp, 
-//   esc: v1arlst, Gamma: ctx, env: v1arlst, loc: loc): e1xp
-// *)
-// implement trans_clo2_e1xp_lam (args, body, esc, Gamma, env) = let
-//   (* find the v1ar in the Gamma or env based on name *)
-//   fun helper (v: v1ar):&lt;cloref1&gt; v1ar = let
-//     val vopt1 = symenv_lookup (Gamma, v.v1ar_nam)
-//   in
-//     case+ vopt1 of
-//     | Some0 v1 =&gt; v1
-//     | None0 () =&gt; let
-//       val vopt2 = list0_find_cloref&lt;v1ar&gt; (env, lam x =&gt; x.v1ar_nam = v.v1ar_nam)
-//     in
-//       case+ vopt2 of
-//       | Some0 v2 =&gt; v2
-//       | None0 () =&gt; ETRACE_MSG_OPR ("trans_clo1_e1xp_fix var not found\n", ETRACE_LEVEL_ERROR,
-//                   abort (ERRORCODE_FORBIDDEN))
-//     end
-//   end
-// 
-//   val env1 = list0_map_cloref&lt;v1ar&gt;&lt;v1ar&gt; (esc, helper)
-// 
-//   val Gamma1 = symenv_inserts (ctx_nil, 
-//     list0_map_fun&lt;v1ar&gt;&lt;(symbol_t, v1ar)&gt; (args, lam x =&gt; (x.v1ar_nam, x)))
-// 
-//   val body_exp = trans_clo2_e1xp (body, Gamma1, env1)
-// 
-//   val exp_node = E1XPlamclo (args, body_exp, env1)
-// in
-//   exp_node
-// end
-// 
-//   
-// (* extern fun trans_clo2_e1xplst (exps: e1xplst,
-//   Gamma: ctx, env: v1arlst): e1xplst *)
-// implement trans_clo2_e1xplst (exps, Gamma, env) =
-//   case+ exps of
-//   | cons (exp, exps1) =&gt;
-//     cons (trans_clo2_e1xp (exp, Gamma, env), trans_clo2_e1xplst (exps1, Gamma, env))
-//   | nil () =&gt; nil ()
-// 
-// (* extern fun trans_clo2_d1eclst (decs: d1eclst, 
-//   Gamma: ctx, env: v1arlst): (ctx(*new gamma*), d1eclst) *)
-// implement trans_clo2_d1eclst (decs, Gamma, env) =
-//   case+ decs of
-//   | cons (dec, decs1) =&gt; let
-//     val (gamma1, dec') = trans_clo2_d1ec (dec, Gamma, env)
-//     val (gamma2, decs1') = trans_clo2_d1eclst (decs1, gamma1, env)
-//   in
-//     (gamma2, cons (dec', decs1'))
-//   end
-//   | nil () =&gt; (Gamma, nil ())
-// 
-// 
-// (* extern fun trans_clo2_d1ec (dec: d1ec, 
-//   Gamma: ctx, env: v1arlst): (ctx, d1ec) *)
-// implement trans_clo2_d1ec (dec, Gamma, env) = let
-//   val loc = dec.d1ec_loc
-//   val dnode = dec.d1ec_node
-//   val+ D1ECval (isrec, valdecs) = dnode
-//   val (gamma, valdecs1) = 
-//     if isrec then trans_clo2_v1aldeclst_rec (valdecs, Gamma, env)
-//              else trans_clo2_v1aldeclst (valdecs, Gamma, env)
-// in
-//   (gamma, d1ec_make_val (loc, isrec, valdecs1))
-// end
-// 
-// (* extern fun trans_clo2_v1aldeclst (valdecs: v1aldeclst, 
-//   Gamma: ctx, env: v1arlst): (ctx, v1aldeclst) *)
-// implement trans_clo2_v1aldeclst (valdecs, Gamma, env) =
-//   case+ valdecs of
-//   | cons (valdec, valdecs1) =&gt; let
-//     val (gamma1, valdec') = trans_clo2_v1aldec (valdec, Gamma, env)
-//     val (gamma2, valdecs1') = trans_clo2_v1aldeclst (valdecs1, gamma1, env)
-//   in
-//     (gamma2, cons (valdec', valdecs1'))
-//   end
-//   | nil () =&gt; (Gamma, nil ())
-// 
-// (* extern fun trans_clo2_v1aldeclst_rec (valdecs: v1aldeclst, 
-//   Gamma: ctx, env: v1arlst): (ctx, v1aldeclst) *)
-// implement trans_clo2_v1aldeclst_rec (valdecs, Gamma, env) = let
-//   val vars = list0_map_fun&lt;v1aldec&gt;&lt;(symbol_t, v1ar)&gt; (
-//     valdecs, lam x =&gt; (x.v1aldec_var.v1ar_nam, x.v1aldec_var))
-// 
-//   val gamma = symenv_inserts (Gamma, vars)
-// 
-//   fun trans_clo2_v1aldeclst_rec_impl (valdecs: v1aldeclst, 
-//     Gamma: ctx, env: v1arlst):&lt;cloref1&gt; v1aldeclst =
-//     case+ valdecs of
-//     | cons (valdec, valdecs1) =&gt; let
-//       val valdec' = trans_clo2_v1aldec_rec (valdec, gamma, env)
-//       val valdecs1' = trans_clo2_v1aldeclst_rec_impl (valdecs1, gamma, env)
-//     in
-//       cons (valdec', valdecs1')
-//     end
-//     | nil () =&gt; nil ()
-// 
-//   val ret = trans_clo2_v1aldeclst_rec_impl (valdecs, gamma, env) 
-// in
-//   (gamma, ret)  // todo is this correct?
-// end
-// 
-// (* extern fun trans_clo2_v1aldec (valdec: v1aldec, 
-//   Gamma: ctx, env: v1arlst): (ctx, v1aldec) *)
-// implement trans_clo2_v1aldec (valdec, Gamma, env) = let
-//   val loc = valdec.v1aldec_loc
-//   val v = valdec.v1aldec_var
-//   val def = valdec.v1aldec_def
-// 
-//   val nam = v.v1ar_nam
-//   val gamma = symenv_insert (Gamma, nam, v)
-//   val def' = trans_clo2_e1xp (def, gamma, env)
-// 
-//   val () = !(v.v1ar_def) := (Some0 def')
-// in
-//   (gamma, v1aldec_make (loc, v, def'))
-// end
-// 
-// (* extern fun trans_clo2_v1aldec_rec (valdec: v1aldec, 
-//   Gamma: ctx, env: v1arlst): v1aldec *)
-// implement trans_clo2_v1aldec_rec (valdec, Gamma, env) = let
-//   val loc = valdec.v1aldec_loc
-//   val v = valdec.v1aldec_var
-//   val def = valdec.v1aldec_def
-// 
-//   val def' = trans_clo2_e1xp (def, Gamma, env)
-// 
-//   val () = !(v.v1ar_def) := (Some0 def')
-// in
-//   v1aldec_make (loc, v, def')
-// end
-// 
-*)</span>
-
-<span class="keyword">implement</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2esats.html#70"><span class="dyncstimp">trans_closure</span></a> <span class="keyword">(</span>e1xp<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2ftrans_5fclosure_2esats.html#70"><span class="dyncstimp">trans_closure</span></a> <span class="keyword">(</span>e1xp<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> ctx <span class="keyword">=</span> trans_clo1_e1xp <span class="keyword">(</span>e1xp<span class="keyword">,</span> ctx_nil<span class="keyword">)</span>
-  <span class="keyword">val</span> ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fatsuser_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2135"><span class="dyncstuse">symenv_listize</span></a> <span class="keyword">(</span>ctx<span class="keyword">)</span>
+  <span class="keyword">val</span> ctx <span class="keyword">=</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fsymbol_2esats.html#2135"><span class="dyncstuse">symenv_listize</span></a> <span class="keyword">(</span>ctx<span class="keyword">)</span>
    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">case+</span> ctx <span class="keyword">of</span>
-            <span class="keyword">|</span> cons <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> fprint <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> "000000000000000000000000000000000\n"<span class="keyword">)</span>
-            <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> fprint <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> "111111111111111111111111111111\n"<span class="keyword">)</span>
-  <span class="comment">// val e = trans_clo2_e1xp (e1xp, ctx_nil, nil)  // todo remove
+            <span class="keyword">|</span> cons <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>  <span class="comment">// fprint (stderr_ref, "000000000000000000000000000000000\n")
+</span>            <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span><span class="keyword">)</span>  <span class="comment">// fprint (stderr_ref, "111111111111111111111111111111\n")
+</span>  <span class="comment">// val e = trans_clo2_e1xp (e1xp, ctx_nil, nil)  // todo remove
 </span><span class="keyword">in</span>
   e1xp
 <span class="keyword">end</span>

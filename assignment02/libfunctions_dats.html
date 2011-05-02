@@ -68,12 +68,12 @@
 <span class="keyword">val</span> label_STRING_ADD    <span class="keyword">=</span> funlab_allocate symbol_STRING_ADD
 
 
-<span class="keyword">val</span> tmpvar_LIST_CONS     <span class="keyword">=</span> tmpvar_new string_LIST_CONS
-<span class="keyword">val</span> tmpvar_LIST_NIL      <span class="keyword">=</span> tmpvar_new string_LIST_NIL
-<span class="keyword">val</span> tmpvar_LIST_IS_EMPTY <span class="keyword">=</span> tmpvar_new string_LIST_IS_EMPTY
-<span class="keyword">val</span> tmpvar_LIST_HEAD     <span class="keyword">=</span> tmpvar_new string_LIST_HEAD
-<span class="keyword">val</span> tmpvar_LIST_TAIL     <span class="keyword">=</span> tmpvar_new string_LIST_TAIL
-<span class="keyword">val</span> tmpvar_STRING_ADD    <span class="keyword">=</span> tmpvar_new string_STRING_ADD
+<span class="keyword">val</span> tmpvar_LIST_CONS     <span class="keyword">=</span> tmpvar_new_string_name string_LIST_CONS
+<span class="keyword">val</span> tmpvar_LIST_NIL      <span class="keyword">=</span> tmpvar_new_string_name string_LIST_NIL
+<span class="keyword">val</span> tmpvar_LIST_IS_EMPTY <span class="keyword">=</span> tmpvar_new_string_name string_LIST_IS_EMPTY
+<span class="keyword">val</span> tmpvar_LIST_HEAD     <span class="keyword">=</span> tmpvar_new_string_name string_LIST_HEAD
+<span class="keyword">val</span> tmpvar_LIST_TAIL     <span class="keyword">=</span> tmpvar_new_string_name string_LIST_TAIL
+<span class="keyword">val</span> tmpvar_STRING_ADD    <span class="keyword">=</span> tmpvar_new_string_name string_STRING_ADD
 
 
 <span class="keyword">val</span> t2yp_list <span class="keyword">=</span> T2YPlist <span class="keyword">(</span>T2YPvar<span class="keyword">)</span>
@@ -101,9 +101,9 @@
 <span class="keyword">val</span> valprim_LIST_TAIL     <span class="keyword">=</span> make_valprim <span class="keyword">(</span>vpnode_LIST_TAIL<span class="keyword">,</span>     t2yp_LIST_TAIL<span class="keyword">)</span>
 <span class="keyword">val</span> valprim_STRING_ADD    <span class="keyword">=</span> make_valprim <span class="keyword">(</span>vpnode_STRING_ADD<span class="keyword">,</span>    t2yp_STRING_ADD<span class="keyword">)</span>
 
-<span class="keyword">abstype</span> <span class="staexp"><a name="3171"><span class="stacstdec">theConstTypMap_t</span></a></span>
+<span class="keyword">abstype</span> <span class="staexp"><a name="3243"><span class="stacstdec">theConstTypMap_t</span></a></span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3200"><span class="dyncstdec">ConstTypMapFind <span class="keyword">(</span>nam<span class="keyword">:</span> <span class="staexp">sym</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 t1yp</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3272"><span class="dyncstdec">ConstTypMapFind <span class="keyword">(</span>nam<span class="keyword">:</span> <span class="staexp">sym</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 t1yp</span></span></a>
 
 <span class="keyword">local</span>
 
@@ -119,7 +119,7 @@
   <span class="keyword">val</span> t1yp_str2 <span class="keyword">=</span> T1YPtup <span class="keyword">(</span>t1yp_string :: t1yp_string :: nil<span class="keyword">)</span>
   <span class="keyword">val</span> t1yp_aop <span class="keyword">=</span> T1YPfun <span class="keyword">(</span>ref_make_elt&lt;<span class="staexp">int</span><span class="keyword">&gt;</span> <span class="keyword">(</span>2<span class="keyword">)</span><span class="keyword">,</span> t1yp_int2<span class="keyword">,</span> t1yp_int<span class="keyword">)</span>
   <span class="keyword">val</span> t1yp_bop <span class="keyword">=</span> T1YPfun <span class="keyword">(</span>ref_make_elt&lt;<span class="staexp">int</span><span class="keyword">&gt;</span> <span class="keyword">(</span>2<span class="keyword">)</span><span class="keyword">,</span> t1yp_int2<span class="keyword">,</span> t1yp_bool<span class="keyword">)</span>
-  <span class="keyword">typedef</span> <span class="staexp"><a name="3744"><span class="stacstdec">T <span class="keyword">=</span> <span class="keyword">@(</span>sym<span class="keyword">,</span> t1yp<span class="keyword">)</span></span></a></span>
+  <span class="keyword">typedef</span> <span class="staexp"><a name="3816"><span class="stacstdec">T <span class="keyword">=</span> <span class="keyword">@(</span>sym<span class="keyword">,</span> t1yp<span class="keyword">)</span></span></a></span>
   <span class="keyword">val</span> cts <span class="keyword">=</span> <span class="keyword">(</span>
     <span class="keyword">(</span>symbol_PLUS<span class="keyword">,</span> t1yp_aop<span class="keyword">)</span> ::
     <span class="keyword">(</span>symbol_MINUS<span class="keyword">,</span> t1yp_aop<span class="keyword">)</span> ::

@@ -1,32 +1,41 @@
 
 
 let
-  val list_create = lam () => ()
-  val list_head = lam (xs) => xs.0
-  val list_tail = lam (xs) => xs.1 
   val list_insert = fix f (pos: int, n: int, xs) =>
-    if pos = 0 then (n, xs)
+    if pos = 0 then list_cons (n, xs)
     else let
       val x = list_head xs
       val tail = list_tail xs
       val xs1 = f (pos - 1, n, tail)
     in
-      (x, xs1)
+      list_cons (x, xs1)
     end
 
   val list_print = lam (xs, len: int) => let
     val aux = fix f (xs, n: int) =>
-      if n < len then let
-        val x = list_head xs
-        val tail = list_tail xs
-        val _ = if n > 0 then print ", "
-        val _ = print_int x
-      in
-        f (tail, n + 1)
-      end
+      if n < len then 
+        if list_is_empty (xs) then let
+          val x = list_head xs
+          val tail = list_tail xs
+          val _ = if n > 0 then print ", "
+          val _ = print_int x
+        in
+          f (tail, n + 1)
+        end
+        else ()
+      else ()
   in
     aux (xs, 0)
   end
+        
+  val xs = list_nil ()
+  val xs = list_insert (0, 2, xs)
+  val xs = list_insert (1, 4, xs)
+  val xs = list_insert (2, 3, xs)
+  val xs = list_insert (3, 7, xs)
+
+  val _ = list_print (xs, 4)
+  val _ =  print "\n"
 
   val list_remove = fix f (pos: int, xs) => let
     val x = list_head xs
@@ -40,15 +49,7 @@ let
   end
     
     
-        
-  val xs = list_create ()
-  val xs = list_insert (0, 2, xs)
-  val xs = list_insert (1, 4, xs)
-  val xs = list_insert (2, 3, xs)
-  val xs = list_insert (3, 7, xs)
 
-  val _ = list_print (xs, 4)
-  val _ =  print "\n"
 
   val x_xs = list_remove (3, xs)
   val _ = print_int x_xs.0

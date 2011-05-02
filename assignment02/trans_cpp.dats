@@ -39,6 +39,7 @@ val header = (header + "#include <stdio.h>\n\n"): string
 // val ftyp_1 = "__ftype1": string  // multi args function type
 // val header_ftyp = "typedef void * (*" + ftyp_0 + ")();\n"
 // val header_ftyp = header_ftyp + "typedef void * (*" + ftyp_1 + ")(void *);\n"
+val initialization_str = "init_lib();"
 
 (* string functions *)
 // todo
@@ -126,7 +127,7 @@ end  // end of [statements_to_string]
 
 fun trans_cpp_typ (t2yp: t2yp): string =
   case+ t2yp of
-  | T2YPint ()  => "int"
+  | T2YPint ()  => "long"
   | T2YPbool () => "bool"
   | T2YPstr ()  => "string"
   | T2YPenv ()  => "env"
@@ -135,7 +136,7 @@ fun trans_cpp_typ (t2yp: t2yp): string =
   | T2YPclo (_, _, _)  => "closure"
   | T2YPtup (_)  => "tuple"
 
-fun trans_cpp_valprimlst_typ (args: valprimlst): string = loop (args, 0) where {
+fun trans_cpp_valprimlst_typ (args: valprimlst, i: int): string = loop (args, i) where {
   fun loop (args: valprimlst, i: int): string = 
     case+ args of
     | cons (arg, args1) => let
@@ -158,7 +159,7 @@ fun trans_cpp_args (args: valprimlst): string = loop (args, 0) where {
       val tmpvar = (case+ node of
           | VPtmp (tmpvar) => tmpvar
           | _ => let
-             val () = fprint_valprim (stderr_ref, arg)
+             // val () = fprint_valprim (stderr_ref, arg)
           in
              ETRACE_MSG_OPR ("trans_cpp_args args should be VPtmp\n", 
                     ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
@@ -240,7 +241,7 @@ implement trans_cpp_fun_body (narg, body, ret) = let
   val ret_typ = trans_cpp_typ (ret_typ)
 
   val stats = list0_append<statement> (stats, 
-              cons (STATplain ("return (" + ret_typ + ")" + 
+              cons (STATplain ("return " (* (" + ret_typ + ")" *) + 
                 trans_cpp_valprim (ret) + ";"), nil))
 in
   stats
@@ -293,7 +294,7 @@ in
 end
 
 extern fun trans_cpp_instr_call (ret: tmpvar, f: valprim, 
-  args: valprimlst): statements
+  args: valprimlst, ret_typ: t2yp): statements
 
 extern fun trans_cpp_instr_cond (ret: tmpvar, typ: t2yp, vp: valprim, 
   brthen: instrlst, brelse: instrlst): statements
@@ -443,7 +444,8 @@ implement trans_cpp_instr_proj (ret, typ, vp, pos) = let
   val ret_typ = trans_cpp_typ (typ)
   val v_str = trans_cpp_valprim (vp)
 
-  val stats = STATplain (ret_typ + ret_str + " = " + 
+  val stats = STATplain (ret_typ + " " + ret_str + " = " + 
+              "(" + ret_typ + ")" +
               "tuple_get(" + v_str + ", " + tostring_int (pos) + ");")
 in
   stats :: nil
@@ -480,9 +482,9 @@ end
 
 (*
 extern fun trans_cpp_instr_call (ret: tmpvar, f: valprim, 
-  args: valprimlst): statements
+  args: valprimlst, ret_typ: t2yp): statements
 *)
-implement trans_cpp_instr_call (ret, f, args) = let
+implement trans_cpp_instr_call (ret, f, args, ret_typ) = let
   val ret_str = tmpvar_get_name (ret)
 
   // name of the closure
@@ -490,10 +492,15 @@ implement trans_cpp_instr_call (ret, f, args) = let
 
   // build the function type
   val f_typ = f.valprim_typ
-  val- T2YPclo (nargs, args_typ, ret_typ) = f_typ
-  val args_typ_str = trans_cpp_valprimlst_typ (args)
+  val- T2YPclo (nargs, args_typ, ret_typ1) = f_typ
+  val args_typ_str = trans_cpp_valprimlst_typ (args, 1)
+
   val ret_typ_str = trans_cpp_typ (ret_typ)
-  val clo_typ_str = "(" + ret_typ_str + " (*)(env, " + args_typ_str + "))"
+  val ret_typ_str1 = trans_cpp_typ (ret_typ1)  // this one maybe any (due to list function
+  val clo_typ_str = "(" + ret_typ_str1 + " (*)(env" + args_typ_str + "))"
+
+  val ret_typ_str_convert = 
+    if ret_typ_str = ret_typ_str1 then "" else "(" + ret_typ_str + ")"
 
   val args_strlst = trans_cpp_valprimlst (args)
 
@@ -502,9 +509,9 @@ implement trans_cpp_instr_call (ret, f, args) = let
     | cons (arg, args1) => loop (init + (if i > 0 then ", " else "") + arg, args1, i + 1)
     | nil () => init
 
-  val args_str = "(closure_get_env(" + f_nam + ")" + ", " + loop ("", args_strlst, 0) + ")"
+  val args_str = "(closure_get_env(" + f_nam + ")" + loop ("", args_strlst, 1) + ")"
 
-  val stats = STATplain (ret_typ_str + " " + ret_str + " = " + 
+  val stats = STATplain (ret_typ_str + " " + ret_str + " = " + ret_typ_str_convert + 
              "(*" + clo_typ_str + "closure_get_fun(" + f_nam + "))" + args_str + ";") :: nil
 in
   stats
@@ -512,8 +519,8 @@ end
 
 implement trans_cpp_instr (instr) =
   case+ instr.instr_node of
-  | INSTRcall (ret, f, args) =>
-    trans_cpp_instr_call (ret, f, args)
+  | INSTRcall (ret, f, args, ret_typ) =>
+    trans_cpp_instr_call (ret, f, args, ret_typ)
   | INSTRcond (ret, typ, v, brthen, brelse) =>
     trans_cpp_instr_cond (ret, typ, v, brthen, brelse)
   | INSTRmove_val (tmpv, vp) => let
@@ -556,7 +563,8 @@ implement trans_cpp (instrs, fns) = let
   val () = ostream_in (os, "\n\n")
   val () = trans_cpp_funlst_def (fns, os)
  
-   val body_stats = STATplain (funlab_get_name (mainlab) + "(0);")
+   val body_stats = STATplain (initialization_str) :: STATplain ("\n\n")
+       :: STATplain (funlab_get_name (mainlab) + "(0);")
        :: STATplain ("return 0;") :: nil
   
    val main_stats = STATplain ("int main (int argc, char *argv)")
