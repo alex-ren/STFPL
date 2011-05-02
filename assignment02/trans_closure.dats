@@ -185,25 +185,50 @@ implement trans_clo1_v1aldeclst_rec (valdecs, Gamma) = let
       collect_var (valdecs1, ctx)
     end
     | nil () => ctx
+
+  val vars_ctx = collect_var (valdecs, ctx_nil)
   
-  val Gamma1 = collect_var (valdecs, Gamma)
+  val Gamma1 = symenv_merge (Gamma, vars_ctx)
  
   (* this esc is the env for the list of valdec *)
   (* These two Gamma1's should be same *)
   val (Gamma1, esc) = trans_clo1_v1aldeclst (valdecs, Gamma1)
-  val esclst = symenv_listize (esc)
-  val esclst = list0_map_fun<@(symbol_t, v1ar)><v1ar> (esclst, lam x => x.1)
 
-  fun closure_set_env (e1xp: e1xp, vs: v1arlst): void =
+  fun closure_reset_env (e1xp: e1xp):<cloref1> void =
     case+  e1xp.e1xp_node of
-    | E1XPann (e1, _) => closure_set_env (e1, vs)
-    | E1XPfix (_, _, _, env_ref) => !env_ref := vs
-    | E1XPlam (_, _, env_ref) => !env_ref := vs
+    | E1XPann (e1, _) => closure_reset_env (e1)
+    | E1XPfix (_, _, _, env_ref) => let
+      val env = !env_ref
+      val env = list0_map_fun<v1ar>< @(symbol_t, v1ar)> (
+          env, lam x => @(x.v1ar_nam, x))
+      val env_ctx = symenv_inserts (ctx_nil, env)
+      val env1_ctx = symenv_sub (env_ctx, vars_ctx)
+      val env1 = symenv_listize (env1_ctx)
+      val env1 = list0_map_fun< @(symbol_t, v1ar)><v1ar> (
+           env1, lam x => x.1)
+    in
+      !env_ref := env1
+    end
+    | E1XPlam (_, _, env_ref) => let
+      val env = !env_ref
+      val env = list0_map_fun<v1ar>< @(symbol_t, v1ar)> (
+          env, lam x => @(x.v1ar_nam, x))
+      val env_ctx = symenv_inserts (ctx_nil, env)
+      val env1_ctx = symenv_sub (env_ctx, vars_ctx)
+      val env1 = symenv_listize (env1_ctx)
+      val env1 = list0_map_fun< @(symbol_t, v1ar)><v1ar> (
+           env1, lam x => x.1)
+    in
+      !env_ref := env1
+    end
     | _ => ()
 
   (* All the v1aldec_rec in the list have the same env. *)
   val _ = list0_map_cloref<v1aldec><int>  // todo use void instead of int
-    (valdecs, lam valdec => let val () = closure_set_env (valdec.v1aldec_def, esclst) in 0 end)
+    (valdecs, lam valdec => let 
+                  val () = closure_reset_env (valdec.v1aldec_def) 
+                in 0 end
+    )
 in
   (Gamma1, esc)
 end

@@ -120,13 +120,14 @@ overload fprint with fprint_valprimlst
 datatype instr_node =
   | INSTRcall of (tmpvar, valprim, valprimlst) // fun call
   // conditional  // no return val, so no tmpvar
-  | INSTRcond of (tmpvar, valprim, instrlst, instrlst) 
+  | INSTRcond of (tmpvar, t2yp, valprim, instrlst, instrlst) 
   | INSTRmove_val of (tmpvar(*x*), valprim(*v*)) // x := v
-  | INSTRopr of (tmpvar, $Absyn.opr, valprimlst) // primtive operator
+  // primtive operator
+  | INSTRopr of (tmpvar, t2yp(*ret typ*), $Absyn.opr, valprimlst)
   | INSTRtup of (tmpvar, valprimlst) // create tuple
   // create closures
   | INSTRclosure of (tmpvar, funlab, valprimlst)  
-  | INSTRproj of (tmpvar, valprim, int) // projection
+  | INSTRproj of (tmpvar, t2yp, valprim, int) // projection
 
 where instr = '{
   instr_loc= $Posloc.location_t, instr_node = instr_node
@@ -156,13 +157,16 @@ fun funlab_get_name (fl: funlab): string
 
 val mainlab: funlab
 
-fun funent_make_label (
+fun funent_make (
   fl: funlab, nargs: int, args: valprimlst, 
   body: instrlst, ret: valprim, env: valprimlst): funent
 
 fun trans2_typ (t1yp: $Trans1.t1yp): t2yp
 
-
+fun fprint_valprim (out: FILEref, vp: valprim): void
+fun fprint_valprimlst (out: FILEref, vp: valprimlst): void
+fun fprint_instr (out: FILEref, ins: instr): void
+fun fprint_instrlst (out: FILEref, inslst: instrlst): void
 (* ****** ****** *)
 
 (* end of [trans2.sats] *)

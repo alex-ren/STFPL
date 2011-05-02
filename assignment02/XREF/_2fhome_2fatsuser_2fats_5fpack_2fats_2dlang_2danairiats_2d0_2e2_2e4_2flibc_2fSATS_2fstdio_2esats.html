@@ -1,0 +1,856 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2010 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the  terms of the  GNU General Public License as published by the Free
+** Software Foundation; either version 2.1, or (at your option) any later
+** version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see the  file COPYING.  If not, please write to the
+** Free Software Foundation,  51 Franklin Street, Fifth Floor, Boston, MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* author: Hongwei Xi (hwxi AT cs DOT bu DOT edu) *)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// This is essentially the first example of its kind:
+</span><span class="comment">// building API for C functions
+</span><span class="comment">//
+</span><span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX-2010-07-13:
+</span><span class="comment">// There are really two versions here: version-0 and version-1; the former
+</span><span class="comment">// is unsafe and prone to resource-leaks; it should be avoided once the programmer
+</span><span class="comment">// becomes comfortable with linear types in ATS.
+</span><span class="comment">//
+</span><span class="comment">// HX-2010-10-03:
+</span><span class="comment">// This design is overly complicated mostly for historic reasons; 
+</span><span class="comment">// it is _not_ suggested that this one be used as an example for learning how to
+</span><span class="comment">// set up interfaces for C functions
+</span><span class="comment">//
+</span><span class="comment">(* ****** ****** *)</span>
+
+<span class="extern">%{#
+#include "libc/CATS/stdio.cats"
+%}</span> <span class="comment">// end of [%{#]
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">TYPES <span class="keyword">=</span> "libc/sys/SATS/types.sats"</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="2179"><span class="stacstdec">whence_t <span class="keyword">=</span> $TYPES<span class="keyword">.</span>whence_t</span></a></span>
+<span class="keyword">macdef</span> <span class="neuexp">SEEK_SET <span class="keyword">=</span> $TYPES<span class="keyword">.</span>SEEK_SET</span>
+<span class="keyword">macdef</span> <span class="neuexp">SEEK_CUR <span class="keyword">=</span> $TYPES<span class="keyword">.</span>SEEK_CUR</span>
+<span class="keyword">macdef</span> <span class="neuexp">SEEK_END <span class="keyword">=</span> $TYPES<span class="keyword">.</span>SEEK_END</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">sortdef</span> <span class="staexp">fm <span class="keyword">=</span> file_mode</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="2361"><span class="stacstdec">bytes <span class="keyword">(</span>n<span class="keyword">:</span>int<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">@[</span>byte<span class="keyword">]</span><span class="keyword">[</span>n<span class="keyword">]</span></span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="2396"><span class="stacstdec">b0ytes <span class="keyword">(</span>n<span class="keyword">:</span>int<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">@[</span>byte?<span class="keyword">]</span><span class="keyword">[</span>n<span class="keyword">]</span></span></a></span>
+<span class="keyword">viewdef</span> <span class="staexp"><a name="2433"><span class="stacstdec">FILE_v <span class="keyword">(</span>m<span class="keyword">:</span>fm<span class="keyword">,</span> l<span class="keyword">:</span>addr<span class="keyword">)</span> <span class="keyword">=</span> FILE m @ l</span></a></span>
+<span class="keyword">viewdef</span> <span class="staexp"><a name="2476"><span class="stacstdec">FILEopt_v <span class="keyword">(</span>m<span class="keyword">:</span>fm<span class="keyword">,</span> l<span class="keyword">:</span>addr<span class="keyword">)</span> <span class="keyword">=</span> option_v <span class="keyword">(</span>FILE m @ l<span class="keyword">,</span> l <span class="keyword">&gt;</span> null<span class="keyword">)</span></span></a></span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">praxi</span> <a name="2563"><span class="dyncstdec"><span class="prfexp">stdin_isnot_null <span class="keyword">:</span> <span class="staexp"><span class="keyword">[</span>stdin_addr <span class="keyword">&gt;</span> null<span class="keyword">]</span> void</span></span></span></a>
+<span class="keyword">praxi</span> <a name="2613"><span class="dyncstdec"><span class="prfexp">stdout_isnot_null <span class="keyword">:</span> <span class="staexp"><span class="keyword">[</span>stdout_addr <span class="keyword">&gt;</span> null<span class="keyword">]</span> void</span></span></span></a>
+<span class="keyword">praxi</span> <a name="2665"><span class="dyncstdec"><span class="prfexp">stderr_isnot_null <span class="keyword">:</span> <span class="staexp"><span class="keyword">[</span>stderr_addr <span class="keyword">&gt;</span> null<span class="keyword">]</span> void</span></span></span></a>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="keyword">macdef</span> <span class="neuexp">EOF <span class="keyword">=</span> <span class="keyword">$extval</span> <span class="keyword">(</span>int<span class="keyword">,</span> "EOF"<span class="keyword">)</span></span> <span class="comment">// HX: it must be -1
+</span>
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+
+// void clearerr (FILE *stream);
+
+The function [clearerr] clears the end-of-file and error indicators for
+the stream pointed to by stream.
+
+*)</span>
+<span class="neuexp"><span class="keyword">symintr</span></span> clearerr
+<span class="keyword">fun</span> <a name="3042"><span class="dyncstdec">clearerr0 <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "mac#atslib_clearerr"
+<span class="neuexp"><span class="keyword">overload</span> clearerr <span class="keyword">with</span> clearerr0</span>
+<span class="keyword">fun</span> <a name="3134"><span class="dyncstdec">clearerr1 <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "mac#atslib_clearerr"
+<span class="neuexp"><span class="keyword">overload</span> clearerr <span class="keyword">with</span> clearerr1</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+
+// int fclose (FILE *stream);
+
+The [fclose] function will flush the stream pointed to by fp (writing any
+buffered output data using [fflush] and close the underlying file
+descriptor. The behaviour of [fclose] is undefined if the stream parameter
+is an illegal pointer, or is a descriptor already passed to a previous
+invocation of [fclose].
+
+Upon successful completion 0 is returned.  Otherwise, EOF is returned and
+the global variable errno is set to indicate the error.  In either case any
+further access (including another call to fclose()) to the stream results
+in undefined behaviour.
+
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fclose_err
+
+<span class="keyword">fun</span> <a name="3906"><span class="dyncstdec">fclose0_err
+  <span class="keyword">(</span>r<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_fclose_err"
+<span class="neuexp"><span class="keyword">overload</span> fclose_err <span class="keyword">with</span> fclose0_err</span>
+<span class="keyword">fun</span> <a name="4007"><span class="dyncstdec">fclose1_err
+  <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>FILE_v <span class="keyword">(</span>m<span class="keyword">,</span> l<span class="keyword">)</span> &gt;&gt; option_v <span class="keyword">(</span>FILE_v <span class="keyword">(</span>m<span class="keyword">,</span> l<span class="keyword">)</span><span class="keyword">,</span> i <span class="keyword">&lt;</span> 0<span class="keyword">)</span></span></span> <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">#[</span>i<span class="keyword">:</span>int <span class="keyword">|</span> i &lt;= 0<span class="keyword">]</span> int i</span></span></a>
+  <span class="keyword">=</span> "mac#atslib_fclose_err"
+<span class="neuexp"><span class="keyword">overload</span> fclose_err <span class="keyword">with</span> fclose1_err</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fclose_exn
+
+<span class="keyword">fun</span> <a name="4226"><span class="dyncstdec">fclose0_exn
+  <span class="keyword">(</span>r<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fclose_exn"
+<span class="neuexp"><span class="keyword">overload</span> fclose_exn <span class="keyword">with</span> fclose0_exn</span>
+<span class="keyword">fun</span> <a name="4328"><span class="dyncstdec">fclose1_exn
+  <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">FILE m @ l</span></span> <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "atslib_fclose_exn"
+<span class="neuexp"><span class="keyword">overload</span> fclose_exn <span class="keyword">with</span> fclose1_exn</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">//
+</span><span class="comment">// HX-2010-10-02:
+</span><span class="comment">// This one ignores all errors except EINTR, which forces
+</span><span class="comment">// a retry.
+</span><span class="comment">//
+</span><span class="keyword">fun</span> <a name="4613"><span class="dyncstdec">fclose1_loop <span class="comment">// implemented in $ATSHOME/libc/DATS/stdio.dats
+</span>  <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">FILE m @ l</span></span> <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="comment">// 0/neg : succ/fail
+</span><span class="comment">// end of [fclose1_loop]
+</span>
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="keyword">fun</span> <a name="4831"><span class="dyncstdec">fclose_stdin <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fclose_stdin"
+<span class="keyword">fun</span> <a name="4887"><span class="dyncstdec">fclose_stdout <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fclose_stdout"
+<span class="keyword">fun</span> <a name="4945"><span class="dyncstdec">fclose_stderr <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fclose_stderr"
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*  
+
+// int feof (FILE *stream);
+
+The function feof() returns a nonzero value if the end of the given file
+stream has been reached.
+
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> feof
+<span class="keyword">fun</span> <a name="5208"><span class="dyncstdec">feof0 <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_feof"
+<span class="neuexp"><span class="keyword">overload</span> feof <span class="keyword">with</span> feof0</span>
+<span class="keyword">fun</span> <a name="5283"><span class="dyncstdec">feof1 <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_feof"
+<span class="neuexp"><span class="keyword">overload</span> feof <span class="keyword">with</span> feof1</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// int ferror (FILE *stream);
+//
+The function [ferror] tests the error indicator for the stream pointed to by
+stream, returning non-zero if it is set.  The error indicator can only be
+reset by the [clearerr] function.
+
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> ferror
+<span class="keyword">fun</span> <a name="5663"><span class="dyncstdec">ferror0 <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_ferror"
+<span class="neuexp"><span class="keyword">overload</span> ferror <span class="keyword">with</span> ferror0</span>
+<span class="keyword">fun</span> <a name="5746"><span class="dyncstdec">ferror1 <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_ferror"
+<span class="neuexp"><span class="keyword">overload</span> ferror <span class="keyword">with</span> ferror1</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// int fflush (FILE *stream);
+//
+The function fflush forces a write of all user-space buffered data for the
+given output or update stream via the streams underlying write function.
+The open status of the stream is unaffected.
+//
+Upon successful completion 0 is returned.  Otherwise, EOF is returned and
+the global variable errno is set to indicate the error.
+//
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fflush_err
+<span class="keyword">fun</span> <a name="6281"><span class="dyncstdec">fflush0_err <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_fflush_err"
+<span class="neuexp"><span class="keyword">overload</span> fflush_err <span class="keyword">with</span> fflush0_err</span>
+<span class="keyword">fun</span> <a name="6380"><span class="dyncstdec">fflush1_err <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> w<span class="keyword">)</span></span></span> <span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>i<span class="keyword">:</span>int <span class="keyword">|</span> i &lt;= 0<span class="keyword">]</span> int i</span></span></a>
+  <span class="keyword">=</span> "mac#atslib_fflush_err"
+<span class="neuexp"><span class="keyword">overload</span> fflush_err <span class="keyword">with</span> fflush1_err</span>
+
+<span class="comment">//
+</span>
+<span class="neuexp"><span class="keyword">symintr</span></span> fflush_exn
+<span class="keyword">fun</span> <a name="6560"><span class="dyncstdec">fflush0_exn
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fflush_exn"
+<span class="neuexp"><span class="keyword">overload</span> fflush_exn <span class="keyword">with</span> fflush0_exn</span>
+<span class="keyword">fun</span> <a name="6662"><span class="dyncstdec">fflush1_exn <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> w<span class="keyword">)</span></span></span> <span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "atslib_fflush_exn"
+<span class="neuexp"><span class="keyword">overload</span> fflush_exn <span class="keyword">with</span> fflush1_exn</span>
+
+<span class="keyword">fun</span> <a name="6801"><span class="dyncstdec">fflush_stdout <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fflush_stdout"
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// int fgetc (FILE *stream)
+//
+[fgetc] reads the next character from stream and returns it as an
+unsigned char cast to an int, or EOF on end of file or error.
+//
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fgetc_err
+<span class="keyword">fun</span> <a name="7103"><span class="dyncstdec">fgetc0_err
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_fgetc_err"
+<span class="neuexp"><span class="keyword">overload</span> fgetc_err <span class="keyword">with</span> fgetc0_err</span>
+<span class="keyword">fun</span> <a name="7200"><span class="dyncstdec">fgetc1_err <span class="comment">// [EOF] must be a negative number!
+</span>  <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> r<span class="keyword">)</span></span></span> <span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>i<span class="keyword">:</span>int <span class="keyword">|</span> i &lt;= UCHAR_MAX<span class="keyword">]</span> int i</span></span></a>
+  <span class="keyword">=</span> "mac#atslib_fgetc_err"
+<span class="neuexp"><span class="keyword">overload</span> fgetc_err <span class="keyword">with</span> fgetc1_err</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// char *fgets (char *str, int size, FILE *stream);
+//
+[fgets] reads in at most one less than [size] characters from stream and
+stores them into the buffer pointed to by s.  Reading stops after an EOF or
+a newline.  If a newline is read, it is stored into the buffer.  A '\0' is
+stored after the last character in the buffer.
+
+*)</span>
+
+<span class="keyword">dataview</span>
+<span class="prfexp"><span class="staexp"><a name="7797"><span class="stacstdec">fgets_v <span class="keyword">(</span>sz<span class="keyword">:</span>int<span class="keyword">,</span> n0<span class="keyword">:</span> int<span class="keyword">,</span> addr<span class="keyword">,</span> addr<span class="keyword">)</span></span></a></span> <span class="keyword">=</span>
+  <span class="keyword">|</span> <span class="keyword">{</span><span class="staexp">l_buf<span class="keyword">:</span>addr</span><span class="keyword">}</span>
+    fgets_v_fail <span class="staexp"><span class="keyword">(</span>sz<span class="keyword">,</span> n0<span class="keyword">,</span> l_buf<span class="keyword">,</span> null<span class="keyword">)</span></span> <span class="keyword">of</span> <span class="staexp">b0ytes <span class="keyword">(</span>sz<span class="keyword">)</span> @ l_buf</span>
+  <span class="keyword">|</span> <span class="keyword">{</span><span class="staexp">n<span class="keyword">:</span>nat</span> <span class="keyword">|</span> <span class="staexp">n <span class="keyword">&lt;</span> n0</span><span class="keyword">}</span> <span class="keyword">{</span><span class="staexp">l_buf<span class="keyword">:</span>addr</span> <span class="keyword">|</span> <span class="staexp">l_buf <span class="keyword">&gt;</span> null</span><span class="keyword">}</span>
+    fgets_v_succ <span class="staexp"><span class="keyword">(</span>sz<span class="keyword">,</span> n0<span class="keyword">,</span> l_buf<span class="keyword">,</span> l_buf<span class="keyword">)</span></span> <span class="keyword">of</span> <span class="staexp">strbuf <span class="keyword">(</span>sz<span class="keyword">,</span> n<span class="keyword">)</span> @ l_buf</span></span>
+<span class="comment">// end of [fgets_v]
+</span>
+<span class="keyword">fun</span> <a name="8056"><span class="dyncstdec">fgets_err
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>n0<span class="keyword">:</span>int <span class="keyword">|</span> 0 <span class="keyword">&lt;</span> n0<span class="keyword">;</span> n0 &lt;= sz<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l_buf<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+    <span class="prfexp">pf_mod<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> r<span class="keyword">)</span></span></span>
+  <span class="keyword">,</span> <span class="prfexp">pf_buf<span class="keyword">:</span> <span class="staexp">b0ytes <span class="keyword">(</span>sz<span class="keyword">)</span> @ l_buf</span></span>
+  <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l_buf</span><span class="keyword">,</span> n0<span class="keyword">:</span> <span class="staexp">int n0</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>l<span class="keyword">:</span>addr<span class="keyword">]</span> <span class="keyword">(</span>fgets_v <span class="keyword">(</span>sz<span class="keyword">,</span> n0<span class="keyword">,</span> l_buf<span class="keyword">,</span> l<span class="keyword">)</span> <span class="keyword">|</span> ptr l<span class="keyword">)</span></span></span></a>
+  <span class="keyword">=</span> "mac#atslib_fgets_err"
+<span class="comment">// end of [fgets_err]
+</span>
+<span class="comment">//
+</span><span class="comment">// HX:
+</span><span class="comment">// this function returns an empty strbuf
+</span><span class="comment">// if EOF is reached but no character is read
+</span><span class="comment">//
+</span><span class="keyword">fun</span> <a name="8437"><span class="dyncstdec">fgets_exn
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">,</span>n0<span class="keyword">:</span>int <span class="keyword">|</span> 0 <span class="keyword">&lt;</span> n0<span class="keyword">;</span> n0 &lt;= sz<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l_buf<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+    <span class="prfexp">pf_mod<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> r<span class="keyword">)</span></span></span><span class="keyword">,</span>
+    <span class="prfexp">pf_buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>b0ytes <span class="keyword">(</span>sz<span class="keyword">)</span> @ l_buf &gt;&gt;
+     <span class="keyword">[</span>n<span class="keyword">:</span>nat <span class="keyword">|</span> n <span class="keyword">&lt;</span> n0<span class="keyword">]</span> strbuf <span class="keyword">(</span>sz<span class="keyword">,</span> n<span class="keyword">)</span> @ l_buf</span></span>
+  <span class="keyword">|</span> p<span class="keyword">:</span> <span class="staexp">ptr l_buf</span><span class="keyword">,</span> n0<span class="keyword">:</span> <span class="staexp">int n0</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fgets_exn"
+<span class="comment">// end of [fgets_exn]
+</span>
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// int fgetpos(FILE *stream, fpos_t *pos);
+//
+The [fgetpos] function stores the file position indicator of the given file
+stream in the given position variable. The position variable is of type
+fpos_t (which is defined in stdio.h) and is an object that can hold every
+possible position in a FILE. [fgetpos] returns zero upon success, and a
+non-zero value upon failure.
+//
+*)</span>
+
+<span class="keyword">abst@ype</span>
+<span class="staexp"><a name="9165"><span class="stacstdec">fpos_t <span class="keyword">=</span> <span class="keyword">$extype</span>"ats_fpos_type"</span></a></span>
+
+<span class="keyword">fun</span> <a name="9202"><span class="dyncstdec">fgetpos <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+  f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">,</span> pos<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>fpos_t? &gt;&gt; opt <span class="keyword">(</span>fpos_t<span class="keyword">,</span> i==0<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">#[</span>i<span class="keyword">:</span>int <span class="keyword">|</span> i &lt;= 0<span class="keyword">]</span> int <span class="keyword">(</span>i<span class="keyword">)</span></span></span></a> <span class="keyword">=</span> "mac#atslib_fgetpos"
+<span class="comment">// end of [fgetpos]
+</span>
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// int fileno (FILE* filp) ;
+// 
+The function fileno examines the argument stream and returns its integer
+descriptor. In case fileno detects that its argument is not a valid stream,
+it must return -1 and set errno to EBADF.
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fileno
+<span class="keyword">fun</span> <a name="9651"><span class="dyncstdec">fileno0 <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_fileno"
+<span class="neuexp"><span class="keyword">overload</span> fileno <span class="keyword">with</span> fileno0</span>
+<span class="keyword">fun</span> <a name="9734"><span class="dyncstdec">fileno1 <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_fileno"
+<span class="neuexp"><span class="keyword">overload</span> fileno <span class="keyword">with</span> fileno1</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// FILE *fopen (const char *path, const char *mode);
+//
+The fopen function opens the file whose name is the string pointed to by
+path and associates a stream with it.
+
+The argument mode points to a string beginning with one of the follow
+ing sequences (Additional characters may follow these sequences.):
+
+  r      Open  text  file  for  reading.  The stream is positioned at the
+         beginning of the file.
+
+  r+     Open for reading and writing.  The stream is positioned  at  the
+         beginning of the file.
+
+  w      Truncate  file  to  zero length or create text file for writing.
+         The stream is positioned at the beginning of the file.
+
+  w+     Open for reading and writing.  The file is created  if  it  does
+         not  exist, otherwise it is truncated.  The stream is positioned
+         at the beginning of the file.
+
+
+  a      Open for appending (writing at end of file).  The file is created
+         if it does not exist.  The stream is positioned at the end of the
+         file.
+
+  a+     Open for reading and appending (writing at end  of  file).   The
+         file  is created if it does not exist.  The stream is positioned
+         at the end of the file.
+
+*)</span>
+
+<span class="keyword">fun</span> <a name="11084"><span class="dyncstdec">fopen_err <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span>path<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> m<span class="keyword">:</span> <span class="staexp">file_mode m</span><span class="keyword">)</span>
+  <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>l<span class="keyword">:</span>addr<span class="keyword">]</span> <span class="keyword">(</span>FILEopt_v <span class="keyword">(</span>m<span class="keyword">,</span> l<span class="keyword">)</span> <span class="keyword">|</span> ptr l<span class="keyword">)</span></span></span></a>
+  <span class="keyword">=</span> "mac#atslib_fopen_err"
+<span class="comment">// end of [fopen_err]
+</span>
+<span class="keyword">fun</span> <a name="11237"><span class="dyncstdec">fopen_exn <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span>path<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> m<span class="keyword">:</span> <span class="staexp">file_mode m</span><span class="keyword">)</span>
+  <span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>l<span class="keyword">:</span>addr<span class="keyword">]</span> <span class="keyword">(</span>FILE m @ l <span class="keyword">|</span> ptr l<span class="keyword">)</span></span></span></a>
+  <span class="keyword">=</span> "atslib_fopen_exn"
+<span class="comment">// end of [fopen_exn]
+</span>
+<span class="keyword">fun</span> <a name="11384"><span class="dyncstdec">fopen_ref_exn <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span>path<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> m<span class="keyword">:</span> <span class="staexp">file_mode m</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">FILEref</span></span></a>
+  <span class="keyword">=</span> "atslib_fopen_exn"
+<span class="comment">// end of [fopen_ref_exn]
+</span>
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+
+// int fputc (int c, FILE *stream)
+
+The function [fputc] writes the given character [c] to the given output
+stream. The return value is the character, unless there is an error, in
+which case the return value is EOF.
+
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fputc_err
+<span class="keyword">fun</span> <a name="11810"><span class="dyncstdec">fputc0_err <span class="keyword">(</span>
+  c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">FILEref</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_fputc_err"
+<span class="neuexp"><span class="keyword">overload</span> fputc_err <span class="keyword">with</span> fputc0_err</span>
+<span class="keyword">fun</span> <a name="11919"><span class="dyncstdec">fputc1_err <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> w<span class="keyword">)</span></span></span> <span class="keyword">|</span> c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span>
+  <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>i<span class="keyword">:</span>int <span class="keyword">|</span> i &lt;= UCHAR_MAX<span class="keyword">]</span> int i</span></span></a>
+  <span class="keyword">=</span> "mac#atslib_fputc_err"
+<span class="neuexp"><span class="keyword">overload</span> fputc_err <span class="keyword">with</span> fputc1_err</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fputc_exn
+<span class="keyword">fun</span> <a name="12110"><span class="dyncstdec">fputc0_exn
+  <span class="keyword">(</span>c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fputc_exn"
+<span class="neuexp"><span class="keyword">overload</span> fputc_exn <span class="keyword">with</span> fputc0_exn</span>
+<span class="keyword">fun</span> <a name="12217"><span class="dyncstdec">fputc1_exn <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> w<span class="keyword">)</span></span></span> <span class="keyword">|</span> c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "atslib_fputc_exn"
+<span class="neuexp"><span class="keyword">overload</span> fputc_exn <span class="keyword">with</span> fputc1_exn</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+
+// int fputs (const char* s, FILE *stream)
+
+The function [fputs] writes a string to a file. it returns a non-negative
+number on success, or EOF on error.
+
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fputs_err
+<span class="keyword">fun</span> <a name="12595"><span class="dyncstdec">fputs0_err <span class="keyword">(</span>
+  str<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> fil<span class="keyword">:</span> <span class="staexp">FILEref</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_fputs_err"
+<span class="neuexp"><span class="keyword">overload</span> fputs_err <span class="keyword">with</span> fputs0_err</span>
+<span class="keyword">fun</span> <a name="12717"><span class="dyncstdec">fputs1_err <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> w<span class="keyword">)</span></span></span> <span class="keyword">|</span> str<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a>
+  <span class="keyword">=</span> "mac#atslib_fputs_err"
+<span class="neuexp"><span class="keyword">overload</span> fputs_err <span class="keyword">with</span> fputs1_err</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fputs_exn
+<span class="keyword">fun</span> <a name="12889"><span class="dyncstdec">fputs0_exn
+  <span class="keyword">(</span>str<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> fil<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fputs_exn"
+<span class="neuexp"><span class="keyword">overload</span> fputs_exn <span class="keyword">with</span> fputs0_exn</span>
+<span class="keyword">fun</span> <a name="13009"><span class="dyncstdec">fputs1_exn <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> w<span class="keyword">)</span></span></span> <span class="keyword">|</span> str<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "atslib_fputs_exn"
+<span class="neuexp"><span class="keyword">overload</span> fputs_exn <span class="keyword">with</span> fputs1_exn</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// size_t fread (void *ptr, size_t size, size_t nmemb, FILE *stream);
+//
+The function [fread] reads [nmemb] elements of data, each [size] bytes
+long, from the stream pointed to by stream, storing them at the location
+given by ptr. The return value is the number of items that are actually
+read.
+//
+[fread] does not distinguish between end-of-file and error, and callers
+must use [feof] and [ferror] to determine which occurred.
+//
+*)</span>
+
+<span class="keyword">fun</span> <a name="13658"><span class="dyncstdec">fread
+  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">:</span>pos<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n_buf<span class="keyword">:</span>int<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">,</span>nsz<span class="keyword">:</span>nat <span class="keyword">|</span> nsz &lt;= n_buf<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+    <span class="prfexp">pf_mod<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> r<span class="keyword">)</span></span></span>
+  <span class="keyword">,</span> <span class="prfexp">pf_mul<span class="keyword">:</span> <span class="staexp">MUL <span class="keyword">(</span>n<span class="keyword">,</span> sz<span class="keyword">,</span> nsz<span class="keyword">)</span></span></span>
+  <span class="keyword">|</span> buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>bytes <span class="keyword">(</span>n_buf<span class="keyword">)</span></span>
+  <span class="keyword">,</span> sz<span class="keyword">:</span> <span class="staexp">size_t sz</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span>
+  <span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span>
+  <span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">sizeLte n</span></span></a> <span class="keyword">=</span> "mac#atslib_fread"
+<span class="comment">// end of [fread]
+</span>
+<span class="keyword">fun</span> <a name="13919"><span class="dyncstdec">fread_byte
+  <span class="staexp"><span class="keyword">{</span>n_buf<span class="keyword">:</span>int<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat <span class="keyword">|</span> n &lt;= n_buf<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf_mod<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> r<span class="keyword">)</span></span></span> <span class="keyword">|</span> buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>bytes <span class="keyword">(</span>n_buf<span class="keyword">)</span></span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">sizeLte n</span></span></a> <span class="keyword">=</span> "atslib_fread_byte"
+<span class="comment">// end of [fread_byte]
+</span>
+<span class="keyword">fun</span> <a name="14122"><span class="dyncstdec">fread_byte_exn
+  <span class="staexp"><span class="keyword">{</span>n_buf<span class="keyword">:</span>int<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat <span class="keyword">|</span> n &lt;= n_buf<span class="keyword">}</span></span>
+  <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf_mod<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> r<span class="keyword">)</span></span></span> <span class="keyword">|</span> buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>bytes <span class="keyword">(</span>n_buf<span class="keyword">)</span></span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fread_byte_exn"
+<span class="comment">// end of [fread_byte_exn]
+</span>
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// FILE *freopen (const char *path, const char *mode, FILE *stream);
+//
+The [freopen] function opens the file whose name is the string pointed to by
+path and associates the stream pointed to by stream with it.  The original
+stream (if it exists) is closed.  The mode argument is used just as in the
+fopen function.  The primary use of the freopen function is to change the
+file associated with a standard text stream (stderr, stdin, or stdout).
+//
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> freopen_err
+
+<span class="keyword">fun</span> <a name="14868"><span class="dyncstdec">freopen0_err <span class="staexp"><span class="keyword">{</span>m_new<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+  path<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> m_new<span class="keyword">:</span> <span class="staexp">file_mode m_new</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">FILEref</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "mac#atslib_freopen_err"
+<span class="neuexp"><span class="keyword">overload</span> freopen_err <span class="keyword">with</span> freopen0_err</span>
+
+<span class="keyword">fun</span> <a name="15034"><span class="dyncstdec">freopen1_err
+  <span class="staexp"><span class="keyword">{</span>m_old<span class="keyword">,</span>m_new<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l0<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">FILE m_old @ l0</span></span>
+<span class="keyword">|</span> path<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> m<span class="keyword">:</span> <span class="staexp">file_mode m_new</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp">ptr l0</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>l<span class="keyword">:</span>addr <span class="keyword">|</span> l==null || l == l0<span class="keyword">]</span> <span class="keyword">(</span>FILEopt_v <span class="keyword">(</span>m_new<span class="keyword">,</span> l<span class="keyword">)</span> <span class="keyword">|</span> ptr l<span class="keyword">)</span></span></span></a>
+  <span class="keyword">=</span> "mac#atslib_freopen_err"
+<span class="neuexp"><span class="keyword">overload</span> freopen_err <span class="keyword">with</span> freopen1_err</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> freopen_exn
+<span class="keyword">fun</span> <a name="15313"><span class="dyncstdec">freopen0_exn <span class="staexp"><span class="keyword">{</span>m_new<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+  path<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> m_new<span class="keyword">:</span> <span class="staexp">file_mode m_new</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">FILEref</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_freopen_exn"
+<span class="neuexp"><span class="keyword">overload</span> freopen_exn <span class="keyword">with</span> freopen0_exn</span>
+<span class="keyword">fun</span> <a name="15478"><span class="dyncstdec">freopen1_exn <span class="staexp"><span class="keyword">{</span>m_old<span class="keyword">,</span>m_new<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l0<span class="keyword">:</span>addr<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf<span class="keyword">:</span> <span class="staexp">FILE m_old @ l0</span></span>
+<span class="keyword">|</span> path<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> m<span class="keyword">:</span> <span class="staexp">file_mode m_new</span><span class="keyword">,</span> p<span class="keyword">:</span> <span class="staexp">ptr l0</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">(</span>FILE m_new @ l0 <span class="keyword">|</span> void<span class="keyword">)</span></span></span></a> <span class="keyword">=</span> "atslib_freopen_exn"
+<span class="neuexp"><span class="keyword">overload</span> freopen_exn <span class="keyword">with</span> freopen1_exn</span>
+
+<span class="keyword">fun</span> <a name="15697"><span class="dyncstdec">freopen_stdin
+  <span class="keyword">(</span>s<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_freopen_stdin"
+<span class="comment">// end of [freopen_stdin]
+</span><span class="keyword">fun</span> <a name="15799"><span class="dyncstdec">freopen_stdout
+  <span class="keyword">(</span>s<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_freopen_stdout"
+<span class="comment">// end of [freopen_stdout]
+</span><span class="keyword">fun</span> <a name="15904"><span class="dyncstdec">freopen_stderr
+  <span class="keyword">(</span>s<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_freopen_stderr"
+<span class="comment">// end of [freopen_stderr]
+</span>
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+
+// int fseek (FILE *stream, long offset, int whence)
+
+The [fseek] function sets the file position indicator for the stream
+pointed to by stream.  The new position, measured in bytes, is obtained by
+adding offset bytes to the position specified by whence.  If whence is set
+to [SEEK_SET], [SEEK_CUR], or [SEEK_END], the offset is relative to the
+start of the file, the current position indicator, or end-of-file,
+respectively.  A successful call to the [fseek] function clears the end-
+of-file indicator for the stream and undoes any effects of the [ungetc]
+function on the same stream. Upon success, [fseek] returns 0. Otherwise,
+it returns -1.
+
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fseek_err
+<span class="keyword">fun</span> <a name="16735"><span class="dyncstdec">fseek0_err <span class="keyword">(</span>
+  f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> offset<span class="keyword">:</span> <span class="staexp">lint</span><span class="keyword">,</span> whence<span class="keyword">:</span> <span class="staexp">whence_t</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_fseek_err"
+<span class="neuexp"><span class="keyword">overload</span> fseek_err <span class="keyword">with</span> fseek0_err</span>
+<span class="keyword">fun</span> <a name="16867"><span class="dyncstdec">fseek1_err <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+  f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">,</span> offset<span class="keyword">:</span> <span class="staexp">lint</span><span class="keyword">,</span> whence<span class="keyword">:</span> <span class="staexp">whence_t</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_fseek_err"
+<span class="neuexp"><span class="keyword">overload</span> fseek_err <span class="keyword">with</span> fseek1_err</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> fseek_exn
+<span class="keyword">fun</span> <a name="17025"><span class="dyncstdec">fseek0_exn
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> offset<span class="keyword">:</span> <span class="staexp">lint</span><span class="keyword">,</span> whence<span class="keyword">:</span> <span class="staexp">whence_t</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fseek_exn"
+<span class="neuexp"><span class="keyword">overload</span> fseek_exn <span class="keyword">with</span> fseek0_exn</span>
+<span class="keyword">fun</span> <a name="17155"><span class="dyncstdec">fseek1_exn <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">,</span> offset<span class="keyword">:</span> <span class="staexp">lint</span><span class="keyword">,</span> whence<span class="keyword">:</span> <span class="staexp">whence_t</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_fseek_exn"
+<span class="neuexp"><span class="keyword">overload</span> fseek_exn <span class="keyword">with</span> fseek1_exn</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+
+// void fsetpos(FILE *stream, const fpos_t *pos);
+
+The [fsetpos] function moves the file position indicator for the given
+stream to a location specified by the position object. The type fpos_t is
+defined in stdio.h.  The return value for fsetpos() is zero upon success,
+non-zero on failure.
+
+*)</span>
+
+<span class="keyword">fun</span> <a name="17646"><span class="dyncstdec">fsetpos <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">,</span> pos<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>fpos_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_fsetpos"
+<span class="comment">// end of [fsetpos]
+</span>
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// long ftell (FILE *stream)
+//
+[ftell] returns the current offset of the given file stream upon on
+success. Otherwise, -1 is returned and the global variable errno is set to
+indicate the error.
+//
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> ftell_err
+<span class="keyword">fun</span> <a name="18022"><span class="dyncstdec">ftell0_err <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a> <span class="keyword">=</span> "mac#atslib_ftell_err"
+<span class="neuexp"><span class="keyword">overload</span> ftell_err <span class="keyword">with</span> ftell0_err</span>
+<span class="keyword">fun</span> <a name="18118"><span class="dyncstdec">ftell1_err <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">lint</span></span></a> <span class="keyword">=</span> "mac#atslib_ftell_err"
+<span class="neuexp"><span class="keyword">overload</span> ftell_err <span class="keyword">with</span> ftell1_err</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> ftell_exn
+<span class="keyword">fun</span> <a name="18240"><span class="dyncstdec">ftell0_exn <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">lint</span></span></a> <span class="keyword">=</span> "atslib_ftell_exn"
+<span class="neuexp"><span class="keyword">overload</span> ftell_exn <span class="keyword">with</span> ftell0_exn</span>
+<span class="keyword">fun</span> <a name="18336"><span class="dyncstdec">ftell1_exn <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">lint</span></span></a> <span class="keyword">=</span> "atslib_ftell_exn"
+<span class="neuexp"><span class="keyword">overload</span> ftell_exn <span class="keyword">with</span> ftell1_exn</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// size_t fwrite (const void *ptr,  size_t size,  size_t nmemb, FILE *stream);
+//
+The function [fwrite] writes [nmemb] elements of data, each [size] bytes
+long, to the stream pointed to by stream, obtaining them from the location
+given by [ptr]. The return value is the number of items that are actually
+written.
+//
+*)</span>
+
+<span class="keyword">fun</span> <a name="18819"><span class="dyncstdec">fwrite <span class="comment">// [sz]: the size of each item
+</span>  <span class="staexp"><span class="keyword">{</span>sz<span class="keyword">:</span>pos<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>bsz<span class="keyword">:</span>int<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">,</span>nsz<span class="keyword">:</span>nat <span class="keyword">|</span> nsz &lt;= bsz<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf_mod<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> w<span class="keyword">)</span></span></span><span class="keyword">,</span> <span class="prfexp">pf_mul<span class="keyword">:</span> <span class="staexp">MUL <span class="keyword">(</span>n<span class="keyword">,</span> sz<span class="keyword">,</span> nsz<span class="keyword">)</span></span></span>
+<span class="keyword">|</span> buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>bytes <span class="keyword">(</span>bsz<span class="keyword">)</span></span><span class="keyword">,</span> sz<span class="keyword">:</span> <span class="staexp">size_t sz</span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span><span class="keyword">,</span> fil<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">natLte n</span></span></a>
+  <span class="keyword">=</span> "mac#atslib_fwrite"
+<span class="comment">//
+</span><span class="comment">// HX: [fwrite_byte] is a special case of [fwrite]
+</span><span class="comment">//
+</span><span class="keyword">fun</span> <a name="19131"><span class="dyncstdec">fwrite_byte <span class="comment">// [fwrite_byte] only writes once
+</span>  <span class="staexp"><span class="keyword">{</span>bsz<span class="keyword">:</span>int<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat <span class="keyword">|</span> n &lt;= bsz<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf_mod<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> w<span class="keyword">)</span></span></span> <span class="keyword">|</span> buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>bytes <span class="keyword">(</span>bsz<span class="keyword">)</span></span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span><span class="keyword">,</span> fil<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">sizeLte n</span></span></a>
+  <span class="keyword">=</span> "atslib_fwrite_byte"
+<span class="comment">//
+</span><span class="comment">// HX: an uncatchable exception is thrown if not all bytes are written
+</span><span class="comment">//
+</span><span class="keyword">fun</span> <a name="19417"><span class="dyncstdec">fwrite_byte_exn
+  <span class="staexp"><span class="keyword">{</span>bsz<span class="keyword">:</span>int<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat <span class="keyword">|</span> n &lt;= bsz<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>
+  <span class="prfexp">pf_mod<span class="keyword">:</span> <span class="staexp">file_mode_lte <span class="keyword">(</span>m<span class="keyword">,</span> w<span class="keyword">)</span></span></span> <span class="keyword">|</span> buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>bytes <span class="keyword">(</span>bsz<span class="keyword">)</span></span><span class="keyword">,</span> n<span class="keyword">:</span> <span class="staexp">size_t n</span><span class="keyword">,</span> fil<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "atslib_fwrite_byte_exn"
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// perror - print a system error message
+//
+The routine [perror(s)] produces a message on the standard error output,
+describing the last error encountered during a call to a system or library
+function.  First (if s is not NULL and *s is not NULL) the argument string
+s is printed, followed by a colon and a blank.  Then the message and a
+newline.
+//
+*)</span>
+
+<span class="keyword">fun</span> <a name="20013"><span class="dyncstdec">perror
+  <span class="keyword">(</span>msg<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_perror"
+<span class="comment">// end of [perror]
+</span>
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="keyword">macdef</span> <span class="neuexp">getc <span class="keyword">=</span> fgetc_err</span>
+<span class="keyword">macdef</span> <span class="neuexp">putc <span class="keyword">=</span> fputc_err</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="keyword">fun</span> <a name="20248"><span class="dyncstdec">getchar <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "atslib_getchar"
+<span class="keyword">fun</span> <a name="20289"><span class="dyncstdec">getchar1
+  <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>i<span class="keyword">:</span>int <span class="keyword">|</span> i &lt;= UCHAR_MAX<span class="keyword">]</span> int i</span></span></a> <span class="keyword">=</span> "atslib_getchar"
+<span class="comment">// end of [getchar1]
+</span>
+<span class="keyword">fun</span> <a name="20383"><span class="dyncstdec">putchar <span class="keyword">(</span>c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "atslib_putchar"
+<span class="keyword">fun</span> <a name="20431"><span class="dyncstdec">putchar1
+  <span class="keyword">(</span>c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>i<span class="keyword">:</span>int <span class="keyword">|</span> i &lt;= UCHAR_MAX<span class="keyword">]</span> int i</span></span></a> <span class="keyword">=</span> "atslib_putchar"
+<span class="comment">// end of [putchar1]
+</span>
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">// [puts] puts a newline at the end
+</span><span class="keyword">fun</span> <a name="20620"><span class="dyncstdec">puts_err
+  <span class="keyword">(</span>inp<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "atslib_puts_err"
+<span class="keyword">fun</span> <a name="20683"><span class="dyncstdec">puts_exn
+  <span class="keyword">(</span>inp<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_puts_exn"
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="keyword">fun</span> <a name="20805"><span class="dyncstdec">remove_err
+  <span class="keyword">(</span>inp<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_remove_err"
+<span class="keyword">fun</span> <a name="20876"><span class="dyncstdec">remove_exn
+  <span class="keyword">(</span>inp<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_remove_exn"
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="keyword">fun</span> <a name="21002"><span class="dyncstdec">rename_err <span class="keyword">(</span>
+  oldpath<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> newpath<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_rename_err"
+
+<span class="keyword">fun</span> <a name="21105"><span class="dyncstdec">rename_exn <span class="keyword">(</span>
+  oldpath<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span><span class="keyword">,</span> newpath<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>READ<span class="keyword">(</span>string<span class="keyword">)</span></span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_rename_exn"
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">//
+</span><span class="comment">// HX: [rewind] generates no error
+</span><span class="comment">//
+</span><span class="neuexp"><span class="keyword">symintr</span></span> rewind
+<span class="keyword">fun</span> <a name="21318"><span class="dyncstdec">rewind0 <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span>fil<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "mac#atslib_rewind"
+<span class="neuexp"><span class="keyword">overload</span> rewind <span class="keyword">with</span> rewind0</span>
+<span class="keyword">fun</span> <a name="21413"><span class="dyncstdec">rewind1 <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>fil<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "atslib_rewind"
+<span class="neuexp"><span class="keyword">overload</span> rewind <span class="keyword">with</span> rewind1</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="keyword">fun</span> <a name="21556"><span class="dyncstdec">tmpfile_err <span class="keyword">(</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>l<span class="keyword">:</span>addr<span class="keyword">]</span> <span class="keyword">(</span>FILEopt_v <span class="keyword">(</span>rw<span class="keyword">,</span> l<span class="keyword">)</span> <span class="keyword">|</span> ptr l<span class="keyword">)</span></span></span></a>
+  <span class="keyword">=</span> "mac#atslib_tmpfile_err"
+<span class="keyword">fun</span> <a name="21646"><span class="dyncstdec">tmpfile_exn <span class="keyword">(</span>
+<span class="keyword">)</span> <span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp"><span class="keyword">[</span>l<span class="keyword">:</span>addr<span class="keyword">]</span> <span class="keyword">(</span>FILE_v <span class="keyword">(</span>rw<span class="keyword">,</span> l<span class="keyword">)</span> <span class="keyword">|</span> ptr l<span class="keyword">)</span></span></span></a>
+  <span class="keyword">=</span> "atslib_tmpfile_exn"
+<span class="keyword">fun</span> <a name="21733"><span class="dyncstdec">tmpfile_ref_exn <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">FILEref</span></span></a> <span class="keyword">=</span> "atslib_tmpfile_exn"
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(*
+//
+// int ungetc(int c, FILE *stream);
+//
+[ungetc] pushes [c] back to stream, cast to unsigned char, where it is
+available for subsequent read operations.  Pushed-back characters will be
+returned in reverse order; only one pushback is guaranteed.
+//
+*)</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> ungetc_err
+<span class="keyword">fun</span> <a name="22124"><span class="dyncstdec">ungetc0_err
+  <span class="keyword">(</span>c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_ungetc_err"
+<span class="neuexp"><span class="keyword">overload</span> ungetc_err <span class="keyword">with</span> ungetc0_err</span>
+<span class="keyword">fun</span> <a name="22234"><span class="dyncstdec">ungetc1_err <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span>c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;&gt;</span> <span class="staexp"><span class="keyword">[</span>i<span class="keyword">:</span>int <span class="keyword">|</span> i &lt;= UCHAR_MAX<span class="keyword">]</span> int i</span></span></a>
+  <span class="keyword">=</span> "mac#atslib_ungetc_err"
+<span class="neuexp"><span class="keyword">overload</span> ungetc_err <span class="keyword">with</span> ungetc1_err</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> ungetc_exn
+<span class="keyword">fun</span> <a name="22400"><span class="dyncstdec">ungetc0_exn <span class="keyword">(</span>c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "atslib_ungetc_exn"
+<span class="neuexp"><span class="keyword">overload</span> ungetc_exn <span class="keyword">with</span> ungetc0_exn</span>
+<span class="keyword">fun</span> <a name="22511"><span class="dyncstdec">ungetc1_exn <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="keyword">!</span><span class="staexp">exn</span><span class="keyword">&gt;</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "atslib_ungetc_exn"
+<span class="neuexp"><span class="keyword">overload</span> ungetc_exn <span class="keyword">with</span> ungetc1_exn</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="keyword">sta</span> <span class="staexp">BUFSIZ <span class="keyword">:</span> int</span>
+<span class="keyword">praxi</span> <a name="22702"><span class="dyncstdec"><span class="prfexp">BUFSIZ_gtez <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">[</span>BUFSIZ &gt;= 0<span class="keyword">]</span> void</span></span></span></a>
+<span class="keyword">macdef</span> <span class="neuexp">BUFSIZ <span class="keyword">=</span> <span class="keyword">$extval</span> <span class="keyword">(</span>int<span class="keyword">(</span>BUFSIZ<span class="keyword">)</span><span class="keyword">,</span> "BUFSIZ"<span class="keyword">)</span></span>
+
+<span class="keyword">abst@ype</span> <span class="staexp"><a name="22795"><span class="stacstdec">bufmode_t <span class="keyword">=</span> int</span></a></span>
+<span class="keyword">macdef</span> <span class="neuexp">_IOFBF <span class="keyword">=</span> <span class="keyword">$extval</span> <span class="keyword">(</span>bufmode_t<span class="keyword">,</span> "_IOFBF"<span class="keyword">)</span></span> <span class="comment">// fully buffered
+</span><span class="keyword">macdef</span> <span class="neuexp">_IOLBF <span class="keyword">=</span> <span class="keyword">$extval</span> <span class="keyword">(</span>bufmode_t<span class="keyword">,</span> "_IOLBF"<span class="keyword">)</span></span> <span class="comment">// line buffered
+</span><span class="keyword">macdef</span> <span class="neuexp">_IONBF <span class="keyword">=</span> <span class="keyword">$extval</span> <span class="keyword">(</span>bufmode_t<span class="keyword">,</span> "_IONBF"<span class="keyword">)</span></span> <span class="comment">// no buffering
+</span>
+<span class="neuexp"><span class="keyword">symintr</span></span> setbuf_null
+<span class="keyword">fun</span> <a name="23025"><span class="dyncstdec">setbuf0_null <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "mac#atslib_setbuf_null"
+<span class="neuexp"><span class="keyword">overload</span> setbuf_null <span class="keyword">with</span> setbuf0_null</span>
+<span class="keyword">fun</span> <a name="23127"><span class="dyncstdec">setbuf1_null <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "mac#atslib_setbuf_null"
+<span class="neuexp"><span class="keyword">overload</span> setbuf_null <span class="keyword">with</span> setbuf1_null</span>
+
+<span class="comment">//
+</span><span class="comment">// HX-2010-10-03:
+</span><span class="comment">// the buffer can be freed only after it is no longer used by
+</span><span class="comment">// the stream to which it is attached!!!
+</span><span class="comment">//
+</span><span class="neuexp"><span class="keyword">symintr</span></span> setbuffer
+<span class="keyword">fun</span> <a name="23382"><span class="dyncstdec">setbuffer0 <span class="staexp"><span class="keyword">{</span>n1<span class="keyword">,</span>n2<span class="keyword">:</span>nat <span class="keyword">|</span> n2 &lt;= n1<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf_buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>b0ytes n1 @ l</span></span> <span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> p_buf<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">,</span> n2<span class="keyword">:</span> <span class="staexp">size_t n2</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "mac#atslib_setbuffer"
+<span class="neuexp"><span class="keyword">overload</span> setbuffer <span class="keyword">with</span> setbuffer0</span>
+<span class="keyword">fun</span> <a name="23566"><span class="dyncstdec">setbuffer1 <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n1<span class="keyword">,</span>n2<span class="keyword">:</span>nat <span class="keyword">|</span> n2 &lt;= n1<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf_buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>b0ytes n1 @ l</span></span> <span class="keyword">|</span> f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">,</span> p_buf<span class="keyword">:</span> <span class="staexp">ptr l</span><span class="keyword">,</span> n2<span class="keyword">:</span> <span class="staexp">size_t n2</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+  <span class="keyword">=</span> "mac#atslib_setbuffer"
+<span class="neuexp"><span class="keyword">overload</span> setbuffer <span class="keyword">with</span> setbuffer1</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> setlinebuf
+<span class="keyword">fun</span> <a name="23777"><span class="dyncstdec">setlinebuf0 <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "mac#atslib_setlinebuf"
+<span class="neuexp"><span class="keyword">overload</span> setlinebuf <span class="keyword">with</span> setlinebuf0</span>
+<span class="keyword">fun</span> <a name="23875"><span class="dyncstdec">setlinebuf1 <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a> <span class="keyword">=</span> "mac#atslib_setlinebuf"
+<span class="neuexp"><span class="keyword">overload</span> setlinebuf <span class="keyword">with</span> setlinebuf1</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> setvbuf_null
+<span class="keyword">fun</span> <a name="24002"><span class="dyncstdec">setvbuf0_null
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> mode<span class="keyword">:</span> <span class="staexp">bufmode_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_setvbuf_null"
+<span class="neuexp"><span class="keyword">overload</span> setvbuf_null <span class="keyword">with</span> setvbuf0_null</span>
+<span class="keyword">fun</span> <a name="24126"><span class="dyncstdec">setvbuf1_null <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span>
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">,</span> mode<span class="keyword">:</span> <span class="staexp">bufmode_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span></span></a> <span class="keyword">=</span> "mac#atslib_setvbuf_null"
+<span class="neuexp"><span class="keyword">overload</span> setvbuf_null <span class="keyword">with</span> setvbuf1_null</span>
+
+<span class="neuexp"><span class="keyword">symintr</span></span> setvbuf
+<span class="keyword">fun</span> <a name="24274"><span class="dyncstdec">setvbuf0 <span class="staexp"><span class="keyword">{</span>n1<span class="keyword">,</span>n2<span class="keyword">:</span>nat <span class="keyword">|</span> n2 &lt;= n1<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf_buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>b0ytes<span class="keyword">(</span>n1<span class="keyword">)</span> @ l</span></span> <span class="keyword">|</span> fil<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> mode<span class="keyword">:</span> <span class="staexp">bufmode_t</span><span class="keyword">,</span> n2<span class="keyword">:</span> <span class="staexp">size_t n2</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span></span></a>
+  <span class="keyword">=</span> "mac#ats_setvbuf"
+<span class="neuexp"><span class="keyword">overload</span> setvbuf <span class="keyword">with</span> setvbuf0</span>
+<span class="keyword">fun</span> <a name="24452"><span class="dyncstdec">setvbuf1 <span class="staexp"><span class="keyword">{</span>m<span class="keyword">:</span>fm<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>n1<span class="keyword">,</span>n2<span class="keyword">:</span>nat <span class="keyword">|</span> n2 &lt;= n1<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>l<span class="keyword">:</span>addr<span class="keyword">}</span></span>
+  <span class="keyword">(</span><span class="prfexp">pf_buf<span class="keyword">:</span> <span class="staexp"><span class="keyword">!</span>b0ytes<span class="keyword">(</span>n1<span class="keyword">)</span> @ l</span></span> <span class="keyword">|</span> fil<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>FILE m</span><span class="keyword">,</span> mode<span class="keyword">:</span> <span class="staexp">bufmode_t</span><span class="keyword">,</span> n2<span class="keyword">:</span> <span class="staexp">size_t n2</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span></span></a>
+  <span class="keyword">=</span> "mac#ats_setvbuf"
+<span class="neuexp"><span class="keyword">overload</span> setvbuf <span class="keyword">with</span> setvbuf1</span>
+
+<span class="comment">// ------------------------------------------------
+</span>
+<span class="comment">(* end of [stdio.sats] *)</span>
+</pre>
+</body>
+</html>

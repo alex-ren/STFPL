@@ -84,8 +84,8 @@ SOURCES := \
   test.dats \
   trans2.sats \
   trans2.dats \
-#   trans_cpp.sats \
-#   trans_cpp.dats \
+  trans_cpp.sats \
+  trans_cpp.dats \
 
 OBJECTS := $(call atsobjname,$(SOURCES))
 
@@ -179,7 +179,7 @@ xref::
 	$(ATSOPT) --posmark_xref=XREF -d trans_closure.dats > xref_trans_closure_dats.html
 	$(ATSOPT) --posmark_xref=XREF -d absyn1.dats > xref_absyn1_dats.html
 	$(ATSOPT) --posmark_xref=XREF -d libfunctions.dats > xref_libfunctions_dats.html
-#	$(ATSOPT) --posmark_xref=XREF -d trans2.dats > xref_trans2_dats.html
-#	$(ATSOPT) --posmark_xref=XREF -d trans_cpp.dats > xref_trans_cpp_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d trans2.dats > xref_trans2_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d trans_cpp.dats > xref_trans_cpp_dats.html
 
 

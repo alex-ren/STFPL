@@ -44,44 +44,54 @@ main () = () where {
   //   print "Please input a program written in STFPL:"; print_newline ()
   // end // end of [val]
   val prog = parse_from_stdin ()
-  val () = print "\n\nbefore type checking ==================================\n\n"
-  val () = print "prog =\n"
-  val () = fprint_e0xp (stdout_ref, prog)
-  val () = print_newline ()
+  val () = fprint (stderr_ref,
+      "\n\nbefore type checking ==================================\n\n")
+  val () = fprint (stderr_ref, "prog =\n")
+  val () = fprint_e0xp (stderr_ref, prog)
+  val () = fprint (stderr_ref, "\n")
 
-  val () = print "\n\nafter type inference ==================================\n\n"
+  val () = fprint (stderr_ref, 
+         "\n\nafter type inference ==================================\n\n")
   val (prog1, err) = trans1_exp (prog)
-  val () = fprint_e1xp (stdout_ref, prog1)
-  val () = print_newline ()
+  val () = fprint_e1xp (stderr_ref, prog1)
+  val () = fprint (stderr_ref, "\n")
   
   val () = if err <> 0 then let
     val () = print "Type error exists, compiler exits\n"
   in end else let
     
-    val () = print "\n\nafter closure formation ==================================\n\n"
+    val () = fprint (stderr_ref, 
+        "\n\nafter closure formation ==================================\n\n")
     val prog_clo = trans_closure (prog1)
-    val () = fprint_e1xp (stdout_ref, prog_clo)
-    val () = print_newline ()
+    val () = fprint_e1xp (stderr_ref, prog_clo)
+  val () = fprint (stderr_ref, "\n")
 
 
-    // val () = print "\n\ninterp0 ==================================\n\n"
+    // val () = fprint (stderr_ref, 
+    //   "\n\ninterp0 ==================================\n\n")
     // val v = interp0_exp(prog)
-    // val () = print_newline ()
-    // val () = fprint_v0al (stdout_ref, v)
-    // val () = print_newline ()
+    // val () = fprint (stderr_ref, "\n")
+    // val () = fprint_v0al (stderr_ref, v)
+    // val () = fprint (stderr_ref, "\n")
 
-    // val () = print "\n\ninterp1 ==================================\n\n"
+    // val () = fprint (stderr_ref, 
+    //      "\n\ninterp1 ==================================\n\n")
     // val v = interp1_exp(prog1)
-    // val () = print_newline ()
-    // val () = fprint_v1al (stdout_ref, v)
-    // val () = print_newline ()
+    // val () = fprint (stderr_ref, "\n")
+    // val () = fprint_v1al (stderr_ref, v)
+    // val () = fprint (stderr_ref, "\n")
 
-    // val () = print "\n\ntransform to IR ==================================\n\n"
+    val () = fprint (stderr_ref, 
+          "\n\ntransform to IR ==================================\n\n")
     val (irs, fns) = trans2_exp (prog1)
+    val () = fprint (stderr_ref, 
+        "\n\nmain function ==================================\n\n")
+    val () = fprint_instrlst (stderr_ref, irs)
+    val () = fprint (stderr_ref, "\n")
 
     val os = trans_cpp (irs, fns)
     val () = print_ostream (os)
-    val () = print_newline ()
+    val () = fprint (stderr_ref, "\n")
   in end
 } // end of [main]
 

@@ -43,7 +43,9 @@ end
 fun trans2_typlst (t1yplst: t1yplst): t2yplst =
   list0_map_fun (t1yplst, lam x => trans2_typ x)
 
-implement trans2_typ (t1yp) =
+implement trans2_typ (t1yp) = let
+  val () = fprint_string (stderr_ref, "\n========================trans2_typ\n")
+in
   case+ t1yp of
   | T1YPbase sym => (
     case+ 0 of 
@@ -66,6 +68,8 @@ implement trans2_typ (t1yp) =
                     ): t2yplst
  
     val t2yp_args = cons (T2YPenv, t2yp_args)  // add an extra type for first parameter
+    val () = fprint_string (stderr_ref, "\nnargs is " + 
+      tostring_int !nargs_ref)
   in
     T2YPclo (!nargs_ref + 1, t2yp_args, t2yp_ret)
   end
@@ -78,6 +82,7 @@ implement trans2_typ (t1yp) =
   end
   | _ => ETRACE_MSG_OPR ("trans2_typ cannot process such t1yp\n", 
           ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+end
 
 implement make_valprim (node, typ) = '{
   valprim_node = node,
@@ -103,10 +108,10 @@ fun instr_reverse (instrs: instrlst): instrlst = let
       val iloc = instr.instr_loc
     in
       case+ inode of
-      | INSTRcond (tmpv, vp, ins_then, ins_else) => let
+      | INSTRcond (tmpv, typ, vp, ins_then, ins_else) => let
         val ins_then1 = instr_reverse (ins_then)
         val ins_else1 = instr_reverse (ins_else)
-        val inode1 = INSTRcond (tmpv, vp, ins_then1, ins_else1)
+        val inode1 = INSTRcond (tmpv, typ, vp, ins_then1, ins_else1)
         val instr1 = instr_make (iloc, inode1)
         val accu = instr1 :: accu
       in
@@ -122,7 +127,7 @@ end
 local  // tmpvar
 assume tmpvar_t = symbol_t
 val tmpvar_count = ref<int> (0)
-val tmpvar_prefix = "__v_": string
+val tmpvar_prefix = "v_": string
 in
 
 implement tmpvar_void = symbol_make_name ("dummy_void")
@@ -208,15 +213,6 @@ implement funent_get_body (ent) = ent.funent_body
 implement funent_get_ret (ent) = ent.funent_ret
 
 
-implement funent_make_label (fl, nargs, args, body, ret, env) = 
-  '{funent_fun = fl,
-    funent_narg = nargs,
-    funent_args = args,
-    funent_body = body,
-    funent_ret = ret,
-    funent_env = env
-    }
-
 (* ***** ****** *)
 
 symintr funlab_make
@@ -229,11 +225,10 @@ overload funlab_make with funlab_make_name
 
 (* ***** ****** *)
 
-fun funent_make (
-  label: funlab, narg: int, args: valprimlst, body: instrlst, 
-  ret: valprim, env: valprimlst): funent = '{
-  funent_fun = label,
-  funent_narg = narg,
+implement funent_make (
+  fl, nargs, args, body, ret, env) = '{
+  funent_fun = fl,
+  funent_narg = nargs,
   funent_args = args,
   funent_body = body,
   funent_ret = ret,
@@ -251,7 +246,7 @@ local
 val funlab_count = ref<int> (0)
 assume funlab_t = symbol_t
 val fun_table = ref<symenv_t (funent)> (symenv_make ())
-val fl_prefix = "__f_": string
+val fl_prefix = "f_": string
 in
 
 implement funlab_get_name (fl) = symbol_get_name (fl)
@@ -305,9 +300,9 @@ fun instr_add_call (loc: loc, tmpv: tmpvar,
 in
 end  // end of [instr_add_call]
 
-fun instr_add_cond (loc: loc, tmpv: tmpvar, vp_test: valprim, 
+fun instr_add_cond (loc: loc, tmpv: tmpvar, typ: t2yp, vp_test: valprim, 
   instr1: instrlst, instr2: instrlst, res: &instrlst): void = let
-  val ins_node = INSTRcond (tmpv, vp_test, instr1, instr2)
+  val ins_node = INSTRcond (tmpv, typ, vp_test, instr1, instr2)
   val ins = instr_make (loc, ins_node)
   val () = instr_add (res, ins)
 in
@@ -320,9 +315,9 @@ fun instr_add_move (loc: loc, tmpv: tmpvar, vp: valprim, res: &instrlst): void =
 in
 end  // end of [instr_add_move]
 
-fun instr_add_opr (loc: loc, tmpv: tmpvar, opr: opr, 
+fun instr_add_opr (loc: loc, tmpv: tmpvar, typ: t2yp, opr: opr, 
   vps: valprimlst, res: &instrlst): void = let
-  val ins_node = INSTRopr (tmpv, opr, vps)
+  val ins_node = INSTRopr (tmpv, typ, opr, vps)
   val ins = instr_make (loc, ins_node)
   val () = instr_add (res, ins)
 in
@@ -336,9 +331,9 @@ fun instr_add_tup (loc: loc, tmpv: tmpvar,
 in
 end  // end of [instr_add_tup]
 
-fun instr_add_proj (loc: loc, tmpv: tmpvar,
+fun instr_add_proj (loc: loc, tmpv: tmpvar, typ: t2yp,
   vp: valprim, pos: int, res: &instrlst): void = let
-  val ins_node = INSTRproj (tmpv, vp, pos)
+  val ins_node = INSTRproj (tmpv, typ, vp, pos)
   val ins = instr_make (loc, ins_node)
   val () = instr_add (res, ins)
 in
@@ -471,7 +466,8 @@ fun aux_exp_fix_lab
   
   val ncloargs = v1arlst_set_tmpvar (cloargs, 0)
   val cloargs_valprims3 = v1arlst_2_valprimlst (cloargs)
-  val ent = funent_make (fl, nargs, args_valprims, body_res, 
+  // add 1 to include the env though it's not in args_valprims
+  val ent = funent_make (fl, nargs + 1, args_valprims, body_res, 
                                vp_ret, cloargs_valprims3)
   val () = funent_add (fl, ent)
 
@@ -487,6 +483,7 @@ end
 fun aux_exp_lam_lab (
   loc: loc, v_args: v1arlst, e_body: e1xp, fl: funlab,
   cloargs: v1arlst, res: &instrlst, init_res: instrlst): valprim = let
+  val () = printf ("aux_exp_lam_lab\n", @())
 
   val cloargs_valprims = v1arlst_2_valprimlst (cloargs)
   val fl_nam = funlab_get_name (fl)
@@ -508,7 +505,8 @@ fun aux_exp_lam_lab (
   val ncloargs = v1arlst_set_tmpvar (cloargs, 0)
   val cloargs_valprims2 = v1arlst_2_valprimlst (cloargs)
 
-  val ent = funent_make (fl, nargs, args_valprims, body_res, vp_ret, cloargs_valprims2)
+  // add 1
+  val ent = funent_make (fl, nargs + 1, args_valprims, body_res, vp_ret, cloargs_valprims2)
   val () = funent_add (fl, ent)
 
   // Caution: turn it back
@@ -516,7 +514,8 @@ fun aux_exp_lam_lab (
 
   val t2yp_args = list0_map_fun<valprim><t2yp> (args_valprims, lam x => x.valprim_typ)
   val t2yp_ret = vp_ret.valprim_typ
-  val f_clo_typ = T2YPclo (nargs, cons (T2YPenv, t2yp_args), t2yp_ret)
+  // add extra T2YPenv
+  val f_clo_typ = T2YPclo (nargs + 1, cons (T2YPenv, t2yp_args), t2yp_ret)
   val f_clo_node = VPclo (f_tmpvar, fl, cloargs_valprims)
   val f_clo = make_valprim (f_clo_node, f_clo_typ)
 in
@@ -592,15 +591,19 @@ fun aux_exp_ret_if (loc: loc, e_test: e1xp, e_then: e1xp, oe_else: e1xpopt,
     )
   val () = instr_add_move (loc_else, tmp_ret, v_else, res_else)
   
-  val () = instr_add_cond (loc, tmp_ret, v_test, res_then, res_else, res)
+  val () = instr_add_cond (loc, tmp_ret, v_then.valprim_typ, 
+                            v_test, res_then, res_else, res)
 in
   make_valprim (VPtmp (tmp_ret), v_then.valprim_typ)
 end
 
-fun aux_exp_ret_opr (loc: loc, opr: opr, exps: e1xplst, 
-  res: &instrlst, tmp_ret: tmpvar): valprim = let
+fun aux_exp_ret_opr (loc: loc, opr: opr, t1yp: t1yp(*return typ*), 
+  exps: e1xplst, res: &instrlst, tmp_ret: tmpvar): valprim = let
   val vps = auxlst_exp (exps, res)
-  val () = instr_add_opr (loc, tmp_ret, opr, vps, res)
+
+  val t2yp = trans2_typ (t1yp)
+
+  val () = instr_add_opr (loc, tmp_ret, t2yp, opr, vps, res)
 
   val opr_typ_opt = libOprTypFind (opr)
   val opr_typ = (case+ opr_typ_opt of
@@ -631,7 +634,7 @@ fun aux_exp_v1aldeclst_rec_r1 (v1aldecs: v1aldeclst,
     val env_opt = e1xp_node_fun_get_env (e_node)
     val () = (case+ env_opt of
       | Some0 env => let
-        // keep the original content
+        // save the original content
         val cloargs_valprims_old = v1arlst_2_valprimlst (env)
         // set to new ones
         val ncloargs = v1arlst_set_env (env, 0)
@@ -669,13 +672,17 @@ fun aux_exp_v1aldeclst_rec_r2 (v1aldecs: v1aldeclst,
     val v = v1aldec.v1aldec_var
     val e = v1aldec.v1aldec_def
     val e_node = e.e1xp_node
-    val is_fun = e1xp_node_is_fun (e_node)
-    val vp = (if is_fun = true then let
-        val fl = aux_v1ar_get_fl (v)
-        val vp_fun = aux_exp_fun (e, fl, res, init_res)
-      in
-        vp_fun
-      end else aux_exp_ret (e, res, tmpvar_new (v))
+    val fun_env_opt = e1xp_node_fun_get_env (e_node)
+    val vp = (case+ fun_env_opt of
+        | Some0 env => let
+          val fl = aux_v1ar_get_fl (v)
+
+          // process the function
+          val vp_fun = aux_exp_fun (e, fl, res, init_res)
+        in
+          vp_fun
+        end 
+        | None0 () => aux_exp_ret (e, res, tmpvar_new (v))
     ): valprim
   in
     cons (vp, aux_exp_v1aldeclst_rec_r2 (v1aldecs1, res, init_res))
@@ -706,7 +713,9 @@ in
   ()
 end
 
-fun aux_exp_v1aldeclst_norec (v1aldecs: v1aldeclst, res: &instrlst): void =
+fun aux_exp_v1aldeclst_norec (v1aldecs: v1aldeclst, res: &instrlst): void = let
+  val () = printf ("aux_exp_v1aldeclst_norec\n", @())
+in
   case+ v1aldecs of
   | cons (v1aldec, v1aldecs1) => let
     val v = v1aldec.v1aldec_var
@@ -714,17 +723,24 @@ fun aux_exp_v1aldeclst_norec (v1aldecs: v1aldeclst, res: &instrlst): void =
     val e_node = e.e1xp_node
     val vp = 
       if e1xp_node_is_fun (e_node) = true then let
+        val () = printf ("aux_exp_v1aldeclst_norec isfun\n", @())
         val fl = funlab_make_name (v)
         val vp_fun = aux_exp_fun (e, fl, res, nil) // no init instructions
       in vp_fun end
       else let
+        val () = printf ("aux_exp_v1aldeclst_norec is not fun\n", @())
         val vp = aux_exp_ret (e, res, tmpvar_new (v))
       in vp end
     val () = v1ar_set_val (v, vp)
   in
     aux_exp_v1aldeclst_norec (v1aldecs1, res)
   end
-  | nil () => ()
+  | nil () => let
+    val () = printf ("aux_exp_v1aldeclst_norec empty\n", @())
+  in
+    ()
+  end
+end
 
 fun aux_exp_d1eclst (d1ecs: d1eclst, res: &instrlst): void =
   case+ d1ecs of
@@ -754,9 +770,9 @@ fun aux_exp_ret_proj (loc: loc, e1xp: e1xp, pos: int,
 
   val () = 
     (case+ vp.valprim_node of  // todo seems unnecessary
-    | VPenv _ => instr_add_proj (loc, tmp_ret, vp, pos, res)
-    | VPtmp _ => instr_add_proj (loc, tmp_ret, vp, pos, res)
-    | VPtup _ => instr_add_proj (loc, tmp_ret, vp, pos, res)
+    | VPenv _ => instr_add_proj (loc, tmp_ret, t2yp, vp, pos, res)
+    | VPtmp _ => instr_add_proj (loc, tmp_ret, t2yp, vp, pos, res)
+    | VPtup _ => instr_add_proj (loc, tmp_ret, t2yp, vp, pos, res)
     | _ => ETRACE_MSG_OPR ("aux_exp_ret_proj left part is not a tuple\n", 
            ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
     )
@@ -818,7 +834,7 @@ in
   | E1XPopr (opr, exps) => let
     // val () = printf ("aux_opr\n", @())
   in
-    aux_exp_ret_opr (loc, opr, exps, res, ret)
+    aux_exp_ret_opr (loc, opr, typ, exps, res, ret)
   end
   | E1XPproj (e1xp, pos) => let
     // val () = printf ("aux_proj\n", @())
@@ -832,7 +848,9 @@ end
 
 (* extern fun aux_exp_fun (e: e1xp, fl: funlab): valprim *)
 (* this function only handle E1XPfix and E1XPlam and E1XPann *)
-implement aux_exp_fun (e, fl, res, init_res) = 
+implement aux_exp_fun (e, fl, res, init_res) = let
+  val () = printf ("aux_exp_lam_fun\n", @())
+in
   case+ e.e1xp_node of
   | E1XPann (e1, _) => aux_exp_fun (e1, fl, res, init_res)
   | E1XPfix (f, args, body, ref_env) => 
@@ -841,6 +859,7 @@ implement aux_exp_fun (e, fl, res, init_res) =
     aux_exp_lam_lab (e.e1xp_loc, args, body, fl, !ref_env, res, init_res)
   | _ => ETRACE_MSG_OPR ("aux_exp_fun handle non-function\n", ETRACE_LEVEL_ERROR,
                     abort (ERRORCODE_FORBIDDEN))
+end
 (* ****** ****** *)
 
 
@@ -858,12 +877,116 @@ trans2_exp (e) = let
   val res = instr_reverse (res)
 
   val fns = funent_getall ()
+
 in
   (res, fns)
 end
 
 (* ****** ****** *)
+implement fprint_valprim (out, vp) = let
+  macdef prstr (s) = fprint_string (out, ,(s))
+in
+  case+ vp.valprim_node of
+  | VPenv pos => prstr ("env[" + tostring_int (pos) + "]")
+  | VPbool b => prstr ("bool(" + tostring_bool b + ")")
+  | VPclo (_, fl, _) => let
+    val f_name = funlab_get_name (fl)
+  in
+    prstr ("closure(" + f_name + ")")
+  end
+  | VPint (i) => prstr ("int(" + (tostring_int i) + ")")
+  | VPstr s => prstr ("str(" + s + ")")
+  | VPtmp (_) => prstr "any"
+  | VPtup (_, _) => prstr "tuple(...)"
+end
+
+implement fprint_valprimlst (out, vps) = let
+  macdef prstr (s) = fprint_string (out, ,(s))
+  fun loop (out: FILEref, vps: valprimlst, i: int):<cloref1> void = let
+    macdef prstr (s) = fprint_string (out, ,(s))
+  in
+    case+ vps of
+    | cons (vp, vps1) => (if i > 0 then prstr ", ";
+                         fprint_valprim (out, vp);
+                         loop (out, vps1, i + 1)
+                         )
+    | nil () => ()
+  end
+in
+  prstr "(";
+  loop (out, vps, 0);
+  prstr ")"
+end
+
+implement fprint_instr (out, ins) = let
+  macdef prstr (s) = fprint_string (out, ,(s))
+in
+  case+ ins.instr_node of
+  | INSTRcall (tmpvar, f, args) => let
+    val ret = tmpvar_get_name (tmpvar)
+  in
+    prstr "\ncall{";
+    fprint_valprim (out, f);
+    prstr "@";
+    fprint_valprimlst (out, args);
+    prstr "}"
+  end
+  | INSTRcond (tmpvar, typ, vp_test, instrlst_then, instrlst_else) => let
+    val ret = tmpvar_get_name (tmpvar)
+  in
+    prstr "\nif{...}"
+  end
+  | INSTRmove_val (tmpvar, vp) => let
+    val ret = tmpvar_get_name (tmpvar)
+  in
+    prstr "\nret <= ";
+    fprint_valprim (out, vp)
+  end
+  | INSTRopr (tmpvar, typ, opr, vps) => let
+    val ret = tmpvar_get_name (tmpvar)
+  in
+    prstr "\nopr{...}"
+  end
+  | INSTRtup (tmpvar, vps) => let
+    val ret = tmpvar_get_name (tmpvar)
+  in
+    prstr "\ntuple{...}"
+  end
+  | INSTRclosure (tmpvar, fl, vps) => let
+    val ret = tmpvar_get_name (tmpvar)
+  in
+    prstr "\nclosure{...}"
+  end
+  | INSTRproj (tmpvar, typ, vp, pos) => let
+    val ret = tmpvar_get_name (tmpvar)
+  in
+    prstr "\nproj{...}"
+  end
+end
+    
+
+implement fprint_instrlst (out, inslst) = let
+  macdef prstr (s) = fprint_string (out, ,(s))
+  fun loop (out: FILEref, inslst: instrlst, i: int): void = let
+    macdef prstr (s) = fprint_string (out, ,(s))
+  in
+    case+ inslst of
+    | cons (ins, inses1) => (if i > 0 then prstr "\n ";
+                         fprint_instr (out, ins);
+                         loop (out, inses1, i + 1)
+                         )
+    | nil () => ()
+  end
+in
+  prstr "instrlst{";
+  loop (out, inslst, 0);
+  prstr "}"
+end
+
 
 (* end of [trans2.dats] *)
+
+
+
 
 
