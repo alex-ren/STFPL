@@ -1,0 +1,129 @@
+
+
+let
+  val numlst = list_nil ()
+  val _ = print "x1 = "
+  val x1 = input_int ()
+
+  val _ = print "x2 = "
+  val x2 = input_int ()
+
+  val _ = print "x3 = "
+  val x3 = input_int ()
+
+  val _ = print "x4 = "
+  val x4 = input_int ()
+
+  // val x1 = 2
+  // val x2 = 3
+  // val x3 = 4
+  // val x4 = 5
+  val numlst = list_cons ((x1, tostring_int (x1)), numlst)
+  val numlst = list_cons ((x2, tostring_int (x2)), numlst)
+  val numlst = list_cons ((x3, tostring_int (x3)), numlst)
+  val numlst = list_cons ((x4, tostring_int (x4)), numlst)
+
+  val list_remove = fix f (pos: int, xs) => let
+    val x = list_head xs
+    val tail = list_tail xs
+  in
+    if pos = 0 then (x, tail) else let
+      val x_xs = f (pos - 1, tail)
+    in
+      (x_xs.0, list_cons (x, x_xs.1))
+    end
+  end
+
+  val list_print = lam (xs, len: int) => let
+    val aux = fix f (xs, n: int) =>
+      if n < len then 
+        if list_is_empty (xs) then ()
+        else let
+          val x = list_head xs
+          val tail = list_tail xs
+          val _ = if n > 0 then print ", "
+          val _ = print_int x.0
+        in
+          f (tail, n + 1)
+        end
+      else ()
+  in
+    aux (xs, 0)
+  end
+
+  val _ = list_print (numlst, 4)
+  val _ = print "\n"
+        
+  val rec game24  = 
+    lam (xs: list, len: int, x: int, y: int) =>
+      if (len = 1) then let
+        // val _ = print "game24 len = 1\n"
+        val item = list_head (xs)
+      in
+        if item.0 = 24 then let
+          val _ = print item.1
+          val _ = print "\n"
+        in () end
+      end
+      else let
+        // val _ = list_print (xs, len)
+        // val _ = print "\n"
+        // val _ = print "game24 len = "
+        // val _ = print_int len
+        // val _ = print "\n"
+
+        // val _ = print "x = "
+        // val _ = print_int x
+        // val _ = print ", y = "
+        // val _ = print_int y
+        // val _ = print "\n"
+
+        val vx_xs1 = list_remove (x, xs)
+        val vx = vx_xs1.0
+        val xs1 = vx_xs1.1
+        
+        val vy_xs1 = if x < y then list_remove (y - 1, xs1) else list_remove (y, xs1)
+        val vy = vy_xs1.0
+        val xs1 = vy_xs1.1
+
+        val vxy_plus  = (vx.0 + vy.0, string_add (string_add (string_add (string_add ("(", vx.1), " + "), vy.1), ")"))
+        val vxy_minus = (vx.0 - vy.0, string_add (string_add (string_add (string_add ("(", vx.1), " - "), vy.1), ")"))
+        val vxy_mul   = (vx.0 * vy.0, string_add (string_add (vx.1, " * "), vy.1))
+
+        val xs1_plus  = list_cons (vxy_plus,  xs1)
+        val xs1_minus = list_cons (vxy_minus, xs1)
+        val xs1_mul   = list_cons (vxy_mul,   xs1)
+
+        val _ = game24 (xs1_plus,  len - 1, 0, 1)
+        val _ = game24 (xs1_minus, len - 1, 0, 1)
+        val _ = game24 (xs1_mul,   len - 1, 0, 1)
+
+        // handle division specially
+        val _ = if vy.0 = 0 then () else let
+          val vxy_div = (vx.0 / vy.0, string_add (string_add (string_add (string_add ("(", vx.1), " / "), vy.1), ")"))
+          val xs1_div   = list_cons (vxy_div,   xs1)
+          val _ = game24 (xs1_div,   len - 1, 0, 1)
+         in () end
+
+        val rec adjust = lam (x: int, y: int): (int, int) => let
+          val y1 = if y = (len - 1) then 0 else y + 1
+          val x1 = if y = (len - 1) then x + 1 else x
+          val y2 = if (y1 = x1) then y1 + 1 else y1
+        in
+          (x1, y2)
+        end
+
+        val xy = adjust (x, y)
+      in
+        if xy.1 = len then ()
+        else game24 (xs, len, xy.0, xy.1)
+      end
+
+  val _ = game24 (numlst, 4, 0, 1)
+  
+in
+  ()
+end
+
+
+
