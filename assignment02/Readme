@@ -1,33 +1,16 @@
 To build the program, please run
 >> make all
 
-At this moment, the compiler cannot generate C code. "trans2.dats" and "trans_cpp.dats" cannot compile.
 
 To do the test, simply run
->> ./tester < TEST/xxx.stfpl
+>> ./testall.sh
 
-and observe the output to check the functionality of type checking.
 
 Updates:
-  Add no. of parameters to the function type.
-
-  Add support of list.
-
-  Collect information for closure and put it along with the functions.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Closure is now fully supported.
+  list operations are supported.
+  game of 24 is finished.
+  All the tests in TEST folder have been checked successfully.
 
 
 

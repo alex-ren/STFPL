@@ -25,6 +25,8 @@ val string_LIST_IS_EMPTY = "list_is_empty"
 val string_LIST_HEAD     = "list_head"
 val string_LIST_TAIL     = "list_tail"
 val string_STRING_ADD    = "string_add"
+val string_TOSTRING_INT  = "tostring_int"
+val string_INPUT_INT  = "input_int"
 
 
 implement symbol_LIST_CONS     = symbol_make_name string_LIST_CONS
@@ -33,6 +35,8 @@ implement symbol_LIST_IS_EMPTY = symbol_make_name string_LIST_IS_EMPTY
 implement symbol_LIST_HEAD     = symbol_make_name string_LIST_HEAD
 implement symbol_LIST_TAIL     = symbol_make_name string_LIST_TAIL
 implement symbol_STRING_ADD    = symbol_make_name string_STRING_ADD
+implement symbol_TOSTRING_INT  = symbol_make_name string_TOSTRING_INT
+implement symbol_INPUT_INT     = symbol_make_name string_INPUT_INT
 
 
 val label_LIST_CONS     = funlab_allocate symbol_LIST_CONS
@@ -41,6 +45,8 @@ val label_LIST_IS_EMPTY = funlab_allocate symbol_LIST_IS_EMPTY
 val label_LIST_HEAD     = funlab_allocate symbol_LIST_HEAD
 val label_LIST_TAIL     = funlab_allocate symbol_LIST_TAIL
 val label_STRING_ADD    = funlab_allocate symbol_STRING_ADD
+val label_TOSTRING_INT  = funlab_allocate symbol_TOSTRING_INT
+val label_INPUT_INT     = funlab_allocate symbol_INPUT_INT
 
 
 val tmpvar_LIST_CONS     = tmpvar_new_string_name string_LIST_CONS
@@ -49,6 +55,8 @@ val tmpvar_LIST_IS_EMPTY = tmpvar_new_string_name string_LIST_IS_EMPTY
 val tmpvar_LIST_HEAD     = tmpvar_new_string_name string_LIST_HEAD
 val tmpvar_LIST_TAIL     = tmpvar_new_string_name string_LIST_TAIL
 val tmpvar_STRING_ADD    = tmpvar_new_string_name string_STRING_ADD
+val tmpvar_TOSTRING_INT  = tmpvar_new_string_name string_TOSTRING_INT
+val tmpvar_INPUT_INT     = tmpvar_new_string_name string_INPUT_INT
 
 
 val t2yp_list = T2YPlist (T2YPvar)
@@ -59,6 +67,8 @@ val t2yp_LIST_IS_EMPTY = T2YPclo (2, T2YPenv :: t2yp_list :: nil, T2YPbool)
 val t2yp_LIST_HEAD     = T2YPclo (2, T2YPenv :: t2yp_list :: nil, T2YPvar)
 val t2yp_LIST_TAIL     = T2YPclo (2, T2YPenv :: t2yp_list :: nil, t2yp_list)
 val t2yp_STRING_ADD    = T2YPclo (3, T2YPenv :: T2YPstr :: T2YPstr :: nil, T2YPstr)
+val t2yp_TOSTRING_INT  = T2YPclo (2, T2YPenv :: T2YPint :: nil, T2YPstr)
+val t2yp_INPUT_INT     = T2YPclo (1, T2YPenv :: nil, T2YPint)
 
 
 val vpnode_LIST_CONS     = VPclo (tmpvar_LIST_CONS, label_LIST_CONS, nil)
@@ -67,6 +77,8 @@ val vpnode_LIST_IS_EMPTY = VPclo (tmpvar_LIST_IS_EMPTY, label_LIST_IS_EMPTY, nil
 val vpnode_LIST_HEAD     = VPclo (tmpvar_LIST_HEAD, label_LIST_HEAD, nil)
 val vpnode_LIST_TAIL     = VPclo (tmpvar_LIST_TAIL, label_LIST_TAIL, nil)
 val vpnode_STRING_ADD    = VPclo (tmpvar_STRING_ADD, label_STRING_ADD, nil)
+val vpnode_TOSTRING_INT  = VPclo (tmpvar_TOSTRING_INT, label_TOSTRING_INT, nil)
+val vpnode_INPUT_INT     = VPclo (tmpvar_INPUT_INT, label_INPUT_INT, nil)
 
 
 val valprim_LIST_CONS     = make_valprim (vpnode_LIST_CONS,     t2yp_LIST_CONS)
@@ -75,6 +87,8 @@ val valprim_LIST_IS_EMPTY = make_valprim (vpnode_LIST_IS_EMPTY, t2yp_LIST_IS_EMP
 val valprim_LIST_HEAD     = make_valprim (vpnode_LIST_HEAD,     t2yp_LIST_HEAD)
 val valprim_LIST_TAIL     = make_valprim (vpnode_LIST_TAIL,     t2yp_LIST_TAIL)
 val valprim_STRING_ADD    = make_valprim (vpnode_STRING_ADD,    t2yp_STRING_ADD)
+val valprim_TOSTRING_INT  = make_valprim (vpnode_TOSTRING_INT,  t2yp_TOSTRING_INT)
+val valprim_INPUT_INT     = make_valprim (vpnode_INPUT_INT,     t2yp_INPUT_INT)
 
 abstype theConstTypMap_t
 
@@ -88,6 +102,7 @@ macdef list0_sing (x) = list0_cons (,(x), list0_nil ())
 
 val theConstTypMap =
   res where {
+  val t1yp_void = T1YPtup (nil)
   val t1yp_int1 = T1YPtup (t1yp_int :: nil)
   val t1yp_int2 = T1YPtup (t1yp_int :: t1yp_int :: nil)
   val t1yp_str1 = T1YPtup (t1yp_string :: nil)
@@ -100,6 +115,7 @@ val theConstTypMap =
     (symbol_MINUS, t1yp_aop) ::
     (symbol_TIMES, t1yp_aop) ::
     (symbol_SLASH, t1yp_aop) ::
+    (*the arguments type of operator must be tupled*)
     (symbol_UMINUS, T1YPfun (ref_make_elt<int> (1), t1yp_int1, t1yp_int)) ::
     (symbol_GT, t1yp_bop) ::
     (symbol_GTE, t1yp_bop) ::
@@ -108,8 +124,11 @@ val theConstTypMap =
     (symbol_EQ, t1yp_bop) ::
     (symbol_NEQ, t1yp_bop) ::
     (symbol_PRINT_INT, T1YPfun (ref_make_elt<int> (1), t1yp_int1, t1yp_unit)) ::
+    (*the arguments type of operator must be tupled*)
     (symbol_PRINT, T1YPfun (ref_make_elt<int> (1), t1yp_str1, t1yp_unit)) ::
-    (symbol_STRING_ADD, T1YPfun (ref_make_elt<int> (2), t1yp_str2, t1yp_str1)) ::
+    (symbol_STRING_ADD, T1YPfun (ref_make_elt<int> (2), t1yp_str2, t1yp_string)) ::
+    (symbol_TOSTRING_INT, T1YPfun (ref_make_elt<int> (1), t1yp_int, t1yp_string)) ::
+    (symbol_INPUT_INT, T1YPfun (ref_make_elt<int> (0), t1yp_void, t1yp_int)) ::
     nil ()
   ) : list0 (T) // end of [val]
   val res: theConstTypMap_t = symenv_make ()
@@ -212,6 +231,10 @@ implement libFunVPFind (fname) =
       Some0 (valprim_LIST_TAIL)
   | _ when fname = symbol_STRING_ADD =>
       Some0 (valprim_STRING_ADD)
+  | _ when fname = symbol_TOSTRING_INT =>
+      Some0 (valprim_TOSTRING_INT)
+  | _ when fname = symbol_INPUT_INT =>
+      Some0 (valprim_INPUT_INT)
   | _ => None0 ()
 
 

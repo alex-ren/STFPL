@@ -25,6 +25,8 @@ val symbol_LIST_HEAD : $Symbol.symbol_t // "list_head"
 val symbol_LIST_TAIL : $Symbol.symbol_t // "list_tail"
 
 val symbol_STRING_ADD : $Symbol.symbol_t // "string_add"
+val symbol_TOSTRING_INT : $Symbol.symbol_t // "tostring_int"
+val symbol_INPUT_INT : $Symbol.symbol_t // "input_int"
 
 (* This is valid.
 ======================================

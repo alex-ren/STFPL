@@ -153,7 +153,7 @@ implement tmpvar_new_string (str) = let
   val i = !tmpvar_count
   val () = !tmpvar_count := i + 1
 
-  val id = tostring_int (i)
+  val id = "_" + tostring_int (i)
   val fullname = string0_append (tmpvar_prefix, string0_append (str, id))
 in
   symbol_make_name (fullname)

@@ -34,15 +34,35 @@ void llist_init(llist xs)
     xs->m_first = xs->m_last = 0;
 }
 
+void llist_print(llist xs)
+{
+    // printf("llist_print\n");
+    assert(0 != xs);
+    node node = xs->m_first;
+
+    while (0 != node)
+    {
+        printf("%d -> ", (long)node->m_item);
+        node = node->m_next;
+    }
+    printf("nil");
+}
+
+
 void llist_push_back(llist xs, any x)
 {
+    // printf("llist_push_back\n");
+    assert(0 != xs);
     node n = malloc(sizeof(node_t));
+    assert(0 != n);
+
     n->m_item = x;
     n->m_next = 0;
 
     if (0 == xs->m_first)
     {
-        xs->m_first = xs->m_last = n;
+        xs->m_first = n;
+        xs->m_last = n;
     }
     else
     {
@@ -50,6 +70,32 @@ void llist_push_back(llist xs, any x)
         xs->m_last = n;
     }
 }
+
+llist llist_add_front(llist xs, any x)
+{
+    assert(0 != xs);
+
+    llist p = malloc(sizeof(llist_t));
+    llist_init (p);
+
+    node n = malloc(sizeof(node_t));
+    n->m_item = x;
+    n->m_next = xs->m_first;
+
+    p->m_first = n;
+
+    if (0 == xs->m_last)
+    {
+        p->m_last = n;
+    }
+    else
+    {
+        p->m_last = xs->m_last;
+    }
+
+    return p;
+}
+
 
 any llist_get_item(llist xs, int pos)
 {
@@ -200,26 +246,32 @@ any tuple_get (tuple tuple, int pos)
 
 /* ********************* ******************** */
 
-void   fun_list_cons(any, list);
+list   fun_list_cons(any, list);
 list   fun_list_nil();
 any    fun_list_head(list);
 list   fun_list_tail(list);
 bool   fun_list_is_empty(list);
 
-void   closure_list_cons(env, any, list);
+list   closure_list_cons(env, any, list);
 list   closure_list_nil(env);
 any    closure_list_head(env, list);
 list   closure_list_tail(env, list);
 bool   closure_list_is_empty(env, list);
 
-void fun_list_cons(any item, list xs)
+list fun_list_cons(any item, list xs)
 {
-    llist_push_back(&xs->m_list, item);
+    list p = malloc(sizeof(list_t));
+
+    llist ls = llist_add_front(&xs->m_list, item);
+    p->m_list = *ls;
+    free (ls);
+
+    return p;
 }
 
-void closure_list_cons(env env, any item, list xs)
+list closure_list_cons(env env, any item, list xs)
 {
-    fun_list_cons(item, xs);
+    return fun_list_cons(item, xs);
 }
 
 list fun_list_nil()
@@ -270,6 +322,11 @@ bool closure_list_is_empty(env env, list xs)
     return fun_list_is_empty(xs);
 }
 
+void list_print(list xs)
+{
+    llist_print(&xs->m_list);
+}
+
 /* ********************* ******************** */
 
 string fun_string_add(string, string);
@@ -277,12 +334,59 @@ string closure_string_add(env, string, string);
 
 string fun_string_add(string to, string from)
 {
-    return strcat(to, from);
+    int nto = strlen(to);
+    int nfrom = strlen(from);
+    int len = (nto + nfrom + 1);
+    char * szBuffer = malloc(len * sizeof(char));
+    memset(szBuffer, 0, len);
+    strcpy(szBuffer, to);
+
+    return strcat(szBuffer, from);
 }
 
 string closure_string_add(env env, string to, string from)
 {
     return fun_string_add(to, from);
+}
+
+/* ********************* ******************** */
+
+string fun_tostring_int(int);
+string closure_tostring_int(env, int);
+
+string fun_tostring_int(int n)
+{
+    static char szBuffer[100];
+    memset(szBuffer, 0, 100);
+    sprintf(szBuffer, "%d", n);
+    
+    int len = strlen(szBuffer) + 1;
+    char *str = malloc(len * sizeof(char));
+    strcpy(str, szBuffer);
+
+    return str;
+}
+
+string closure_tostring_int(env env, int i)
+{
+    return fun_tostring_int(i);
+}
+
+/* ********************* ******************** */
+
+int fun_input_int();
+int closure_input_int(env);
+
+int fun_input_int()
+{
+    int d = 0;
+    scanf("%d", &d);
+    return d;
+}
+
+int closure_input_int(env env)
+{
+    return fun_input_int();
 }
 
 /* ********************* ******************** */
@@ -294,6 +398,8 @@ closure list_tail     = 0;
 closure list_is_empty = 0;
 
 closure string_add    = 0;
+closure tostring_int  = 0;
+closure input_int  = 0;
 
 /* ********** ************ */
 
@@ -305,6 +411,8 @@ void init_lib()
     list_tail     = closure_create();
     list_is_empty = closure_create();
     string_add    = closure_create();
+    tostring_int  = closure_create();
+    input_int     = closure_create();
 
     closure_put_fun(list_cons,     (void*)closure_list_cons);
     closure_put_fun(list_nil,      (void*)closure_list_nil);
@@ -312,6 +420,8 @@ void init_lib()
     closure_put_fun(list_tail,     (void*)closure_list_tail);
     closure_put_fun(list_is_empty, (void*)closure_list_is_empty);
     closure_put_fun(string_add,    (void*)closure_string_add);
+    closure_put_fun(tostring_int,  (void*)closure_tostring_int);
+    closure_put_fun(input_int,     (void*)closure_input_int);
 }
 
 

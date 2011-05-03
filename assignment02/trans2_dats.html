@@ -178,7 +178,7 @@
   <span class="keyword">val</span> i <span class="keyword">=</span> <span class="keyword">!</span>tmpvar_count
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>tmpvar_count := i + 1
 
-  <span class="keyword">val</span> id <span class="keyword">=</span> tostring_int <span class="keyword">(</span>i<span class="keyword">)</span>
+  <span class="keyword">val</span> id <span class="keyword">=</span> "_" + tostring_int <span class="keyword">(</span>i<span class="keyword">)</span>
   <span class="keyword">val</span> fullname <span class="keyword">=</span> string0_append <span class="keyword">(</span>tmpvar_prefix<span class="keyword">,</span> string0_append <span class="keyword">(</span>str<span class="keyword">,</span> id<span class="keyword">)</span><span class="keyword">)</span>
 <span class="keyword">in</span>
   symbol_make_name <span class="keyword">(</span>fullname<span class="keyword">)</span>
@@ -197,8 +197,8 @@
 <span class="keyword">end</span> <span class="comment">// [end of local]
 </span>
 <span class="keyword">local</span>
-  <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="4574"><span class="dyncstdec">valprim_encode <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim_t</span></span></a>
-  <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="4629"><span class="dyncstdec">valprim_decode <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">valprim_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+  <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="4580"><span class="dyncstdec">valprim_encode <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim_t</span></span></a>
+  <span class="keyword">extern</span> <span class="keyword">castfn</span> <a name="4635"><span class="dyncstdec">valprim_decode <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">valprim_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
 <span class="keyword">in</span>
   <span class="keyword">fun</span> v1ar_get_val
     <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">v1ar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
@@ -221,7 +221,7 @@
 </span>  
 <span class="keyword">end</span> <span class="comment">// end of [local]
 </span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="5104"><span class="stacstdec">funent <span class="keyword">=</span> <span class="keyword">'{</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="5110"><span class="stacstdec">funent <span class="keyword">=</span> <span class="keyword">'{</span>
   funent_fun <span class="keyword">=</span> funlab_t
 <span class="keyword">,</span> funent_narg <span class="keyword">=</span> int
 <span class="keyword">,</span> funent_args <span class="keyword">=</span> valprimlst
@@ -244,8 +244,8 @@
 
 <span class="neuexp"><span class="keyword">symintr</span></span> funlab_make
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="5591"><span class="dyncstdec">funlab_make_anon <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funlab</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="5630"><span class="dyncstdec">funlab_make_name <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">v1ar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funlab</span></span></a>  <span class="comment">// similar v1ar's lead to different names
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="5597"><span class="dyncstdec">funlab_make_anon <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funlab</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="5636"><span class="dyncstdec">funlab_make_name <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">v1ar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funlab</span></span></a>  <span class="comment">// similar v1ar's lead to different names
 </span>
 <span class="neuexp"><span class="keyword">overload</span> funlab_make <span class="keyword">with</span> funlab_make_anon</span>
 <span class="neuexp"><span class="keyword">overload</span> funlab_make <span class="keyword">with</span> funlab_make_name</span>
@@ -265,9 +265,9 @@
 <span class="comment">(*
 There is a global map for this function:
 *)</span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6068"><span class="dyncstdec">funent_add <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6122"><span class="dyncstdec">funent_lookup <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funent</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6168"><span class="dyncstdec">funent_getall <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 funent</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6074"><span class="dyncstdec">funent_add <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6128"><span class="dyncstdec">funent_lookup <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funent</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6174"><span class="dyncstdec">funent_getall <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 funent</span></span></a>
 
 <span class="keyword">local</span>
 <span class="keyword">val</span> funlab_count <span class="keyword">=</span> ref&lt;<span class="staexp">int</span><span class="keyword">&gt;</span> <span class="keyword">(</span>0<span class="keyword">)</span>
@@ -375,14 +375,14 @@ There is a global map for this function:
 <span class="keyword">end</span>
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9206"><span class="dyncstdec">aux_exp <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9212"><span class="dyncstdec">aux_exp <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
 
 <span class="comment">(* ret is supposed to be used in the evaluation *)</span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9312"><span class="dyncstdec">aux_exp_ret <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9318"><span class="dyncstdec">aux_exp_ret <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
 
 <span class="comment">(* this function only handle E1XPfixclo and E1XPlamclo and E1XPann *)</span>
 <span class="comment">(* caller guarantees that e is a function *)</span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9499"><span class="dyncstdec">aux_exp_fun <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> 
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9505"><span class="dyncstdec">aux_exp_fun <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> 
   res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> init_res<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
 
 <span class="keyword">fun</span> auxlst_exp <span class="keyword">(</span>

@@ -50,6 +50,8 @@
 </span><span class="keyword">val</span> <a name="624"><span class="dyncstdec">symbol_LIST_TAIL <span class="keyword">:</span> <span class="staexp">$Symbol<span class="keyword">.</span>symbol_t</span></span></a> <span class="comment">// "list_tail"
 </span>
 <span class="keyword">val</span> <a name="680"><span class="dyncstdec">symbol_STRING_ADD <span class="keyword">:</span> <span class="staexp">$Symbol<span class="keyword">.</span>symbol_t</span></span></a> <span class="comment">// "string_add"
+</span><span class="keyword">val</span> <a name="737"><span class="dyncstdec">symbol_TOSTRING_INT <span class="keyword">:</span> <span class="staexp">$Symbol<span class="keyword">.</span>symbol_t</span></span></a> <span class="comment">// "tostring_int"
+</span><span class="keyword">val</span> <a name="798"><span class="dyncstdec">symbol_INPUT_INT <span class="keyword">:</span> <span class="staexp">$Symbol<span class="keyword">.</span>symbol_t</span></span></a> <span class="comment">// "input_int"
 </span>
 <span class="comment">(* This is valid.
 ======================================
@@ -87,10 +89,10 @@ val r = fn (x1, x2)
 *)</span>
 
 
-<span class="keyword">fun</span> <a name="1526"><span class="dyncstdec">libSymTypFind <span class="keyword">(</span>nam<span class="keyword">:</span> <span class="staexp">$Symbol<span class="keyword">.</span>symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 $Trans1<span class="keyword">.</span>t1yp</span></span></a>
-<span class="keyword">fun</span> <a name="1590"><span class="dyncstdec">libOprTypFind <span class="keyword">(</span>opr<span class="keyword">:</span> <span class="staexp">$Absyn<span class="keyword">.</span>opr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 $Trans1<span class="keyword">.</span>t1yp</span></span></a>
+<span class="keyword">fun</span> <a name="1642"><span class="dyncstdec">libSymTypFind <span class="keyword">(</span>nam<span class="keyword">:</span> <span class="staexp">$Symbol<span class="keyword">.</span>symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 $Trans1<span class="keyword">.</span>t1yp</span></span></a>
+<span class="keyword">fun</span> <a name="1706"><span class="dyncstdec">libOprTypFind <span class="keyword">(</span>opr<span class="keyword">:</span> <span class="staexp">$Absyn<span class="keyword">.</span>opr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 $Trans1<span class="keyword">.</span>t1yp</span></span></a>
 
-<span class="keyword">fun</span> <a name="1649"><span class="dyncstdec">libFunVPFind <span class="keyword">(</span>nam<span class="keyword">:</span> <span class="staexp">$Symbol<span class="keyword">.</span>symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 $Trans2<span class="keyword">.</span>valprim</span></span></a>
+<span class="keyword">fun</span> <a name="1765"><span class="dyncstdec">libFunVPFind <span class="keyword">(</span>nam<span class="keyword">:</span> <span class="staexp">$Symbol<span class="keyword">.</span>symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">option0 $Trans2<span class="keyword">.</span>valprim</span></span></a>
 
 
 

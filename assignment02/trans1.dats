@@ -819,9 +819,9 @@ in
     case+ t1yp_opr of
     | T1YPfun (_, t1yp_args, t1yp_ret) => let
       val e0xp_tup = '{e0xp_loc = loc, e0xp_node = E0XPtup (e0xps)}
-      val (e1xp_tup, tyerrs) = typcheck (Gamma, e0xp_tup, t1yp_args)
+      val (e1xp, tyerrs) = typcheck (Gamma, e0xp_tup, t1yp_args)
     in
-      case+ e1xp_tup.e1xp_node of
+      case+ e1xp.e1xp_node of
       | E1XPtup (e1xps) => let
         val e1xp = e1xp_make_opr (loc, opr, e1xps, t1yp_ret)
       in
