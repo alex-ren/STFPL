@@ -3,7 +3,7 @@ To build the program, please run
 
 
 To do the test, simply run
->> ./testall.sh
+>> make -f make_test all
 
 
 Updates:

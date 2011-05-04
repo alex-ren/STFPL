@@ -61,3 +61,10 @@ rm -rf ./TEST/mytuple
 rm -rf ./TEST/game24.c
 rm -rf ./TEST/game24
 
+
+rm -rf ./TEST/scratch.c
+rm -rf ./TEST/scratch
+
+
+
+

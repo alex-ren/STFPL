@@ -1,0 +1,36 @@
+# Zhiqiang Ren 
+# 05/02/2011
+
+
+STFPL_LIB="lib/stfpl_header.c"
+STFPL_INC=-I"lib"
+
+MODULE=tuple helloworld funvargs fix_closure
+
+.PHONY: all
+all: $(MODULE)
+
+tuple: 
+	./tester < DEMO/tuple.stfpl 1>DEMO/tuple.c
+	gcc -o DEMO/tuple DEMO/tuple.c $(STFPL_LIB) $(STFPL_INC)
+	./DEMO/tuple
+
+
+helloworld: 
+	./tester < DEMO/helloworld.stfpl 1>DEMO/helloworld.c
+	gcc -o DEMO/helloworld DEMO/helloworld.c $(STFPL_LIB) $(STFPL_INC)
+	./DEMO/helloworld
+
+funvargs: 
+	./tester < DEMO/funvargs.stfpl 1>DEMO/funvargs.c
+	gcc -o DEMO/funvargs DEMO/funvargs.c $(STFPL_LIB) $(STFPL_INC)
+	./DEMO/funvargs
+
+fix_closure: 
+	./tester < DEMO/fix_closure.stfpl 1>DEMO/fix_closure.c
+	gcc -o DEMO/fix_closure DEMO/fix_closure.c $(STFPL_LIB) $(STFPL_INC)
+	./DEMO/fix_closure
+
+.PHONY: clean
+clean:
+	cd DEMO;rm -rf $(MODULE); rm -rf *.c

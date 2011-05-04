@@ -1,12 +1,21 @@
 let
   val plus = lam (x) => x + 1
   val sum = lam (x, y) => x + y
+  val sum2 = lam (x) => x.0 + x.1
 
   val _ = print_int (plus 1)
   val _ = print "\n"
 
   val _ = print_int (sum (2, 3))
   val _ = print "\n"
+
+  val x = (3, 4)
+  val y = sum2 x
+  // val _ = sum x
+
+  val fn = lam (f: (int, int) -> int) => f (3, 4)
+  val _ = fn (sum)
+  // val _ = fn (sum2)
 in
   ()
 end

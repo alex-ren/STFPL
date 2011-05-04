@@ -1,0 +1,102 @@
+
+# Zhiqiang Ren 
+# 05/02/2011
+
+
+STFPL_LIB="lib/stfpl_header.c"
+STFPL_INC=-I"lib"
+
+MODULE=queens simple ackermann bsearch_fun coin \
+evenodd fact_fix fact twice f91 fib funargs list_opr \
+mytuple game24 scratch
+
+.PHONY: all
+all: $(MODULE)
+
+queens:
+	./tester < TEST/queens.stfpl 1>TEST/queens.c
+	gcc -o TEST/queens TEST/queens.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/queens
+
+simple: 
+	./tester < TEST/simple.stfpl 1>TEST/simple.c
+	gcc -o TEST/simple TEST/simple.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/simple
+
+ackermann: 
+	./tester < TEST/ackermann.stfpl 1>TEST/ackermann.c
+	gcc -o TEST/ackermann TEST/ackermann.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/ackermann
+
+bsearch_fun: 
+	./tester < TEST/bsearch_fun.stfpl 1>TEST/bsearch_fun.c
+	gcc -o TEST/bsearch_fun TEST/bsearch_fun.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/bsearch_fun
+
+coin: 
+	./tester < TEST/coin.stfpl 1>TEST/coin.c
+	gcc -o TEST/coin TEST/coin.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/coin
+
+evenodd: 
+	./tester < TEST/evenodd.stfpl 1>TEST/evenodd.c
+	gcc -o TEST/evenodd TEST/evenodd.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/evenodd
+
+fact_fix: 
+	./tester < TEST/fact_fix.stfpl 1>TEST/fact_fix.c
+	gcc -o TEST/fact_fix TEST/fact_fix.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/fact_fix
+
+fact: 
+	./tester < TEST/fact.stfpl 1>TEST/fact.c
+	gcc -o TEST/fact TEST/fact.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/fact
+
+twice: 
+	./tester < TEST/twice.stfpl 1>TEST/twice.c
+	gcc -o TEST/twice TEST/twice.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/twice
+
+f91: 
+	./tester < TEST/f91.stfpl 1>TEST/f91.c
+	gcc -o TEST/f91 TEST/f91.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/f91
+
+fib: 
+	./tester < TEST/fib.stfpl 1>TEST/fib.c
+	gcc -o TEST/fib TEST/fib.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/fib
+
+funargs: 
+	./tester < TEST/funargs.stfpl 1>TEST/funargs.c
+	echo should see type errors
+
+list_opr: 
+	./tester < TEST/list_opr.stfpl 1>TEST/list_opr.c
+	gcc -o TEST/list_opr TEST/list_opr.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/list_opr
+
+mytuple: 
+	./tester < TEST/mytuple.stfpl 1>TEST/mytuple.c
+	gcc -o TEST/mytuple TEST/mytuple.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/mytuple
+
+game24: 
+	./tester < TEST/game24.stfpl 1>TEST/game24.c
+	gcc -o TEST/game24 TEST/game24.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/game24
+
+scratch: 
+	./tester < TEST/scratch.stfpl 1>TEST/scratch.c
+	gcc -o TEST/scratch TEST/scratch.c $(STFPL_LIB) $(STFPL_INC)
+	./TEST/scratch
+
+.PHONY: clean
+clean:
+	cd TEST;rm -rf $(MODULE); rm -rf *.c
+
+
+
+
+

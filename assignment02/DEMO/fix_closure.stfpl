@@ -1,0 +1,14 @@
+  let
+    val foo = 
+        lam (x: int -> int, y: int) => x (y)
+  
+    val q = 3
+    val fn = fix f (x: int): int => 
+        if x > 0 then q else foo (f, x - 1)
+  
+    val rec fn1 = lam (x: int): int => 
+        if x > 0 then q else foo (fn1, x - 1)
+    
+  in
+    ()
+  end

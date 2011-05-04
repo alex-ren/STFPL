@@ -1344,8 +1344,8 @@ implement e1xpopt_t1yp_finalize (eopt) =
 
 implement v1ar_t1yp_finalize (v) = let
   val (typ, amb1) = t1yp_finalize (v.v1ar_typ)
-  // val (def, amb2) = e1xpopt_t1yp_finalize (!(v.v1ar_def))  // after the closure translation, this could
-                                                              // cause circle
+  // val (def, amb2) = e1xpopt_t1yp_finalize (!(v.v1ar_def))  
+  // after the closure translation, this could cause circle
 in
   ('{v1ar_loc = v.v1ar_loc,
     v1ar_nam = v.v1ar_nam,

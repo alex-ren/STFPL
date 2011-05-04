@@ -1,9 +1,8 @@
 let
-   val a = list_cons (4, list_nil ())
-   val ret = list_head (a)
-   val _ = print_int (ret)
-   val _ = print "\n"
-  
+  val f = lam () => 3
+  val k = f ()
+  val f2 = lam (f) => f ()
+  val _ = print_int (f2 f)
 in
   ()
 end
