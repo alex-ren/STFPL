@@ -1,8 +1,8 @@
 let
-  val f = lam () => 3
-  val k = f ()
-  val f2 = lam (f) => f ()
-  val _ = print_int (f2 f)
+  val k = "ee"
+  val b = k
+  val _ = print b
+  val _ = print "\n"
 in
   ()
 end

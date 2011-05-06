@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+
+<span class="keyword">staload</span> <span class="staexp">"string_opr.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"libats/smlbas/SATS/string.sats"</span>
+
+<span class="keyword">staload</span> <span class="staexp">"prelude/DATS/list.dats"</span>
+<span class="keyword">staload</span> <span class="staexp">"prelude/DATS/list0.dats"</span>
+
+<span class="keyword">dynload</span> "libats/smlbas/DATS/string.dats"
+
+<span class="keyword">#define</span> <span class="neuexp">:: list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">cons list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">nil list0_nil</span>
+
+<span class="keyword">implement</span> string_formalize <span class="keyword">(</span>str<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> cs <span class="keyword">=</span> explode <span class="keyword">(</span>str<span class="keyword">)</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>cs<span class="keyword">:</span> <span class="staexp">list0 char</span><span class="keyword">,</span> accu<span class="keyword">:</span> <span class="staexp">list0 char</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 char</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> cs <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>c<span class="keyword">,</span> cs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">if</span> c <span class="keyword">=</span> '\n' <span class="keyword">then</span> loop <span class="keyword">(</span>cs1<span class="keyword">,</span> 'n' :: '\\' :: accu<span class="keyword">)</span>
+                       <span class="keyword">else</span> loop <span class="keyword">(</span>cs1<span class="keyword">,</span> c :: accu<span class="keyword">)</span>
+    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> accu
+
+  <span class="keyword">val</span> cs <span class="keyword">=</span> loop <span class="keyword">(</span>cs<span class="keyword">,</span> nil<span class="keyword">)</span>
+  <span class="keyword">val</span> cs <span class="keyword">=</span> list0_reverse <span class="keyword">(</span>cs<span class="keyword">)</span>
+  <span class="keyword">val</span> cs <span class="keyword">=</span> implode <span class="keyword">(</span>cs<span class="keyword">)</span>
+  <span class="keyword">val</span> cs <span class="keyword">=</span> "\"" + cs + "\""
+<span class="keyword">in</span>
+  cs
+<span class="keyword">end</span>
+
+</pre>
+</body>
+</html>

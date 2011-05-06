@@ -12,12 +12,9 @@ staload "error.sats"
 staload "absyn.sats"
 staload "symbol.sats"
 
-// staload _(*anon*) = "symbol.dats"
+staload "ostream.sats"
+staload "string_opr.sats"
 
-// typedef opr = $Absyn.opr
-
-// typedef loc = $Posloc.location_t
-// typedef symbol = $Symbol.symbol_t
 (* ****** ****** *)
 
 staload _(*anon*) = "prelude/DATS/list.dats" 
@@ -41,47 +38,11 @@ val header = (header + "#include <stdio.h>\n\n"): string
 // val header_ftyp = header_ftyp + "typedef void * (*" + ftyp_1 + ")(void *);\n"
 val initialization_str = "init_lib();"
 
-(* string functions *)
-// todo
-extern
-fun string_implode (cs: list0 char): string = "atspre_string_implode"
-extern
-fun string_explode (str: string): list0 char = "atspre_string_explode"
-
-fun string_formalize (str: string): string = let
-  val cs = string_explode (str)
-  fun loop (cs: list0 char, accu: list0 char): list0 char =
-    case+ cs of
-    | cons (c, cs1) => if c = '\n' then loop (cs1, 'n' :: '\\' :: accu)
-                       else loop (cs1, c :: accu)
-    | nil () => accu
-
-  val cs = loop (cs, nil)
-  val cs = list0_reverse (cs)
-  val cs = string_implode (cs)
-  val cs = "\"" + cs + "\""
-in
-  cs
-end
-
 
 
 
 // #define Some0 option0_some
 // #define None0 option0_none
-
-local
-  assume ostream_t = string
-in
-  implement ostream_new () = ""
-
-  implement ostream_in (os, s) = let
-    val () = os := string0_append(os, s)
-  in end
-
-  implement print_ostream (os) = print os
-end  // end of [local]
-
 datatype statement_t =
   | STATplain of string
   | STATcomp of statements_t

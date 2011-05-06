@@ -86,6 +86,10 @@ SOURCES := \
   trans2.dats \
   trans_cpp.sats \
   trans_cpp.dats \
+  ostream.sats \
+  ostream.dats \
+  string_opr.sats \
+  string_opr.dats \
 
 OBJECTS := $(call atsobjname,$(SOURCES))
 
@@ -95,7 +99,7 @@ target := tester
 all: ${target}
 
 tester: $(OBJECTS)
-	$(ATSCC) -D_ATS_GCATS -o $@ $^ $(LIBPARCOMB)
+	$(ATSCC) -D_ATS_GCATS -o $@ $^ $(LIBPARCOMB) -lats_smlbas
 
 
 # #################
@@ -181,5 +185,7 @@ xref::
 	$(ATSOPT) --posmark_xref=XREF -d libfunctions.dats > xref_libfunctions_dats.html
 	$(ATSOPT) --posmark_xref=XREF -d trans2.dats > xref_trans2_dats.html
 	$(ATSOPT) --posmark_xref=XREF -d trans_cpp.dats > xref_trans_cpp_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d ostream.dats > xref_ostream_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d string_opr.dats > xref_string_opr_dats.html
 
 

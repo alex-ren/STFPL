@@ -8,6 +8,8 @@
 dynload "contrib/parcomb/dynloadall.dats"
 
 (* ****** ****** *)
+dynload "string_opr.dats"
+dynload "ostream.dats"
 
 dynload "absyn.dats"
 dynload "absyn1.dats"
@@ -34,6 +36,7 @@ staload "trans1.sats"
 staload "trans_closure.sats"
 staload "trans2.sats"
 staload "trans_cpp.sats"
+staload "ostream.sats"
 
 
 (* ****** ****** *)

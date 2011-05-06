@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+
+<span class="keyword">staload</span> <span class="staexp">"string_opr.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"libats/smlbas/SATS/string.sats"</span>
+
+<span class="keyword">staload</span> <span class="staexp">"prelude/DATS/list.dats"</span>
+<span class="keyword">staload</span> <span class="staexp">"prelude/DATS/list0.dats"</span>
+
+<span class="keyword">dynload</span> "libats/smlbas/DATS/string.dats"
+
+<span class="keyword">#define</span> <span class="neuexp">:: list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">cons list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">nil list0_nil</span>
+
+<span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fstring_5fopr_2esats.html#28"><span class="dyncstimp">string_formalize</span></a> <span class="keyword">(</span>str<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> cs <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2flibats_2fsmlbas_2fSATS_2fstring_2esats.html#2345"><span class="dyncstuse">explode</span></a> <span class="keyword">(</span>str<span class="keyword">)</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>cs<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fbasics_5fsta_2esats.html#22196"><span class="stacstuse">list0</span></a> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fbasics_5fsta_2esats.html#15295"><span class="stacstuse">char</span></a></span><span class="keyword">,</span> accu<span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fbasics_5fsta_2esats.html#22196"><span class="stacstuse">list0</span></a> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fbasics_5fsta_2esats.html#15295"><span class="stacstuse">char</span></a></span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fbasics_5fsta_2esats.html#22196"><span class="stacstuse">list0</span></a> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fbasics_5fsta_2esats.html#15295"><span class="stacstuse">char</span></a></span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> cs <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>c<span class="keyword">,</span> cs1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">if</span> c <span class="keyword">=</span> '\n' <span class="keyword">then</span> loop <span class="keyword">(</span>cs1<span class="keyword">,</span> 'n' :: '\\' :: accu<span class="keyword">)</span>
+                       <span class="keyword">else</span> loop <span class="keyword">(</span>cs1<span class="keyword">,</span> c :: accu<span class="keyword">)</span>
+    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> accu
+
+  <span class="keyword">val</span> cs <span class="keyword">=</span> loop <span class="keyword">(</span>cs<span class="keyword">,</span> nil<span class="keyword">)</span>
+  <span class="keyword">val</span> cs <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2flist0_2esats.html#5374"><span class="dyncstuse">list0_reverse</span></a> <span class="keyword">(</span>cs<span class="keyword">)</span>
+  <span class="keyword">val</span> cs <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2flibats_2fsmlbas_2fSATS_2fstring_2esats.html#2308"><span class="dyncstuse">implode</span></a> <span class="keyword">(</span>cs<span class="keyword">)</span>
+  <span class="keyword">val</span> cs <span class="keyword">=</span> "\"" + cs + "\""
+<span class="keyword">in</span>
+  cs
+<span class="keyword">end</span>
+
+</pre>
+</body>
+</html>

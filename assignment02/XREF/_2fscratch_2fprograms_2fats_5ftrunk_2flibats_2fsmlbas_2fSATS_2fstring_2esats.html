@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+<span class="comment">(***********************************************************************)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                         Applied Type System                         *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(*                              Hongwei Xi                             *)</span>
+<span class="comment">(*                                                                     *)</span>
+<span class="comment">(***********************************************************************)</span>
+
+<span class="comment">(*
+** ATS - Unleashing the Potential of Types!
+**
+** Copyright (C) 2002-2009 Hongwei Xi, Boston University
+**
+** All rights reserved
+**
+** ATS is free software;  you can  redistribute it and/or modify it under
+** the terms of the GNU LESSER GENERAL PUBLIC LICENSE as published by the
+** Free Software Foundation; either version 2.1, or (at your option)  any
+** later version.
+** 
+** ATS is distributed in the hope that it will be useful, but WITHOUT ANY
+** WARRANTY; without  even  the  implied  warranty  of MERCHANTABILITY or
+** FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License
+** for more details.
+** 
+** You  should  have  received  a  copy of the GNU General Public License
+** along  with  ATS;  see the  file COPYING.  If not, please write to the
+** Free Software Foundation,  51 Franklin Street, Fifth Floor, Boston, MA
+** 02110-1301, USA.
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// Author: Hongwei Xi (hwxi AT cs DOT bu DOT edu)
+</span><span class="comment">// Time: Summer, 2009
+</span><span class="comment">//
+</span><span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">//
+</span><span class="comment">// SML Basis Library: String (http://www.standardml.org/Basis/string.html)
+</span><span class="comment">//
+</span>
+<span class="comment">(* ****** ****** *)</span>
+<span class="comment">//
+</span><span class="comment">// HX: this one is undefined!
+</span><span class="comment">//
+</span><span class="keyword">fun</span> <a name="1653"><span class="dyncstdec">maxSize <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">size_t</span></span></a> <span class="comment">// maximal string size allowed
+</span>
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="1729"><span class="dyncstdec">size <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>s<span class="keyword">:</span> <span class="staexp">string n</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">size_t n</span></span></a>
+
+<span class="keyword">fun</span> <a name="1771"><span class="dyncstdec">sub <span class="staexp"><span class="keyword">{</span>n<span class="keyword">,</span>i<span class="keyword">:</span>nat <span class="keyword">|</span> i <span class="keyword">&lt;</span> n<span class="keyword">}</span></span> <span class="keyword">(</span>s<span class="keyword">:</span> <span class="staexp">string n</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">size_t i</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">char</span></span></a>
+
+<span class="keyword">fun</span> <a name="1831"><span class="dyncstdec">extract <span class="staexp"><span class="keyword">{</span>n<span class="keyword">,</span>i<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>b<span class="keyword">:</span>bool<span class="keyword">;</span>j<span class="keyword">:</span>nat <span class="keyword">|</span> i+j &lt;= n<span class="keyword">}</span></span>
+  <span class="keyword">(</span>s<span class="keyword">:</span> <span class="staexp">string n</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">size_t i</span><span class="keyword">,</span> j<span class="keyword">:</span> <span class="staexp">option <span class="keyword">(</span>size_t j<span class="keyword">,</span> b<span class="keyword">)</span></span><span class="keyword">)</span>
+  <span class="keyword">:</span> <span class="staexp"><span class="keyword">[</span>k<span class="keyword">:</span>nat <span class="keyword">|</span> <span class="keyword">(</span>b &amp;&amp; k == j<span class="keyword">)</span> || <span class="keyword">(</span><span class="keyword">~</span>b &amp;&amp; k == n-i<span class="keyword">)</span><span class="keyword">]</span> string <span class="keyword">(</span>k<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span> <a name="1993"><span class="dyncstdec">substring
+  <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>int<span class="keyword">}</span></span> <span class="staexp"><span class="keyword">{</span>i<span class="keyword">,</span>ln<span class="keyword">:</span>nat <span class="keyword">|</span> i+ln &lt;= n<span class="keyword">}</span></span>
+  <span class="keyword">(</span>s<span class="keyword">:</span> <span class="staexp">string n</span><span class="keyword">,</span> ofs<span class="keyword">:</span> <span class="staexp">size_t i</span><span class="keyword">,</span> len<span class="keyword">:</span> <span class="staexp">size_t ln</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string <span class="keyword">(</span>ln<span class="keyword">)</span></span></span></a>
+<span class="comment">// end of [substring]
+</span>
+<span class="keyword">fun</span> <a name="2123"><span class="dyncstdec">^ <span class="staexp"><span class="keyword">{</span>i<span class="keyword">,</span>j<span class="keyword">:</span>nat<span class="keyword">}</span></span> <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string i</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string j</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string <span class="keyword">(</span>i+j<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span> <a name="2183"><span class="dyncstdec">concat <span class="keyword">(</span>ss<span class="keyword">:</span> <span class="staexp">list0 string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+<span class="keyword">fun</span> <a name="2221"><span class="dyncstdec">concatWith <span class="keyword">(</span>sep<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> ss<span class="keyword">:</span> <span class="staexp">list0 string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+
+<span class="keyword">fun</span> <a name="2277"><span class="dyncstdec">str <span class="keyword">(</span>c<span class="keyword">:</span> <span class="staexp">char</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string <span class="keyword">(</span>1<span class="keyword">)</span></span></span></a>
+
+<span class="keyword">fun</span> <a name="2308"><span class="dyncstdec">implode <span class="keyword">(</span>cs<span class="keyword">:</span> <span class="staexp">list0 char</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+<span class="keyword">fun</span> <a name="2345"><span class="dyncstdec">explode <span class="keyword">(</span>str<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 char</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="2405"><span class="dyncstdec">map <span class="staexp"><span class="keyword">{</span>n<span class="keyword">:</span>nat<span class="keyword">}</span></span>
+  <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">char <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> char</span><span class="keyword">,</span> s<span class="keyword">:</span> <span class="staexp">string n</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string n</span></span></a>
+<span class="comment">// end of [map]
+</span>
+<span class="keyword">fun</span> <a name="2489"><span class="dyncstdec">translate <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp">char <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> string</span><span class="keyword">,</span> s<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="2572"><span class="dyncstdec">tokens <span class="keyword">(</span>isdelim<span class="keyword">:</span> <span class="staexp">char <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> s<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 string</span></span></a>
+<span class="keyword">fun</span> <a name="2640"><span class="dyncstdec">fields <span class="keyword">(</span>isdelim<span class="keyword">:</span> <span class="staexp">char <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> bool</span><span class="keyword">,</span> s<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 string</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="2730"><span class="dyncstdec">isPrefix <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+<span class="keyword">fun</span> <a name="2774"><span class="dyncstdec">isSubstring <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+<span class="keyword">fun</span> <a name="2821"><span class="dyncstdec">isSuffix <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">fun</span> <a name="2887"><span class="dyncstdec">lt <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+<span class="keyword">fun</span> <a name="2925"><span class="dyncstdec">lte <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+<span class="keyword">fun</span> <a name="2964"><span class="dyncstdec">gt <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+<span class="keyword">fun</span> <a name="3002"><span class="dyncstdec">gte <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a>
+
+<span class="keyword">fun</span> <a name="3042"><span class="dyncstdec">eq <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a> 
+<span class="keyword">fun</span> <a name="3081"><span class="dyncstdec">neq <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">bool</span></span></a> 
+
+<span class="keyword">fun</span> <a name="3122"><span class="dyncstdec">compare <span class="keyword">(</span>s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span></span></a>
+
+<span class="keyword">fun</span> <a name="3165"><span class="dyncstdec">collate <span class="keyword">(</span>f<span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>char<span class="keyword">,</span> char<span class="keyword">)</span> <span class="keyword">-&lt;</span>cloref1<span class="keyword">&gt;</span> int</span><span class="keyword">,</span> s1<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> s2<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span></span></a>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(*
+
+these one are yet to be implemented:
+
+val toString : string -&gt; String.string
+val scan       : (char, 'a) StringCvt.reader
+                       -&gt; (string, 'a) StringCvt.reader
+val fromString : String.string -&gt; string option
+val toCString : string -&gt; String.string
+val fromCString : String.string -&gt; string option 
+
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="comment">(* end of [string.sats] *)</span>
+</pre>
+</body>
+</html>

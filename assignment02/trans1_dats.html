@@ -1369,8 +1369,8 @@ v1ar_set_def (
 
 <span class="keyword">implement</span> v1ar_t1yp_finalize <span class="keyword">(</span>v<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> <span class="keyword">(</span>typ<span class="keyword">,</span> amb1<span class="keyword">)</span> <span class="keyword">=</span> t1yp_finalize <span class="keyword">(</span>v<span class="keyword">.</span>v1ar_typ<span class="keyword">)</span>
-  <span class="comment">// val (def, amb2) = e1xpopt_t1yp_finalize (!(v.v1ar_def))  // after the closure translation, this could
-</span>                                                              <span class="comment">// cause circle
+  <span class="comment">// val (def, amb2) = e1xpopt_t1yp_finalize (!(v.v1ar_def))  
+</span>  <span class="comment">// after the closure translation, this could cause circle
 </span><span class="keyword">in</span>
   <span class="keyword">(</span><span class="keyword">'{</span>v1ar_loc <span class="keyword">=</span> v<span class="keyword">.</span>v1ar_loc<span class="keyword">,</span>
     v1ar_nam <span class="keyword">=</span> v<span class="keyword">.</span>v1ar_nam<span class="keyword">,</span>

@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+
+<span class="keyword">staload</span> <span class="staexp">"ostream.sats"</span>
+
+<span class="keyword">local</span>
+  <span class="keyword">assume</span> <span class="staexp">ostream_t <span class="keyword">=</span> <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fbasics_5fsta_2esats.html#16164"><span class="stacstuse">string</span></a></span>
+<span class="keyword">in</span>
+  <span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fostream_2esats.html#52"><span class="dyncstimp">ostream_new</span></a> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ""
+
+  <span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fostream_2esats.html#81"><span class="dyncstimp">ostream_in</span></a> <span class="keyword">(</span>os<span class="keyword">,</span> s<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> os := <a href="XREF/_2fscratch_2fprograms_2fats_5ftrunk_2fprelude_2fSATS_2fstring_2esats.html#13074"><span class="dyncstuse">string0_append</span></a><span class="keyword">(</span>os<span class="keyword">,</span> s<span class="keyword">)</span>
+  <span class="keyword">in</span> <span class="keyword">end</span>
+
+  <span class="keyword">implement</span> <a href="XREF/_2fhome_2fgrad2_2faren_2fcourses_2fcs525_5fCompiler_2fassignment02_2fostream_2esats.html#129"><span class="dyncstimp">print_ostream</span></a> <span class="keyword">(</span>os<span class="keyword">)</span> <span class="keyword">=</span> print os
+<span class="keyword">end</span>  <span class="comment">// end of [local]
+</span>
+
+</pre>
+</body>
+</html>

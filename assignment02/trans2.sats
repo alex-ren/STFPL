@@ -85,12 +85,8 @@ where t2yplst = list0 (t2yp)
  * a tag for a temporary variable
  *)
 datatype valprim_node = // primitive values
-//  | VParg of int // function arguments: the ith argument -- no need
   | VPenv of int // closure parameter: the ith parameter
   | VPbool of bool // boolean constants
-  // function label
-  // | VPfun of funlab
-  // (closure name, function labels, env)
   | VPclo of (tmpvar, funlab, valprimlst)
   | VPint of int // integer constants
   | VPstr of string // string constants
