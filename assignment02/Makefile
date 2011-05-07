@@ -59,7 +59,7 @@ define atshtmlname
 $(patsubst %.dats,%_dats.html,$(patsubst %.sats,%_sats.html,$1))
 endef
 
-SOURCES := \
+SOURCES_COMM := \
   absyn.sats \
   absyn.dats \
   symbol.sats \
@@ -81,7 +81,6 @@ SOURCES := \
   trans_closure.dats \
   libfunctions.sats \
   libfunctions.dats \
-  test.dats \
   trans2.sats \
   trans2.dats \
   trans_cpp.sats \
@@ -93,16 +92,30 @@ SOURCES := \
   trans_llvm.sats \
   trans_llvm.dats \
 
-OBJECTS := $(call atsobjname,$(SOURCES))
+SOURCES_CPP := \
+  test_cpp.dats
 
-target := tester
+SOURCES_LLVM := \
+  test_llvm.dats
+
+SOURCES := $(SOURCES_CPP) $(SOURCES_CPP) $(SOURCES_LLVM)
+
+OBJECTS_COMM := $(call atsobjname,$(SOURCES_COMM))
+OBJECTS_CPP := $(call atsobjname,$(SOURCES_CPP))
+OBJECTS_LLVM := $(call atsobjname,$(SOURCES_LLVM))
+
+target := tester_cpp tester_llvm
 
 .PHONY: all
 all: ${target}
 
-tester: $(OBJECTS)
+tester_cpp: $(OBJECTS_COMM) $(OBJECTS_CPP)
 	$(ATSCC) -D_ATS_GCATS -o $@ $^ $(LIBPARCOMB) -lats_smlbas
+	cp $@ ./TRANS_CPP
 
+tester_llvm: $(OBJECTS_COMM) $(OBJECTS_LLVM)
+	$(ATSCC) -D_ATS_GCATS -o $@ $^ $(LIBPARCOMB) -lats_smlbas
+	cp $@ ./TRANS_LLVM
 
 # #################
 $(call atsobjname,%.sats): %.sats
@@ -165,6 +178,7 @@ clean::
 
 distclean: clean
 	$(RMF) $(call atshtmlname,*.sats *.dats)
+	$(RMF) ./XREF/*.html
 
 ###### end of [Makefile] ######
 
@@ -189,5 +203,7 @@ xref::
 	$(ATSOPT) --posmark_xref=XREF -d trans_cpp.dats > xref_trans_cpp_dats.html
 	$(ATSOPT) --posmark_xref=XREF -d ostream.dats > xref_ostream_dats.html
 	$(ATSOPT) --posmark_xref=XREF -d string_opr.dats > xref_string_opr_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d test_cpp.dats > xref_test_cpp_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d test_llmv.dats > xref_test_llvm_dats.html
 
 

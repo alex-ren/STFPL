@@ -42,7 +42,7 @@ void llist_print(llist xs)
 
     while (0 != node)
     {
-        printf("%d -> ", (long)node->m_item);
+        printf("%i -> ", (int)node->m_item);
         node = node->m_next;
     }
     printf("nil");

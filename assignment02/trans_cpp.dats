@@ -88,7 +88,7 @@ end  // end of [statements_to_string]
 
 fun trans_cpp_typ (t2yp: t2yp): string =
   case+ t2yp of
-  | T2YPint ()  => "long"
+  | T2YPint ()  => "int"
   | T2YPbool () => "bool"
   | T2YPstr ()  => "string"
   | T2YPenv ()  => "env"

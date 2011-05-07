@@ -8,9 +8,9 @@
 staload "trans1.sats"
 typedef loc = $Posloc.location_t
 macdef location_none = $Posloc.location_none
-macdef prerr_loc = $Posloc.prerr_location
 macdef fprint_location = $Posloc.fprint_location
 macdef print_location = $Posloc.print_location
+macdef prerr_location = $Posloc.prerr_location
 
 (* ****** ****** *)
 
@@ -146,8 +146,8 @@ implement prerr_tyerr_pool (pool) = fprint_tyerr_pool (stderr_ref, pool)
 
 implement fprint_tyerr (out, tyerr) = () where {
   // todo cannot print location, should use out
-  val () = fprint_location (out, tyerr.loc)
-  // val () = print_location (tyerr.loc)
+  // val () = fprint_location (out, tyerr.loc)
+  val () = prerr_location (tyerr.loc)
   val _ = fprint (out, "@" + tyerr.msg)
 } 
 
@@ -769,7 +769,7 @@ in
     (Gamma1, v1ar, tyerr_pool_nil)
   end
     (*let  serve as comment
-    val () = prerr_loc (loc)
+    val () = prerr_location (loc)
     val () = prerr ": arg must have type"
     val () = prerr_newline ()
     val errmsg = "arg must have type"
@@ -852,7 +852,7 @@ in
     | None0 () => let
       (* out of bound: use int as the type *)
       val e1xp_proj = e1xp_make_proj (loc, e1xp, i, t1yp_int)
-      val () = prerr_loc (loc)
+      val () = prerr_location (loc)
       val () = prerr ": projection out of bound"
       val () = prerr_newline ()
       val errmsg = "projection out of bound"
@@ -888,7 +888,7 @@ in
   | _ => let
     (* not tuple: use whatever type it has *)
     val e1xp_proj = e1xp_make_proj (loc, e1xp, i, e1xp.e1xp_typ)
-    // val () = prerr_loc (loc)
+    // val () = prerr_location (loc)
     // val () = prerr ": projection on non-tuple type"
     // val () = prerr_newline ()
     val errmsg = "projection on non-tuple type"
@@ -928,7 +928,7 @@ in
     | Some0 t1yp => (e1xp_make_var (loc, v1ar_make (loc, nam, t1yp)), 
                      tyerr_pool_nil)
     | None0 () => let
-      // val () = prerr_loc (loc)
+      // val () = prerr_location (loc)
       // val () = prerr ": no such var"
       // val () = prerr_newline ()
       val errmsg = "oftype_var: no such var, assuming its type is int"
@@ -961,7 +961,7 @@ fun oftype_fix (Gamma: ctx, loc: loc,
       (T1YPfun (ref_make_elt<int> (nargs), t1yp_args, retty), retty)
     end
     (*let
-      val () = prerr_loc (loc)
+      val () = prerr_location (loc)
       val () = prerr ": oftype_fix, return type not specified, int assumed"
       val () = prerr_newline ()
       val errmsg = "oftype_fix, return type not specified, int assumed"    
@@ -1029,7 +1029,7 @@ in
     (e1xp, tyerrs)
   end
   | _ => let
-    // val () = prerr_loc (loc)
+    // val () = prerr_location (loc)
     // val () = prerr ": error(type) ... expected a function type"
     // val () = prerr " ... actual: "
     // val () = fprint_t1yp (stderr_ref, f.e1xp_typ)
@@ -1125,7 +1125,7 @@ implement typcheck (Gamma, e0, t1) = let
   val (e1, tyerrs) = oftype (Gamma, e0)
 
   // val () = fprint (stderr_ref, "=============typcheck@")
-  // val () = prerr_loc (e1.e1xp_loc)
+  // val () = prerr_location (e1.e1xp_loc)
   // val () = prerr " ... expected: "
   // val () = fprint_t1yp (stderr_ref, t1)
   // val () = prerr " ... actual: "
@@ -1136,7 +1136,7 @@ implement typcheck (Gamma, e0, t1) = let
 in
   if ty_cmp = true then (e1, tyerrs)
   else let
-    // val () = prerr_loc (e1.e1xp_loc)
+    // val () = prerr_location (e1.e1xp_loc)
     // val () = prerr ": error(type) ... expected: "
     // val () = fprint_t1yp (stderr_ref, t1)
     // val () = prerr " ... actual: "

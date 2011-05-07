@@ -10,18 +10,22 @@ MODULE=queens simple ackermann bsearch_fun coin \
 evenodd fact_fix fact twice f91 fib funargs list_opr \
 mytuple game24 scratch
 
-STFPL=./tester_llvm
-LLVM_GCC=llvm-gcc
+STFPL=./tester
+GCC=gcc
 SOURCE_DIR=./TEST
-DEST_DIR=./TRANS_LLVM
-
+DEST_DIR=./TRANS_CPP
 .PHONY: all
+
 all: $(MODULE)
 
-%: 
-	$(STFPL) < TEST/$@.stfpl 1>$(DEST_DIR)/$@.ll
-# 	$(LLVM_GCC) -o $(DEST_DIR)/$@ $(DEST_DIR)/$@.s $(STFPL_LIB)
-# 	$(DEST_DIR)/$@
+%:
+	$(STFPL) < $(SOURCE_DIR)/$@.stfpl 1>$(DEST_DIR)/$@.c
+	$(GCC) -o $(DEST_DIR)/$@ $(DEST_DIR)/$@.c $(STFPL_LIB) $(STFPL_INC)
+	$(DEST_DIR)/$@
+
+funargs: 
+	./tester < TEST/funargs.stfpl 1>TEST/funargs.c
+	echo should see type errors
 
 # queens:
 # 	./tester < TEST/queens.stfpl 1>TEST/queens.c
@@ -78,10 +82,6 @@ all: $(MODULE)
 # 	gcc -o TEST/fib TEST/fib.c $(STFPL_LIB) $(STFPL_INC)
 # 	./TEST/fib
 # 
-# funargs: 
-# 	./tester < TEST/funargs.stfpl 1>TEST/funargs.c
-# 	echo should see type errors
-# 
 # list_opr: 
 # 	./tester < TEST/list_opr.stfpl 1>TEST/list_opr.c
 # 	gcc -o TEST/list_opr TEST/list_opr.c $(STFPL_LIB) $(STFPL_INC)
@@ -96,11 +96,15 @@ all: $(MODULE)
 # 	./tester < TEST/game24.stfpl 1>TEST/game24.c
 # 	gcc -o TEST/game24 TEST/game24.c $(STFPL_LIB) $(STFPL_INC)
 # 	./TEST/game24
-
-
+# 
+# scratch: 
+# 	./tester < TEST/scratch.stfpl 1>TEST/scratch.c
+# 	gcc -o TEST/scratch TEST/scratch.c $(STFPL_LIB) $(STFPL_INC)
+# 	./TEST/scratch
+# 
 .PHONY: clean
 clean:
-	cd $(DEST_DIR);rm -rf $(MODULE); rm -rf *.s
+	cd $(DEST_DIR);rm -rf $(MODULE); rm -rf *.c
 
 
 
