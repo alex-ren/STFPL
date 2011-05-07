@@ -24,6 +24,7 @@ dynload "trans_closure.dats"
 dynload "trans2.dats"
 dynload "libfunctions.dats"  // after trans2
 dynload "trans_cpp.dats"
+dynload "trans_llvm.dats"
 
 (* ****** ****** *)
 
@@ -37,6 +38,7 @@ staload "trans_closure.sats"
 staload "trans2.sats"
 staload "trans_cpp.sats"
 staload "ostream.sats"
+staload "trans_llvm.sats"
 
 
 (* ****** ****** *)
@@ -91,7 +93,8 @@ main () = () where {
     // val () = fprint_instrlst (stderr_ref, irs)
     // val () = fprint (stderr_ref, "\n")
 
-    val os = trans_cpp (irs, fns)
+    // val os = trans_cpp (irs, fns)
+    val os = trans_llvm (irs, fns)
     val () = print_ostream (os)
     val () = fprint (stderr_ref, "\n")
   in end

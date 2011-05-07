@@ -90,6 +90,8 @@ SOURCES := \
   ostream.dats \
   string_opr.sats \
   string_opr.dats \
+  trans_llvm.sats \
+  trans_llvm.dats \
 
 OBJECTS := $(call atsobjname,$(SOURCES))
 

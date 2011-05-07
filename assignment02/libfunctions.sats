@@ -69,6 +69,7 @@ fun libOprTypFind (opr: $Absyn.opr): option0 $Trans1.t1yp
 
 fun libFunVPFind (nam: $Symbol.symbol_t): option0 $Trans2.valprim
 
+fun get_llvm_header (): string
 
 
 
