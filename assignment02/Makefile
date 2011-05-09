@@ -104,18 +104,27 @@ OBJECTS_COMM := $(call atsobjname,$(SOURCES_COMM))
 OBJECTS_CPP := $(call atsobjname,$(SOURCES_CPP))
 OBJECTS_LLVM := $(call atsobjname,$(SOURCES_LLVM))
 
+DEST_DIR_CPP=./TRANS_CPP
+DEST_DIR_LLVM=./TRANS_LLVM
+
 target := tester_cpp tester_llvm
 
 .PHONY: all
-all: ${target} lib/stfpl_header.bc
+all: ${target}
 
-tester_cpp: $(OBJECTS_COMM) $(OBJECTS_CPP)
-	$(ATSCC) -D_ATS_GCATS -o $@ $^ $(LIBPARCOMB) -lats_smlbas
-	cp $@ ./TRANS_CPP
+tester_cpp: $(OBJECTS_COMM) $(OBJECTS_CPP) $(DEST_DIR_CPP)
+	$(ATSCC) -D_ATS_GCATS -o $@ $(OBJECTS_COMM) $(OBJECTS_CPP) $(LIBPARCOMB) -lats_smlbas
+	cp $@ $(DEST_DIR_CPP)
 
-tester_llvm: $(OBJECTS_COMM) $(OBJECTS_LLVM)
-	$(ATSCC) -D_ATS_GCATS -o $@ $^ $(LIBPARCOMB) -lats_smlbas
-	cp $@ ./TRANS_LLVM
+tester_llvm: $(OBJECTS_COMM) $(OBJECTS_LLVM) lib/stfpl_header.bc $(DEST_DIR_LLVM)
+	$(ATSCC) -D_ATS_GCATS -o $@ $(OBJECTS_COMM) $(OBJECTS_LLVM) $(LIBPARCOMB) -lats_smlbas
+	cp $@ $(DEST_DIR_LLVM)
+
+$(DEST_DIR_CPP):
+	mkdir $(DEST_DIR_CPP)
+
+$(DEST_DIR_LLVM):
+	mkdir $(DEST_DIR_LLVM)
 
 lib/stfpl_header.bc: lib/stfpl_header.h lib/stfpl_header.c
 	llvm-gcc lib/stfpl_header.c -c -emit-llvm -Ilib -o $@
