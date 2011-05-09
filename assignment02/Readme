@@ -3,10 +3,12 @@ To build the program, please run
 
 
 To do the test, simply run
->> make -f make_test all
+>> make -f make_test_cpp all
+>> make -f make_test_llvm all
 
 
 Updates:
+  llvm generator is in progress.
   Closure is now fully supported.
   list operations are supported.
   game of 24 is finished.
