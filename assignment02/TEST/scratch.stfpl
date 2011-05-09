@@ -1,12 +1,9 @@
 let
-  val fn = lam (x: int) => x
-  val k = fn(3) + 4
-  val _ = print_int k
-  val _ = print "=\n"
-  val kk = tostring_int (3)
-  val kk = if 1 > k then 3 else 4
+  val q = 3
+  val _ = print_int q
+  val _ = print "\n"
 in
-  "cc"
+  0
 end
 
 
