@@ -11,6 +11,9 @@ in
   in end
 
   implement print_ostream (os) = print os
+
+  implement ostream_to_string(os) = os
+
 end  // end of [local]
 
 

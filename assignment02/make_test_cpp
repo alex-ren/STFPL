@@ -8,10 +8,10 @@ STFPL_INC=-I"lib"
 
 MODULE=queens simple ackermann bsearch_fun coin \
 evenodd fact_fix fact twice f91 fib funargs list_opr \
-mytuple game24 scratch
+mytuple game24 arith_opr scratch
 
-STFPL=./tester
-GCC=gcc
+STFPL=./tester_cpp
+CC=gcc
 SOURCE_DIR=./TEST
 DEST_DIR=./TRANS_CPP
 .PHONY: all
@@ -20,7 +20,7 @@ all: $(MODULE)
 
 %:
 	$(STFPL) < $(SOURCE_DIR)/$@.stfpl 1>$(DEST_DIR)/$@.c
-	$(GCC) -o $(DEST_DIR)/$@ $(DEST_DIR)/$@.c $(STFPL_LIB) $(STFPL_INC)
+	$(CC) -o $(DEST_DIR)/$@ $(DEST_DIR)/$@.c $(STFPL_LIB) $(STFPL_INC)
 	$(DEST_DIR)/$@
 
 funargs: 

@@ -113,7 +113,7 @@
 </span>
 <span class="keyword">fun</span> trans_cpp_typ <span class="keyword">(</span>t2yp<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span> <span class="keyword">=</span>
   <span class="keyword">case+</span> t2yp <span class="keyword">of</span>
-  <span class="keyword">|</span> T2YPint <span class="keyword">(</span><span class="keyword">)</span>  <span class="keyword">=&gt;</span> "long"
+  <span class="keyword">|</span> T2YPint <span class="keyword">(</span><span class="keyword">)</span>  <span class="keyword">=&gt;</span> "int"
   <span class="keyword">|</span> T2YPbool <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> "bool"
   <span class="keyword">|</span> T2YPstr <span class="keyword">(</span><span class="keyword">)</span>  <span class="keyword">=&gt;</span> "string"
   <span class="keyword">|</span> T2YPenv <span class="keyword">(</span><span class="keyword">)</span>  <span class="keyword">=&gt;</span> "env"
@@ -188,14 +188,14 @@
   ostream_in <span class="keyword">(</span>os<span class="keyword">,</span> header<span class="keyword">)</span>
 <span class="keyword">end</span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4486"><span class="dyncstdec">trans_cpp_fun_body <span class="keyword">(</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4485"><span class="dyncstdec">trans_cpp_fun_body <span class="keyword">(</span>
   narg<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">,</span> body<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">,</span> ret<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4574"><span class="dyncstdec">trans_cpp_instrlst <span class="keyword">(</span>body<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4633"><span class="dyncstdec">trans_cpp_instr <span class="keyword">(</span>instr<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4573"><span class="dyncstdec">trans_cpp_instrlst <span class="keyword">(</span>body<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4632"><span class="dyncstdec">trans_cpp_instr <span class="keyword">(</span>instr<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4688"><span class="dyncstdec">trans_cpp_valprim <span class="keyword">(</span>vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4739"><span class="dyncstdec">trans_cpp_valprimlst <span class="keyword">(</span>vps<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 string</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4687"><span class="dyncstdec">trans_cpp_valprim <span class="keyword">(</span>vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4738"><span class="dyncstdec">trans_cpp_valprimlst <span class="keyword">(</span>vps<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 string</span></span></a>
 
 <span class="keyword">fun</span> trans_cpp_funlst_def <span class="keyword">(</span>fns<span class="keyword">:</span> <span class="staexp">list0 funent_t</span><span class="keyword">,</span> os<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>ostream</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">fun</span> trans <span class="keyword">(</span>init<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> ent<span class="keyword">:</span> <span class="staexp">funent_t</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">string</span> <span class="keyword">=</span> <span class="keyword">let</span>
@@ -279,21 +279,21 @@
   loop <span class="keyword">(</span>body<span class="keyword">,</span> nil<span class="keyword">)</span>
 <span class="keyword">end</span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7231"><span class="dyncstdec">trans_cpp_instr_call <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> 
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7230"><span class="dyncstdec">trans_cpp_instr_call <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> 
   args<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">,</span> ret_typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7338"><span class="dyncstdec">trans_cpp_instr_cond <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> 
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7337"><span class="dyncstdec">trans_cpp_instr_cond <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> 
   brthen<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">,</span> brelse<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
   
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7462"><span class="dyncstdec">trans_cpp_instr_opr <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">,</span> opr<span class="keyword">:</span> <span class="staexp">opr</span><span class="keyword">,</span> 
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7461"><span class="dyncstdec">trans_cpp_instr_opr <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">,</span> opr<span class="keyword">:</span> <span class="staexp">opr</span><span class="keyword">,</span> 
   args<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7562"><span class="dyncstdec">trans_cpp_instr_tup <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> vps<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7561"><span class="dyncstdec">trans_cpp_instr_tup <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> vps<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7637"><span class="dyncstdec">trans_cpp_instr_closure <span class="keyword">(</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7636"><span class="dyncstdec">trans_cpp_instr_closure <span class="keyword">(</span>
   ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> fl<span class="keyword">:</span> <span class="staexp">funlab_t</span><span class="keyword">,</span> vps<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7733"><span class="dyncstdec">trans_cpp_instr_proj <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> 
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="7732"><span class="dyncstdec">trans_cpp_instr_proj <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> 
   pos<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
 
 
@@ -478,12 +478,13 @@ extern fun trans_cpp_instr_call (ret: tmpvar, f: valprim,
 
   <span class="comment">// build the function type
 </span>  <span class="keyword">val</span> f_typ <span class="keyword">=</span> f<span class="keyword">.</span>valprim_typ
-  <span class="keyword">val-</span> T2YPclo <span class="keyword">(</span>nargs<span class="keyword">,</span> args_typ<span class="keyword">,</span> ret_typ1<span class="keyword">)</span> <span class="keyword">=</span> f_typ
+  <span class="keyword">val-</span> T2YPclo <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> ret_typ1<span class="keyword">)</span> <span class="keyword">=</span> f_typ
   <span class="keyword">val</span> args_typ_str <span class="keyword">=</span> trans_cpp_valprimlst_typ <span class="keyword">(</span>args<span class="keyword">,</span> 1<span class="keyword">)</span>
 
   <span class="keyword">val</span> ret_typ_str <span class="keyword">=</span> trans_cpp_typ <span class="keyword">(</span>ret_typ<span class="keyword">)</span>
-  <span class="keyword">val</span> ret_typ_str1 <span class="keyword">=</span> trans_cpp_typ <span class="keyword">(</span>ret_typ1<span class="keyword">)</span>  <span class="comment">// this one maybe any (due to list function
-</span>  <span class="keyword">val</span> clo_typ_str <span class="keyword">=</span> "(" + ret_typ_str1 + " (*)(env" + args_typ_str + "))"
+  <span class="comment">// this one maybe any (due to list operation such as list_head)
+</span>  <span class="keyword">val</span> ret_typ_str1 <span class="keyword">=</span> trans_cpp_typ <span class="keyword">(</span>ret_typ1<span class="keyword">)</span>
+  <span class="keyword">val</span> clo_typ_str <span class="keyword">=</span> "(" + ret_typ_str1 + " (*)(env" + args_typ_str + "))"
 
   <span class="keyword">val</span> ret_typ_str_convert <span class="keyword">=</span> 
     <span class="keyword">if</span> ret_typ_str <span class="keyword">=</span> ret_typ_str1 <span class="keyword">then</span> "" <span class="keyword">else</span> "(" + ret_typ_str + ")"
@@ -553,7 +554,7 @@ extern fun trans_cpp_instr_call (ret: tmpvar, f: valprim,
        :: STATplain <span class="keyword">(</span>funlab_get_name <span class="keyword">(</span>mainlab<span class="keyword">)</span> + "(0);"<span class="keyword">)</span>
        :: STATplain <span class="keyword">(</span>"return 0;"<span class="keyword">)</span> :: nil
   
-   <span class="keyword">val</span> main_stats <span class="keyword">=</span> STATplain <span class="keyword">(</span>"int main (int argc, char *argv)"<span class="keyword">)</span>
+   <span class="keyword">val</span> main_stats <span class="keyword">=</span> STATplain <span class="keyword">(</span>"int main (int argc, char *argv[])"<span class="keyword">)</span>
        :: STATplain <span class="keyword">(</span>scope_beg<span class="keyword">)</span> :: STATcomp <span class="keyword">(</span>body_stats<span class="keyword">)</span>
        :: STATplain <span class="keyword">(</span>scope_end<span class="keyword">)</span> :: nil
    

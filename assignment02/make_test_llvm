@@ -3,7 +3,7 @@
 # 05/02/2011
 
 
-STFPL_LIB="lib/stfpl_header.c"
+STFPL_LIB="lib/stfpl_header.bc"
 STFPL_INC=-I"lib"
 
 MODULE=queens simple ackermann bsearch_fun coin \
@@ -11,17 +11,21 @@ evenodd fact_fix fact twice f91 fib funargs list_opr \
 mytuple game24 scratch
 
 STFPL=./tester_llvm
-LLVM_GCC=llvm-gcc
+
 SOURCE_DIR=./TEST
 DEST_DIR=./TRANS_LLVM
 
 .PHONY: all
 all: $(MODULE)
 
-%: 
+
+%:
 	$(STFPL) < TEST/$@.stfpl 1>$(DEST_DIR)/$@.ll
-# 	$(LLVM_GCC) -o $(DEST_DIR)/$@ $(DEST_DIR)/$@.s $(STFPL_LIB)
-# 	$(DEST_DIR)/$@
+	llvm-as $(DEST_DIR)/$@.ll -o $(DEST_DIR)/$@.bc
+	llvm-link $(DEST_DIR)/$@.bc $(STFPL_LIB) -o $(DEST_DIR)/$@.llvm
+	lli $(DEST_DIR)/$@.llvm
+	llvm-ld $(DEST_DIR)/$@.bc $(STFPL_LIB) -o $(DEST_DIR)/$@
+	$(DEST_DIR)/$@
 
 # queens:
 # 	./tester < TEST/queens.stfpl 1>TEST/queens.c
@@ -100,7 +104,11 @@ all: $(MODULE)
 
 .PHONY: clean
 clean:
-	cd $(DEST_DIR);rm -rf $(MODULE); rm -rf *.s
+	cd $(DEST_DIR);\
+	rm -rf $(MODULE);\
+	rm -rf *.llvm;\
+	rm -rf *.bc;\
+	rm -rf *.ll
 
 
 

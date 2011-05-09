@@ -7,3 +7,7 @@ fun ostream_new (): ostream
 fun ostream_in (os: &ostream, s: string): void
 
 fun print_ostream (os: ostream): void
+
+fun ostream_to_string(os: ostream): string
+
+

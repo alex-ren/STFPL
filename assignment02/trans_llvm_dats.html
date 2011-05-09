@@ -1,0 +1,768 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title></title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <style type="text/css">
+    .atsyntax {color:#E80000;background-color:#E0E0E0}
+    .atsyntax span.comment {color:#787878;font-style:italic}
+    .atsyntax span.extern  {color:#A52A2A}
+    .atsyntax span.keyword {color:#000000;font-weight:bold}
+    .atsyntax span.neuexp  {color:#800080}
+    .atsyntax span.staexp  {color:#0000FF}
+    .atsyntax span.dynexp  {color:#E80000}
+    .atsyntax span.prfexp  {color:#009000}
+    .atsyntax span.stacstdec  {text-decoration:none}
+    .atsyntax span.stacstuse  {color:#0000CF;text-decoration:underline}
+    .atsyntax span.dyncstdec  {text-decoration:none}
+    .atsyntax span.dyncstimp  {color:#B80000;text-decoration:underline}
+    .atsyntax span.dyncstuse  {color:#B80000;text-decoration:underline}
+    body {color:#E80000;background-color:#E0E0E0}
+  </style>
+</head>
+<body>
+<pre class="atsyntax">
+
+
+<span class="comment">(*
+** CAS CS525, Spring 2011
+** Instructor: Hongwei Xi
+*)</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">"trans2.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"trans_llvm.sats"</span>
+
+<span class="keyword">staload</span> <span class="staexp">"error.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"absyn.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"symbol.sats"</span>
+
+<span class="keyword">staload</span> <span class="staexp">"ostream.sats"</span>
+<span class="keyword">staload</span> <span class="staexp">"string_opr.sats"</span>
+
+<span class="comment">(* ****** ****** *)</span>
+
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/list.dats"</span> 
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/list0.dats"</span> 
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "prelude/DATS/reference.dats"</span> 
+<span class="keyword">staload</span> <span class="staexp">_<span class="comment">(*anon*)</span> <span class="keyword">=</span> "symbol.dats"</span>
+
+<span class="comment">// 
+</span><span class="keyword">#define</span> <span class="neuexp">:: list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">cons list0_cons</span>
+<span class="keyword">#define</span> <span class="neuexp">nil list0_nil</span>
+
+<span class="keyword">#define</span> <span class="neuexp">Some0 option0_some</span>
+<span class="keyword">#define</span> <span class="neuexp">None0 option0_none</span>
+
+<span class="keyword">datatype</span> <span class="staexp"><a name="583"><span class="stacstdec">statement_t</span></a></span> <span class="keyword">=</span>
+  <span class="keyword">|</span> STATplain <span class="keyword">of</span> <span class="staexp">string</span>
+  <span class="keyword">|</span> STATindent <span class="keyword">of</span> <span class="staexp">string</span>
+
+<span class="keyword">typedef</span> <span class="staexp"><a name="655"><span class="stacstdec">statements_t <span class="keyword">=</span> list0 statement_t</span></a></span>
+
+<span class="keyword">typedef</span> <span class="staexp"><a name="697"><span class="stacstdec">statements <span class="keyword">=</span> statements_t</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="731"><span class="stacstdec">statement <span class="keyword">=</span> statement_t</span></a></span>
+
+<span class="comment">(* ********* *********** *)</span>
+
+<span class="keyword">val</span> env_str <span class="keyword">=</span> "env"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> env_tmpvar <span class="keyword">=</span> tmpvar_new <span class="keyword">(</span>env_str<span class="keyword">)</span>
+<span class="keyword">val</span> env_arg <span class="keyword">=</span> make_valprim <span class="keyword">(</span>VPtmp <span class="keyword">(</span>env_tmpvar<span class="keyword">)</span><span class="keyword">,</span> T2YPenv<span class="keyword">)</span>
+
+<span class="comment">(* ********* *********** *)</span>
+
+<span class="comment">(* 64 bit machine *)</span>
+<span class="comment">// val layout = "target datalayout = \"e-p:64:64:64-": string
+</span><span class="comment">// val layout = layout +
+</span><span class="comment">//              "i1:8:8-i8:8:8-i16:16:16-" +
+</span><span class="comment">//              "i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-" + 
+</span><span class="comment">//              "v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64\""
+</span><span class="comment">// 
+</span><span class="comment">// val target = "target triple = \"x86_64-unknown-linux-gnu\"": string
+</span>
+<span class="comment">(* 32 bit machine *)</span>
+<span class="keyword">val</span> layout <span class="keyword">=</span> "target datalayout = \"e-p:32:32:32-"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> layout <span class="keyword">=</span> layout + 
+             "i1:8:8-i8:8:8-i16:16:16-" +
+             "i32:32:32-i64:32:64-f32:32:32-f64:32:64-v64:64:64-" +
+             "v128:128:128-a0:0:64-f80:32:32-n8:16:32\""
+
+<span class="keyword">val</span> target <span class="keyword">=</span> "target triple = \"i386-linux-gnu\""
+
+<span class="comment">(* ********* *********** *)</span>
+
+<span class="keyword">val</span> header_type <span class="keyword">=</span> "%struct.env_t = type opaque"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> header_type <span class="keyword">=</span> header_type + "\n" + 
+                  "%struct.tuple_t = type opaque" + "\n" +
+                  "%struct.closure_t = type opaque" + "\n" +
+                  "%struct.list_t = type opaque"
+
+<span class="keyword">val</span> header_global_value <span class="keyword">=</span> 
+    "@tostring_int = external global %struct.closure_t*"<span class="keyword">:</span> <span class="staexp">string</span>
+
+<span class="keyword">val</span> header_func_decl <span class="keyword">=</span> "declare %struct.closure_t* @closure_create(...)"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> header_func_decl <span class="keyword">=</span> header_func_decl + "\n" +
+           "declare void @closure_put_fun(%struct.closure_t*, i8*)" + "\n" +
+           "declare i8* @closure_get_fun(%struct.closure_t*)" + "\n" + 
+           "declare %struct.env_t* @closure_get_env(%struct.closure_t*)"
+
+<span class="keyword">val</span> header_func_decl <span class="keyword">=</span> header_func_decl + "\n" +
+           "declare i8* @env_get(%struct.env_t*, i32)"
+
+<span class="keyword">val</span> header_func_decl <span class="keyword">=</span> header_func_decl + "\n" +
+           "declare i32 @printf(i8* noalias, ...) nounwind" + "\n" +
+           "declare i32 @puts(i8*)"
+
+
+<span class="keyword">val</span> header_func_decl <span class="keyword">=</span> header_func_decl + "\n" +
+           "declare void @init_lib(...)"
+
+<span class="keyword">val</span> header <span class="keyword">=</span> layout + "\n" + 
+             target + "\n\n" +
+             header_type + "\n\n" + 
+             header_global_value + "\n\n" +
+             header_func_decl
+
+<span class="keyword">val</span> gv_str_pre <span class="keyword">=</span> ".str"
+
+<span class="keyword">val</span> type_int<span class="keyword">:</span> <span class="staexp">string</span> <span class="keyword">=</span> "i32"
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="2967"><span class="dyncstdec">statements_to_string <span class="keyword">(</span>stats<span class="keyword">:</span> <span class="staexp">statements</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+
+<span class="keyword">val</span> indent_pad <span class="keyword">=</span> "  "<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> scope_beg <span class="keyword">=</span> "{"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> scope_end <span class="keyword">=</span> "}"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> str_entry <span class="keyword">=</span> "entry"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> str_return <span class="keyword">=</span> "return"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> str_addr_postfix <span class="keyword">=</span> "_addr"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> str_retval <span class="keyword">=</span> "retval"<span class="keyword">:</span> <span class="staexp">string</span>
+<span class="keyword">val</span> str_ret <span class="keyword">=</span> "ret"<span class="keyword">:</span> <span class="staexp">string</span>
+
+<span class="keyword">typedef</span> <span class="staexp"><a name="3279"><span class="stacstdec">global_val <span class="keyword">=</span> <span class="keyword">'{</span>gv_stat <span class="keyword">=</span> statement<span class="keyword">,</span>
+                      gv_typ <span class="keyword">=</span> string<span class="keyword">,</span>
+                      gv_id <span class="keyword">=</span> string<span class="keyword">}</span></span></a></span>
+
+
+<span class="keyword">implement</span> statements_to_string <span class="keyword">(</span>stats<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> stats <span class="keyword">of</span>
+  <span class="keyword">|</span> cons <span class="keyword">(</span>stat<span class="keyword">,</span> stats1<span class="keyword">)</span> <span class="keyword">=&gt;</span> 
+    <span class="keyword">(</span><span class="keyword">case+</span> stat <span class="keyword">of</span>
+    <span class="keyword">|</span> STATplain str <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> cur <span class="keyword">=</span> str + "\n"
+      <span class="keyword">val</span> rest <span class="keyword">=</span> statements_to_string <span class="keyword">(</span>stats1<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      cur + rest
+    <span class="keyword">end</span>
+    <span class="keyword">|</span> STATindent str <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> cur <span class="keyword">=</span> indent_pad + str + "\n"
+      <span class="keyword">val</span> rest <span class="keyword">=</span> statements_to_string <span class="keyword">(</span>stats1<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      cur + rest
+    <span class="keyword">end</span>
+    <span class="keyword">)</span>
+  <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> ""
+<span class="keyword">end</span>  <span class="comment">// end of [statements_to_string]
+</span>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3859"><span class="dyncstdec">add_global_val <span class="keyword">(</span>str<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>string <span class="comment">(*type*)</span><span class="keyword">,</span> string <span class="comment">(* identifier *)</span><span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3943"><span class="dyncstdec">get_global_val <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3985"><span class="dyncstdec">get_counter <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+
+<span class="keyword">local</span>
+
+<span class="keyword">val</span> gv_table <span class="keyword">=</span> ref&lt;<span class="staexp">symenv_t <span class="keyword">(</span>global_val<span class="keyword">)</span></span><span class="keyword">&gt;</span> <span class="keyword">(</span>symenv_make <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span>
+<span class="keyword">val</span> gv_str_counter <span class="keyword">=</span> ref&lt;<span class="staexp">int</span><span class="keyword">&gt;</span> <span class="keyword">(</span>0<span class="keyword">)</span>
+
+<span class="keyword">val</span> gv_counter <span class="keyword">=</span> ref&lt;<span class="staexp">int</span><span class="keyword">&gt;</span> <span class="keyword">(</span>0<span class="keyword">)</span>
+<span class="keyword">in</span>
+
+<span class="keyword">implement</span> add_global_val <span class="keyword">(</span>str<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> table <span class="keyword">=</span> <span class="keyword">!</span>gv_table
+  <span class="keyword">val</span> sym <span class="keyword">=</span> symbol_make_name <span class="keyword">(</span>str<span class="keyword">)</span>
+  <span class="keyword">val</span> gv_opt <span class="keyword">=</span> symenv_lookup <span class="keyword">(</span>table<span class="keyword">,</span> sym<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> gv_opt <span class="keyword">of</span>
+  <span class="keyword">|</span> Some0 gv <span class="keyword">=&gt;</span> <span class="keyword">(</span>gv<span class="keyword">.</span>gv_typ<span class="keyword">,</span> gv<span class="keyword">.</span>gv_id<span class="keyword">)</span>
+  <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>len<span class="keyword">,</span> gv_string<span class="keyword">)</span> <span class="keyword">=</span> string_formalize_llvm_gv <span class="keyword">(</span>str<span class="keyword">)</span>
+
+    <span class="keyword">val</span> counter <span class="keyword">=</span> <span class="keyword">!</span>gv_str_counter
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>gv_str_counter := counter + 1
+
+    <span class="keyword">val</span> gv_nam <span class="keyword">=</span> "@"<span class="keyword">:</span> <span class="staexp">string</span>
+    <span class="keyword">val</span> gv_nam <span class="keyword">=</span> gv_nam + gv_str_pre + tostring_int <span class="keyword">(</span>counter<span class="keyword">)</span>  <span class="comment">// @.str1
+</span>    <span class="keyword">val</span> gv_str <span class="keyword">=</span> gv_nam + " = private constant [" + tostring_int <span class="keyword">(</span>len<span class="keyword">)</span> +
+                 " x i8] c" + gv_string + ", align 1"
+
+    <span class="keyword">val</span> gv_stat <span class="keyword">=</span> STATplain gv_str
+    <span class="keyword">val</span> gv_typ <span class="keyword">=</span> "i8*"
+    <span class="keyword">val</span> gv_id <span class="keyword">=</span> "noalias getelementptr inbounds ([" + 
+                tostring_int <span class="keyword">(</span>len<span class="keyword">)</span> + " x i8]* " + gv_nam + ", i32 0, i32 0)"
+
+    <span class="keyword">val</span> gv <span class="keyword">=</span> <span class="keyword">'{</span>gv_stat <span class="keyword">=</span> gv_stat<span class="keyword">,</span> gv_typ <span class="keyword">=</span> gv_typ<span class="keyword">,</span> gv_id <span class="keyword">=</span> gv_id<span class="keyword">}</span>
+    <span class="keyword">val</span> table <span class="keyword">=</span> symenv_insert <span class="keyword">(</span>table<span class="keyword">,</span> sym<span class="keyword">,</span> gv<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>gv_table := table
+  
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>gv_typ<span class="keyword">,</span> gv_id<span class="keyword">)</span>
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> get_global_val <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> gvs <span class="keyword">=</span> symenv_listize <span class="keyword">(</span><span class="keyword">!</span>gv_table<span class="keyword">)</span>
+  <span class="keyword">val</span> stats <span class="keyword">=</span> list0_map_fun&lt; <span class="staexp"><span class="keyword">@(</span>symbol_t<span class="keyword">,</span> global_val<span class="keyword">)</span></span><span class="keyword">&gt;&lt;</span><span class="staexp">statement</span><span class="keyword">&gt;</span> <span class="keyword">(</span>
+              gvs<span class="keyword">,</span> <span class="keyword">lam</span> x <span class="keyword">=&gt;</span> <span class="keyword">(</span>x<span class="keyword">.</span>1<span class="keyword">)</span><span class="keyword">.</span>gv_stat<span class="keyword">)</span>
+<span class="keyword">in</span>
+  stats
+<span class="keyword">end</span>
+      
+<span class="keyword">implement</span> get_counter <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> counter <span class="keyword">=</span> <span class="keyword">!</span>gv_counter
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>gv_counter := counter + 1
+<span class="keyword">in</span>
+  tostring_int <span class="keyword">(</span>counter<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>  <span class="comment">// [end of local]
+</span>
+<span class="comment">(* ************* *************** *)</span>
+
+<span class="keyword">fun</span> trans_llvm_typ <span class="keyword">(</span>t2yp<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> t2yp <span class="keyword">of</span>
+  <span class="keyword">|</span> T2YPint <span class="keyword">(</span><span class="keyword">)</span>  <span class="keyword">=&gt;</span> type_int
+  <span class="keyword">|</span> T2YPbool <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> "i32"
+  <span class="keyword">|</span> T2YPstr <span class="keyword">(</span><span class="keyword">)</span>  <span class="keyword">=&gt;</span> "i8*"
+  <span class="keyword">|</span> T2YPenv <span class="keyword">(</span><span class="keyword">)</span>  <span class="keyword">=&gt;</span> "%struct.env_t*"
+  <span class="keyword">|</span> T2YPlist <span class="keyword">(</span>_<span class="keyword">)</span> <span class="keyword">=&gt;</span> "%struct.list_t*"
+  <span class="keyword">|</span> T2YPvar <span class="keyword">(</span><span class="keyword">)</span>  <span class="keyword">=&gt;</span> "i8*"
+  <span class="keyword">|</span> T2YPclo <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> _<span class="keyword">)</span>  <span class="keyword">=&gt;</span> "%struct.closure_t"
+  <span class="keyword">|</span> T2YPtup <span class="keyword">(</span>ts<span class="keyword">)</span>  <span class="keyword">=&gt;</span> <span class="keyword">case+</span> ts <span class="keyword">of</span>
+          <span class="keyword">|</span> cons <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> "%struct.tuple_t*"
+          <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> "i32"
+
+<span class="keyword">fun</span> trans_llvm_valprimlst_typ <span class="keyword">(</span>args<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span> <span class="keyword">=</span> 
+  loop <span class="keyword">(</span>args<span class="keyword">,</span> i<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>args<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span> <span class="keyword">=</span> 
+    <span class="keyword">case+</span> args <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>arg<span class="keyword">,</span> args1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> t2yp <span class="keyword">=</span> arg<span class="keyword">.</span>valprim_typ
+
+      <span class="keyword">val</span> arg_typ <span class="keyword">=</span> trans_llvm_typ <span class="keyword">(</span>t2yp<span class="keyword">)</span>
+      <span class="keyword">val</span> arg_str <span class="keyword">=</span> <span class="keyword">if</span> <span class="keyword">(</span>i <span class="keyword">&gt;</span> 0<span class="keyword">)</span> <span class="keyword">then</span> ", " + arg_typ <span class="keyword">else</span> arg_typ
+    <span class="keyword">in</span>
+      arg_str + loop <span class="keyword">(</span>args1<span class="keyword">,</span> i + 1<span class="keyword">)</span>
+    <span class="keyword">end</span>
+    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> ""
+<span class="keyword">}</span>
+
+<span class="comment">(* ************* *************** *)</span>
+
+<span class="keyword">fun</span> trans_llvm_args <span class="keyword">(</span>args<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span> <span class="keyword">=</span> loop <span class="keyword">(</span>args<span class="keyword">,</span> 0<span class="keyword">)</span> <span class="keyword">where</span> <span class="keyword">{</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>args<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span> <span class="keyword">=</span> 
+    <span class="keyword">case+</span> args <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>arg<span class="keyword">,</span> args1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> t2yp <span class="keyword">=</span> arg<span class="keyword">.</span>valprim_typ
+      <span class="keyword">val</span> node <span class="keyword">=</span> arg<span class="keyword">.</span>valprim_node
+      <span class="keyword">val</span> tmpvar <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">case+</span> node <span class="keyword">of</span>
+          <span class="keyword">|</span> VPtmp <span class="keyword">(</span>tmpvar<span class="keyword">)</span> <span class="keyword">=&gt;</span> tmpvar
+          <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+             <span class="comment">// val () = fprint_valprim (stderr_ref, arg)
+</span>          <span class="keyword">in</span>
+             ETRACE_MSG_OPR <span class="keyword">(</span>"trans_llvm_args args should be VPtmp\n"<span class="keyword">,</span> 
+                    ETRACE_LEVEL_ERROR<span class="keyword">,</span> abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+          <span class="keyword">end</span>
+          <span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tmpvar</span>
+      <span class="keyword">val</span> arg_nam <span class="keyword">=</span> tmpvar_get_name <span class="keyword">(</span>tmpvar<span class="keyword">)</span>
+      <span class="keyword">val</span> arg_typ <span class="keyword">=</span> trans_llvm_typ <span class="keyword">(</span>t2yp<span class="keyword">)</span>
+      <span class="keyword">val</span> arg_str <span class="keyword">=</span> arg_typ + " %" + arg_nam
+      <span class="keyword">val</span> arg_str <span class="keyword">=</span> <span class="keyword">if</span> <span class="keyword">(</span>i <span class="keyword">&gt;</span> 0<span class="keyword">)</span> <span class="keyword">then</span> ", " + arg_str <span class="keyword">else</span> arg_str
+    <span class="keyword">in</span>
+      arg_str + loop <span class="keyword">(</span>args1<span class="keyword">,</span> i + 1<span class="keyword">)</span>
+    <span class="keyword">end</span>
+    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> ""
+<span class="keyword">}</span>
+
+<span class="keyword">fun</span> valprim_get_name <span class="keyword">(</span>vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> def<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> vp<span class="keyword">.</span>valprim_node <span class="keyword">of</span>
+  <span class="keyword">|</span> VPenv _ <span class="keyword">=&gt;</span> def
+  <span class="keyword">|</span> VPbool _ <span class="keyword">=&gt;</span> def
+  <span class="keyword">|</span> VPclo <span class="keyword">(</span>tmpvar<span class="keyword">,</span> _<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> tmpvar_get_name <span class="keyword">(</span>tmpvar<span class="keyword">)</span>
+  <span class="keyword">|</span> VPint _ <span class="keyword">=&gt;</span> def
+  <span class="keyword">|</span> VPstr _ <span class="keyword">=&gt;</span> def
+  <span class="keyword">|</span> VPtmp <span class="keyword">(</span>tmpvar<span class="keyword">)</span> <span class="keyword">=&gt;</span> tmpvar_get_name <span class="keyword">(</span>tmpvar<span class="keyword">)</span>
+  <span class="keyword">|</span> VPtup <span class="keyword">(</span>tmpvar<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> tmpvar_get_name <span class="keyword">(</span>tmpvar<span class="keyword">)</span>
+
+<span class="keyword">fun</span> trans_llvm_fun_args_ret_alloc <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> args <span class="keyword">=</span> funent_get_args <span class="keyword">(</span>ent<span class="keyword">)</span>
+
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>args<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">,</span> accu<span class="keyword">:</span> <span class="staexp">statements</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span> <span class="keyword">=</span> 
+    <span class="keyword">case+</span> args <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>arg<span class="keyword">,</span> args1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> t2yp <span class="keyword">=</span> arg<span class="keyword">.</span>valprim_typ
+      <span class="keyword">val</span> node <span class="keyword">=</span> arg<span class="keyword">.</span>valprim_node
+      <span class="keyword">val</span> tmpvar <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">case+</span> node <span class="keyword">of</span>
+          <span class="keyword">|</span> VPtmp <span class="keyword">(</span>tmpvar<span class="keyword">)</span> <span class="keyword">=&gt;</span> tmpvar
+          <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+             <span class="comment">// val () = fprint_valprim (stderr_ref, arg)
+</span>          <span class="keyword">in</span>
+             ETRACE_MSG_OPR <span class="keyword">(</span>"trans_llvm_args args should be VPtmp\n"<span class="keyword">,</span> 
+                    ETRACE_LEVEL_ERROR<span class="keyword">,</span> abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+          <span class="keyword">end</span>
+          <span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tmpvar</span>
+      <span class="keyword">val</span> arg_nam <span class="keyword">=</span> tmpvar_get_name <span class="keyword">(</span>tmpvar<span class="keyword">)</span>
+      <span class="keyword">val</span> arg_typ <span class="keyword">=</span> trans_llvm_typ <span class="keyword">(</span>t2yp<span class="keyword">)</span>
+
+      <span class="keyword">val</span> arg_str <span class="keyword">=</span> "%" + arg_nam + str_addr_postfix + 
+                     " = alloca " + arg_typ
+      <span class="keyword">val</span> arg_stat <span class="keyword">=</span> STATindent <span class="keyword">(</span>arg_str<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      loop <span class="keyword">(</span>args1<span class="keyword">,</span> arg_stat :: accu<span class="keyword">)</span>
+    <span class="keyword">end</span>
+    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> accu
+
+  <span class="keyword">val</span> args_stats <span class="keyword">=</span> loop <span class="keyword">(</span>args<span class="keyword">,</span> nil<span class="keyword">)</span>
+
+  <span class="keyword">val</span> ret_vp <span class="keyword">=</span> funent_get_ret <span class="keyword">(</span>ent<span class="keyword">)</span>
+  <span class="keyword">val</span> ret_typ <span class="keyword">=</span> trans_llvm_typ <span class="keyword">(</span>ret_vp<span class="keyword">.</span>valprim_typ<span class="keyword">)</span>
+  <span class="keyword">val</span> ret_nam <span class="keyword">=</span> valprim_get_name <span class="keyword">(</span>ret_vp<span class="keyword">,</span> str_retval<span class="keyword">)</span>
+
+  <span class="keyword">val</span> ret_str <span class="keyword">=</span> "%" + ret_nam + " = alloca " + ret_typ
+  <span class="keyword">val</span> ret_stat <span class="keyword">=</span> STATindent <span class="keyword">(</span>ret_str<span class="keyword">)</span>
+
+  <span class="keyword">val</span> stats <span class="keyword">=</span> list0_reverse <span class="keyword">(</span>ret_stat :: args_stats<span class="keyword">)</span>
+<span class="keyword">in</span>
+  stats
+<span class="keyword">end</span>
+
+<span class="comment">(* add env as the first parameter *)</span>
+<span class="keyword">fun</span> trans_llvm_fun_decl <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent_t</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">string</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> fl <span class="keyword">=</span> funent_get_lab <span class="keyword">(</span>ent<span class="keyword">)</span>
+  <span class="keyword">val</span> nam <span class="keyword">=</span> funlab_get_name <span class="keyword">(</span>fl<span class="keyword">)</span>
+  <span class="keyword">val</span> args <span class="keyword">=</span> funent_get_args <span class="keyword">(</span>ent<span class="keyword">)</span>
+
+  <span class="keyword">val</span> ret_vp <span class="keyword">=</span> funent_get_ret <span class="keyword">(</span>ent<span class="keyword">)</span>
+  <span class="keyword">val</span> ret_typ <span class="keyword">=</span> trans_llvm_typ <span class="keyword">(</span>ret_vp<span class="keyword">.</span>valprim_typ<span class="keyword">)</span>
+
+  <span class="keyword">val</span> stat <span class="keyword">=</span> "define " + ret_typ + " @" + nam + "("
+  <span class="keyword">val</span> stat <span class="keyword">=</span> stat + trans_llvm_args <span class="keyword">(</span>cons <span class="keyword">(</span>env_arg<span class="keyword">,</span> args<span class="keyword">)</span><span class="keyword">)</span> + ") nounwind"
+<span class="keyword">in</span>
+  stat
+<span class="keyword">end</span>
+
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9197"><span class="dyncstdec">trans_llvm_instrlst <span class="keyword">(</span>body<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9257"><span class="dyncstdec">trans_llvm_instr <span class="keyword">(</span>instr<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
+
+<span class="comment">(* 
+ret:
+  nam: string including the preceding %
+*)</span>
+<span class="keyword">fun</span> trans_llvm_valprim <span class="keyword">(</span>vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> 
+  <span class="staexp"><span class="keyword">(</span>statements<span class="keyword">,</span> string <span class="comment">(*type*)</span><span class="keyword">,</span> string <span class="comment">(*name*)</span><span class="keyword">)</span></span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> node <span class="keyword">=</span> vp<span class="keyword">.</span>valprim_node
+  <span class="keyword">val</span> typ <span class="keyword">=</span> vp<span class="keyword">.</span>valprim_typ
+  <span class="keyword">val</span> typ_str <span class="keyword">=</span> trans_llvm_typ <span class="keyword">(</span>typ<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> node <span class="keyword">of</span>
+  <span class="keyword">|</span> VPenv <span class="keyword">(</span>pos<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> nam <span class="keyword">=</span> "%" + env_str + "_" + tostring_int <span class="keyword">(</span>pos<span class="keyword">)</span> + "_" +
+             get_counter <span class="keyword">(</span><span class="keyword">)</span>
+    <span class="keyword">val</span> nam1 <span class="keyword">=</span> nam + "b"
+
+    <span class="keyword">val</span> env_nam <span class="keyword">=</span> tmpvar_get_name <span class="keyword">(</span>env_tmpvar<span class="keyword">)</span>
+    <span class="keyword">val</span> stat_str1 <span class="keyword">=</span> nam1 + " = call i8* @env_get(%struct.env_t* %" + 
+              env_nam + ", i32 " + tostring_int <span class="keyword">(</span>pos<span class="keyword">)</span> + ") nounwind"
+    <span class="keyword">val</span> stat_str2 <span class="keyword">=</span> nam + " = bitcast i8* " + nam1 + " to " + typ_str
+    <span class="keyword">val</span> stats <span class="keyword">=</span> STATindent <span class="keyword">(</span>stat_str1<span class="keyword">)</span> :: STATindent <span class="keyword">(</span>stat_str2<span class="keyword">)</span> :: nil
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>stats<span class="keyword">,</span> typ_str<span class="keyword">,</span> nam<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> VPbool <span class="keyword">(</span>b<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">if</span> b <span class="keyword">then</span> <span class="keyword">(</span>nil<span class="keyword">,</span> typ_str<span class="keyword">,</span> "1"<span class="keyword">)</span>
+                  <span class="keyword">else</span> <span class="keyword">(</span>nil<span class="keyword">,</span> typ_str<span class="keyword">,</span> "0"<span class="keyword">)</span>
+  <span class="keyword">|</span> VPclo <span class="keyword">(</span>tmpvar<span class="keyword">,</span> fl<span class="keyword">,</span> vps<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>nil<span class="keyword">,</span> typ_str<span class="keyword">,</span> 
+                                 "%" + tmpvar_get_name <span class="keyword">(</span>tmpvar<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">|</span> VPint <span class="keyword">(</span>i<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>nil<span class="keyword">,</span> typ_str<span class="keyword">,</span> tostring_int <span class="keyword">(</span>i<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">|</span> VPstr <span class="keyword">(</span>str<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>_<span class="keyword">,</span> nam<span class="keyword">)</span> <span class="keyword">=</span> add_global_val <span class="keyword">(</span>str<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>nil<span class="keyword">,</span> typ_str<span class="keyword">,</span> nam<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> VPtmp <span class="keyword">(</span>tmpvar<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>nil<span class="keyword">,</span> typ_str<span class="keyword">,</span> "%" + tmpvar_get_name <span class="keyword">(</span>tmpvar<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">|</span> VPtup <span class="keyword">(</span>tmpvar<span class="keyword">,</span> vps<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> ret <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">if</span> list0_length <span class="keyword">(</span>vps<span class="keyword">)</span> <span class="keyword">=</span> 0 <span class="keyword">then</span> 
+          <span class="keyword">(</span>nil<span class="keyword">,</span> typ_str<span class="keyword">,</span> "null"<span class="keyword">)</span>
+          <span class="keyword">else</span> <span class="keyword">(</span>nil<span class="keyword">,</span> typ_str<span class="keyword">,</span> "%" + tmpvar_get_name <span class="keyword">(</span>tmpvar<span class="keyword">)</span><span class="keyword">)</span>
+          <span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>statements<span class="keyword">,</span> string<span class="keyword">,</span> string<span class="keyword">)</span></span>
+  <span class="keyword">in</span>
+    ret
+  <span class="keyword">end</span>
+<span class="keyword">end</span>
+
+<span class="keyword">fun</span> trans_llvm_valprimlst <span class="keyword">(</span>vps<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> 
+  <span class="staexp"><span class="keyword">(</span>statements<span class="keyword">,</span> list0 string<span class="comment">(*type*)</span><span class="keyword">,</span> list0 string <span class="comment">(*nam*)</span><span class="keyword">)</span></span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> vps <span class="keyword">of</span>
+  <span class="keyword">|</span> cons <span class="keyword">(</span>vp<span class="keyword">,</span> vps1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>stats<span class="keyword">,</span> typ<span class="keyword">,</span> name<span class="keyword">)</span> <span class="keyword">=</span> trans_llvm_valprim <span class="keyword">(</span>vp<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>stats1<span class="keyword">,</span> typs<span class="keyword">,</span> names<span class="keyword">)</span> <span class="keyword">=</span> trans_llvm_valprimlst <span class="keyword">(</span>vps1<span class="keyword">)</span>
+  <span class="keyword">in</span>
+    <span class="keyword">(</span>list0_append <span class="keyword">(</span>stats<span class="keyword">,</span> stats1<span class="keyword">)</span><span class="keyword">,</span> typ :: typs<span class="keyword">,</span> name :: names<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">(</span>nil<span class="keyword">,</span> nil<span class="keyword">,</span> nil<span class="keyword">)</span>
+
+<span class="keyword">implement</span> trans_llvm_instrlst <span class="keyword">(</span>body<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> loop <span class="keyword">(</span>body<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">,</span> accu<span class="keyword">:</span> <span class="staexp">statements</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> body <span class="keyword">of</span>
+    <span class="keyword">|</span> cons <span class="keyword">(</span>instr<span class="keyword">,</span> body1<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+      <span class="keyword">val</span> stats <span class="keyword">=</span> trans_llvm_instr <span class="keyword">(</span>instr<span class="keyword">)</span>
+      <span class="keyword">val</span> accu <span class="keyword">=</span> list0_append <span class="keyword">(</span>accu<span class="keyword">,</span> stats<span class="keyword">)</span>
+    <span class="keyword">in</span>
+      loop <span class="keyword">(</span>body1<span class="keyword">,</span> accu<span class="keyword">)</span>
+    <span class="keyword">end</span>
+    <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> accu
+<span class="keyword">in</span>
+  loop <span class="keyword">(</span>body<span class="keyword">,</span> nil<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="comment">(* ******** *********** *)</span>
+
+<span class="keyword">fun</span> trans_llvm_instr_call <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> f<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> 
+  args<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">,</span> ret_typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span> <span class="keyword">=</span> <span class="keyword">let</span>
+
+  <span class="comment">// name of the closure
+</span>  <span class="keyword">val</span> <span class="keyword">(</span>stats0<span class="keyword">,</span> _<span class="keyword">,</span> f_nam<span class="keyword">)</span> <span class="keyword">=</span> trans_llvm_valprim <span class="keyword">(</span>f<span class="keyword">)</span>
+  <span class="keyword">val</span> f_fun_nam <span class="keyword">=</span>  f_nam + "_f_" + get_counter <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">val</span> f_fun_nam1 <span class="keyword">=</span>  f_fun_nam + "b"
+
+  <span class="comment">// get function pointer
+</span>  <span class="keyword">val</span> stat1 <span class="keyword">=</span> STATindent <span class="keyword">(</span>f_fun_nam1 + " = call i8* " + 
+                    "@closure_get_fun(%struct.closure_t* " + 
+                    f_nam + ") nounwind"<span class="keyword">)</span>
+  
+  <span class="comment">// build the function type
+</span>  <span class="keyword">val</span> f_typ <span class="keyword">=</span> f<span class="keyword">.</span>valprim_typ
+  <span class="keyword">val-</span> T2YPclo <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">,</span> ret_typ1<span class="keyword">)</span> <span class="keyword">=</span> f_typ
+  <span class="keyword">val</span> args_typ_str <span class="keyword">=</span> trans_llvm_valprimlst_typ <span class="keyword">(</span>args<span class="keyword">,</span> 1<span class="keyword">)</span>
+
+  <span class="keyword">val</span> ret_typ_str <span class="keyword">=</span> trans_llvm_typ <span class="keyword">(</span>ret_typ<span class="keyword">)</span>
+  <span class="comment">// this one maybe any (due to list operation such as list_head)
+</span>  <span class="keyword">val</span> ret_typ_str1 <span class="keyword">=</span> trans_llvm_typ <span class="keyword">(</span>ret_typ1<span class="keyword">)</span>
+
+  <span class="comment">// convert function pointer
+</span>  <span class="keyword">val</span> stat2 <span class="keyword">=</span> STATindent <span class="keyword">(</span>f_fun_nam + " = bitcast i8* " + f_fun_nam1 +
+              " to " + ret_typ_str1 + " (%struct.env_t*" + 
+              args_typ_str + ")*"<span class="keyword">)</span>
+
+  <span class="comment">// get function env
+</span>  <span class="keyword">val</span> f_env_nam <span class="keyword">=</span>  f_nam + "_env_" + get_counter <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">val</span> stat3 <span class="keyword">=</span> STATindent <span class="keyword">(</span>f_env_nam + " = call %struct.env_t*" + 
+                 " @closure_get_env(%struct.closure_t* " + f_nam +
+                 ") nounwind"<span class="keyword">)</span>
+
+  <span class="keyword">val</span> ret_str <span class="keyword">=</span> "%" + tmpvar_get_name <span class="keyword">(</span>ret<span class="keyword">)</span> 
+  <span class="keyword">val</span> ret_str1 <span class="keyword">=</span> ret_str + "b"
+
+  <span class="keyword">val</span> <span class="keyword">(</span>stats4<span class="keyword">,</span> typ_lst<span class="keyword">,</span> nam_lst<span class="keyword">)</span> <span class="keyword">=</span> trans_llvm_valprimlst <span class="keyword">(</span>args<span class="keyword">)</span>
+
+  <span class="keyword">fun</span> loop_args <span class="keyword">(</span>typs<span class="keyword">:</span> <span class="staexp">list0 string</span><span class="keyword">,</span> nams<span class="keyword">:</span> <span class="staexp">list0 string</span><span class="keyword">,</span> 
+    init<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> i<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span> <span class="keyword">=</span>
+    <span class="keyword">case+</span> <span class="keyword">(</span>typs<span class="keyword">,</span> nams<span class="keyword">)</span> <span class="keyword">of</span>
+    <span class="keyword">|</span> <span class="keyword">(</span>cons <span class="keyword">(</span>typ<span class="keyword">,</span> typs1<span class="keyword">)</span><span class="keyword">,</span> cons <span class="keyword">(</span>nam<span class="keyword">,</span> nams1<span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span>
+        <span class="keyword">if</span> i <span class="keyword">&gt;</span> 0 <span class="keyword">then</span> loop_args <span class="keyword">(</span>
+             typs1<span class="keyword">,</span> nams1<span class="keyword">,</span> init + ", " + typ + " " + nam<span class="keyword">,</span> i + 1<span class="keyword">)</span>
+        <span class="keyword">else</span> loop_args <span class="keyword">(</span>typs1<span class="keyword">,</span> nams1<span class="keyword">,</span> init + typ + " " + nam<span class="keyword">,</span> i + 1<span class="keyword">)</span>
+    <span class="keyword">|</span> <span class="keyword">(</span>nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">,</span> nil <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> init
+    <span class="keyword">|</span> <span class="keyword">(</span>_<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"loop_args lists not of the same length\n"<span class="keyword">,</span> 
+                    ETRACE_LEVEL_ERROR<span class="keyword">,</span> abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+
+  <span class="comment">// call the function and convert the ret if necessary
+</span>  <span class="keyword">val</span> stats4 <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">if</span> ret_typ_str <span class="keyword">=</span> ret_typ_str1 <span class="keyword">then</span>
+      STATindent <span class="keyword">(</span>ret_str + " = call " + ret_typ_str1 + " " + f_fun_nam +
+                "(%struct.env_t* " + f_env_nam + 
+                loop_args <span class="keyword">(</span>typ_lst<span class="keyword">,</span> nam_lst<span class="keyword">,</span> ""<span class="keyword">,</span> 1<span class="keyword">)</span> + ")"<span class="keyword">)</span> :: nil
+      <span class="keyword">else</span> 
+      STATindent <span class="keyword">(</span>ret_str1 + " = call " + ret_typ_str1 + " " + f_fun_nam +
+                "(%struct.env_t* " + f_env_nam + 
+                loop_args <span class="keyword">(</span>typ_lst<span class="keyword">,</span> nam_lst<span class="keyword">,</span> ""<span class="keyword">,</span> 1<span class="keyword">)</span> + ")"<span class="keyword">)</span> ::
+      STATindent <span class="keyword">(</span>ret_str + " = bitcast " + ret_typ_str1 + " " +
+                 ret_str1 + " to " + ret_typ_str<span class="keyword">)</span> :: nil
+               <span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span>
+   
+  <span class="keyword">val</span> stats <span class="keyword">=</span> stat1 :: stat2 :: stat3 :: stats4
+  <span class="keyword">val</span> stats <span class="keyword">=</span> list0_append <span class="keyword">(</span>stats0<span class="keyword">,</span> stats<span class="keyword">)</span>
+<span class="keyword">in</span>
+  stats
+<span class="keyword">end</span>
+
+<span class="keyword">fun</span> trans_llvm_instr_cond <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> 
+  brthen<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">,</span> brelse<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span> <span class="keyword">=</span> nil  <span class="comment">// let
+</span><span class="comment">//   val ret_str = tmpvar_get_name (ret)
+</span><span class="comment">//   val ret_typ = trans_cpp_typ (typ)
+</span><span class="comment">//   val stat_dec = STATindent (ret_typ + " " + ret_str + ";")
+</span><span class="comment">// 
+</span>
+  
+<span class="keyword">fun</span> trans_llvm_instr_opr <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">,</span> opr<span class="keyword">:</span> <span class="staexp">opr</span><span class="keyword">,</span> 
+  args<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span>  <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val+</span> OPR sym <span class="keyword">=</span> opr
+  <span class="comment">// statements for handling arguments
+</span>  <span class="keyword">val</span> <span class="keyword">(</span>stats0<span class="keyword">,</span> typlst<span class="keyword">,</span> namlst<span class="keyword">)</span> <span class="keyword">=</span> trans_llvm_valprimlst <span class="keyword">(</span>args<span class="keyword">)</span>
+
+  <span class="keyword">val</span> ret_typ <span class="keyword">=</span> trans_llvm_typ <span class="keyword">(</span>typ<span class="keyword">)</span>
+  <span class="keyword">val</span> ret_nam <span class="keyword">=</span> "%" + tmpvar_get_name <span class="keyword">(</span>ret<span class="keyword">)</span>
+  <span class="keyword">val</span> ret_nam1 <span class="keyword">=</span> ret_nam + "b"
+
+  <span class="keyword">val</span> <span class="keyword">(</span>stats1<span class="keyword">,</span> needret<span class="keyword">)</span> <span class="keyword">=</span> 
+    <span class="keyword">(</span><span class="keyword">case+</span> 0 <span class="keyword">of</span>
+    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_PLUS <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s1 :: s2 :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str <span class="keyword">=</span> ret_nam + " = add i32 " + s1 + ", " + s2
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_ when ...]
+</span>    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_MINUS <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s1 :: s2 :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str <span class="keyword">=</span> ret_nam + " = sub i32 " + s1 + ", " + s2
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_ when ...]
+</span>    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_TIMES <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s1 :: s2 :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str <span class="keyword">=</span> ret_nam + " = mul i32 " + s1 + ", " + s2
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_ when ...]
+</span>    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_SLASH <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s1 :: s2 :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str <span class="keyword">=</span> ret_nam + " = sdiv i32 " + s1 + ", " + s2
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_ when ...]
+</span>    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_UMINUS <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str <span class="keyword">=</span> ret_nam + " = sub i32 0, " + s
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_ when ...]
+</span>    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_GT <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s1 :: s2 :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str1 <span class="keyword">=</span> ret_nam1 + " = icmp sgt i32 " + s1 + ", " + s2
+        <span class="keyword">val</span> stat_str2 <span class="keyword">=</span> ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str1<span class="keyword">)</span> :: STATindent <span class="keyword">(</span>stat_str2<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_ when ...]
+</span>    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_GTE <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s1 :: s2 :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str1 <span class="keyword">=</span> ret_nam1 + " = icmp sge i32 " + s1 + ", " + s2
+        <span class="keyword">val</span> stat_str2 <span class="keyword">=</span> ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str1<span class="keyword">)</span> :: STATindent <span class="keyword">(</span>stat_str2<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_ when ...]
+</span>    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_LT <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s1 :: s2 :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str1 <span class="keyword">=</span> ret_nam1 + " = icmp slt i32 " + s1 + ", " + s2
+        <span class="keyword">val</span> stat_str2 <span class="keyword">=</span> ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str1<span class="keyword">)</span> :: STATindent <span class="keyword">(</span>stat_str2<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span>
+    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_LTE <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s1 :: s2 :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str1 <span class="keyword">=</span> ret_nam1 + " = icmp sle i32 " + s1 + ", " + s2
+        <span class="keyword">val</span> stat_str2 <span class="keyword">=</span> ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str1<span class="keyword">)</span> :: STATindent <span class="keyword">(</span>stat_str2<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span>
+    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_EQ <span class="keyword">=&gt;</span> <span class="keyword">let</span>      
+        <span class="keyword">val-</span> s1 :: s2 :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str1 <span class="keyword">=</span> ret_nam1 + " = icmp eq i32 " + s1 + ", " + s2
+        <span class="keyword">val</span> stat_str2 <span class="keyword">=</span> ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str1<span class="keyword">)</span> :: STATindent <span class="keyword">(</span>stat_str2<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span>
+    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_NEQ <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s1 :: s2 :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val</span> stat_str1 <span class="keyword">=</span> ret_nam1 + " = icmp ne i32 " + s1 + ", " + s2
+        <span class="keyword">val</span> stat_str2 <span class="keyword">=</span> ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str1<span class="keyword">)</span> :: STATindent <span class="keyword">(</span>stat_str2<span class="keyword">)</span> :: nil<span class="keyword">,</span> true<span class="keyword">)</span>
+      <span class="keyword">end</span>
+    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_PRINT <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> s :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val-</span> t  :: _ <span class="keyword">=</span> typlst
+        <span class="keyword">val</span> stat_str <span class="keyword">=</span> ret_nam + " = call i32 (i8*, ...)* @printf(" +
+                t + " " + s + ") nounwind"
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str<span class="keyword">)</span> :: nil<span class="keyword">,</span> false<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_ when ...]
+</span>    <span class="keyword">|</span> _ <span class="keyword">when</span> sym <span class="keyword">=</span> symbol_PRINT_INT <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+        <span class="keyword">val-</span> i  :: _ <span class="keyword">=</span> namlst
+        <span class="keyword">val-</span> t  :: _ <span class="keyword">=</span> typlst
+        <span class="keyword">val</span> <span class="keyword">(</span>typ<span class="keyword">,</span> id<span class="keyword">)</span> <span class="keyword">=</span> add_global_val <span class="keyword">(</span>"%i"<span class="keyword">)</span>
+        <span class="keyword">val</span> stat_str <span class="keyword">=</span> ret_nam + " = call i32 (i8*, ...)* @printf(" +
+                typ + " " + id + ", " + t + " " + i + ") nounwind"
+      <span class="keyword">in</span>
+        <span class="keyword">(</span>STATindent <span class="keyword">(</span>stat_str<span class="keyword">)</span> :: nil<span class="keyword">,</span> false<span class="keyword">)</span>
+      <span class="keyword">end</span> <span class="comment">// end of [_ when ...]
+</span>    <span class="keyword">|</span> _ <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"trans_cpp_instr_opr unsupported operator\n"<span class="keyword">,</span> 
+                      ETRACE_LEVEL_ERROR<span class="keyword">,</span> abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
+      <span class="comment">// end of [_]
+</span>    <span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>statements<span class="keyword">,</span> bool<span class="keyword">)</span></span>
+<span class="keyword">in</span>
+  list0_append <span class="keyword">(</span>stats0<span class="keyword">,</span> stats1<span class="keyword">)</span>
+<span class="keyword">end</span>  <span class="comment">// end of [trans_cpp_instr_opr]
+</span>
+<span class="keyword">fun</span> trans_llvm_instr_tup <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> vps<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span>
+<span class="keyword">=</span> nil  <span class="comment">// todo
+</span>
+<span class="keyword">fun</span> trans_llvm_instr_closure <span class="keyword">(</span>
+  ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> fl<span class="keyword">:</span> <span class="staexp">funlab_t</span><span class="keyword">,</span> vps<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span>
+<span class="keyword">=</span> nil  <span class="comment">// todo
+</span>
+<span class="keyword">fun</span> trans_llvm_instr_proj <span class="keyword">(</span>ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> 
+  pos<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span> <span class="keyword">=</span> nil  <span class="comment">// todo
+</span>
+
+<span class="keyword">implement</span> trans_llvm_instr <span class="keyword">(</span>instr<span class="keyword">)</span> <span class="keyword">=</span>
+  <span class="keyword">case+</span> instr<span class="keyword">.</span>instr_node <span class="keyword">of</span>
+  <span class="keyword">|</span> INSTRcall <span class="keyword">(</span>ret<span class="keyword">,</span> f<span class="keyword">,</span> args<span class="keyword">,</span> ret_typ<span class="keyword">)</span> <span class="keyword">=&gt;</span>
+    trans_llvm_instr_call <span class="keyword">(</span>ret<span class="keyword">,</span> f<span class="keyword">,</span> args<span class="keyword">,</span> ret_typ<span class="keyword">)</span>
+  <span class="keyword">|</span> INSTRcond <span class="keyword">(</span>ret<span class="keyword">,</span> typ<span class="keyword">,</span> v<span class="keyword">,</span> brthen<span class="keyword">,</span> brelse<span class="keyword">)</span> <span class="keyword">=&gt;</span>
+    trans_llvm_instr_cond <span class="keyword">(</span>ret<span class="keyword">,</span> typ<span class="keyword">,</span> v<span class="keyword">,</span> brthen<span class="keyword">,</span> brelse<span class="keyword">)</span>
+  <span class="keyword">|</span> INSTRmove_val <span class="keyword">(</span>tmpv<span class="keyword">,</span> vp<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> nam<span class="keyword">:</span> <span class="staexp">string</span> <span class="keyword">=</span> "%" + tmpvar_get_name <span class="keyword">(</span>tmpv<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span>stats<span class="keyword">,</span> vptyp<span class="keyword">,</span> vpnam<span class="keyword">)</span> <span class="keyword">=</span> trans_llvm_valprim <span class="keyword">(</span>vp<span class="keyword">)</span>
+    <span class="keyword">val</span> stats1 <span class="keyword">=</span> STATindent <span class="keyword">(</span>nam + " = " + vptyp + " " + vpnam <span class="keyword">)</span> :: nil
+  <span class="keyword">in</span>
+    list0_append <span class="keyword">(</span>stats<span class="keyword">,</span> stats1<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> INSTRopr <span class="keyword">(</span>ret<span class="keyword">,</span> t2yp<span class="keyword">,</span> opr<span class="keyword">,</span> vps<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="comment">// val () = printf ("opr\n", @())
+</span>  <span class="keyword">in</span>
+    trans_llvm_instr_opr <span class="keyword">(</span>ret<span class="keyword">,</span> t2yp<span class="keyword">,</span> opr<span class="keyword">,</span> vps<span class="keyword">)</span>
+  <span class="keyword">end</span>
+  <span class="keyword">|</span> INSTRtup <span class="keyword">(</span>ret<span class="keyword">,</span> vps<span class="keyword">)</span> <span class="keyword">=&gt;</span>
+    trans_llvm_instr_tup <span class="keyword">(</span>ret<span class="keyword">,</span> vps<span class="keyword">)</span>
+  <span class="keyword">|</span> INSTRclosure <span class="keyword">(</span>ret<span class="keyword">,</span> fl<span class="keyword">,</span> vps<span class="keyword">)</span> <span class="keyword">=&gt;</span>
+    trans_llvm_instr_closure <span class="keyword">(</span>ret<span class="keyword">,</span> fl<span class="keyword">,</span> vps<span class="keyword">)</span>
+  <span class="keyword">|</span> INSTRproj <span class="keyword">(</span>ret<span class="keyword">,</span> typ<span class="keyword">,</span> v<span class="keyword">,</span> pos<span class="keyword">)</span> <span class="keyword">=&gt;</span> <span class="keyword">let</span>
+    <span class="comment">// val () = printf ("proj\n", @())
+</span>  <span class="keyword">in</span>
+    trans_llvm_instr_proj <span class="keyword">(</span>ret<span class="keyword">,</span> typ<span class="keyword">,</span> v<span class="keyword">,</span> pos<span class="keyword">)</span>
+  <span class="keyword">end</span>
+
+<span class="comment">(* ************* ************ *)</span>
+
+<span class="keyword">fun</span> trans_llvm_fun_body <span class="keyword">(</span>
+  narg<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">,</span> body<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">,</span> ret<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> stats_body <span class="keyword">=</span> trans_llvm_instrlst <span class="keyword">(</span>body<span class="keyword">)</span>
+
+  <span class="comment">// val ret_typ = trans_llvm_typ (ret.valprim_typ)
+</span>
+  <span class="keyword">val</span> <span class="keyword">(</span>stats_ret0<span class="keyword">,</span> ret_typ<span class="keyword">,</span> ret_id<span class="keyword">)</span> <span class="keyword">=</span> trans_llvm_valprim <span class="keyword">(</span>ret<span class="keyword">)</span>
+  <span class="comment">// val ret_nam = valprim_get_name (ret, str_retval)
+</span>
+  <span class="keyword">val</span> ret_stat0 <span class="keyword">=</span> STATindent <span class="keyword">(</span>"br label %" + str_return<span class="keyword">)</span>
+  <span class="keyword">val</span> ret_stat1 <span class="keyword">=</span> STATplain <span class="keyword">(</span>"\n" + str_return + ":"<span class="keyword">)</span>
+  <span class="keyword">val</span> ret_stat2 <span class="keyword">=</span> STATindent <span class="keyword">(</span>str_ret + " " + ret_typ + " " + ret_id<span class="keyword">)</span>
+  <span class="keyword">val</span> stats_ret1 <span class="keyword">=</span> ret_stat0 :: ret_stat1 :: ret_stat2 :: nil
+
+  <span class="keyword">val</span> stats_ret <span class="keyword">=</span> list0_append <span class="keyword">(</span>stats_ret0<span class="keyword">,</span> stats_ret1<span class="keyword">)</span>
+<span class="keyword">in</span>
+  list0_append <span class="keyword">(</span>stats_body<span class="keyword">,</span> stats_ret<span class="keyword">)</span>
+<span class="keyword">end</span>
+
+<span class="comment">(* ************* ************ *)</span>
+
+<span class="keyword">fun</span> trans_llvm_funlst_def <span class="keyword">(</span>fns<span class="keyword">:</span> <span class="staexp">list0 funent_t</span><span class="keyword">,</span> os<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>ostream</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">fun</span> trans <span class="keyword">(</span>init<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">,</span> ent<span class="keyword">:</span> <span class="staexp">funent_t</span><span class="keyword">)</span><span class="keyword">:&lt;</span><span class="staexp">cloref1</span><span class="keyword">&gt;</span> <span class="staexp">string</span> <span class="keyword">=</span> <span class="keyword">let</span>
+    <span class="keyword">val</span> fl <span class="keyword">=</span> funent_get_lab <span class="keyword">(</span>ent<span class="keyword">)</span>
+    <span class="keyword">val</span> nargs <span class="keyword">=</span> funent_get_narg <span class="keyword">(</span>ent<span class="keyword">)</span>
+    <span class="keyword">val</span> body <span class="keyword">=</span> funent_get_body <span class="keyword">(</span>ent<span class="keyword">)</span>
+    <span class="keyword">val</span> ret <span class="keyword">=</span> funent_get_ret <span class="keyword">(</span>ent<span class="keyword">)</span>
+    <span class="keyword">val</span> nam <span class="keyword">=</span> funlab_get_name <span class="keyword">(</span>fl<span class="keyword">)</span>
+
+    <span class="keyword">val</span> fundef <span class="keyword">=</span> trans_llvm_fun_decl <span class="keyword">(</span>ent<span class="keyword">)</span>
+
+    <span class="keyword">val</span> fundef <span class="keyword">=</span> fundef + " " + scope_beg + "\n" + str_entry + ":\n"
+
+    <span class="keyword">val</span> fun_args_ret_alloc <span class="keyword">=</span> trans_llvm_fun_args_ret_alloc <span class="keyword">(</span>ent<span class="keyword">)</span>
+    <span class="keyword">val</span> fundef <span class="keyword">=</span> fundef + statements_to_string <span class="keyword">(</span>fun_args_ret_alloc<span class="keyword">)</span>
+
+    <span class="keyword">val</span> funbody <span class="keyword">=</span> trans_llvm_fun_body <span class="keyword">(</span>nargs<span class="keyword">,</span> body<span class="keyword">,</span> ret<span class="keyword">)</span>
+    <span class="keyword">val</span> fundef <span class="keyword">=</span> fundef + statements_to_string <span class="keyword">(</span>funbody<span class="keyword">)</span>
+    <span class="keyword">val</span> fundef <span class="keyword">=</span> fundef + scope_end + "\n\n"
+  <span class="keyword">in</span>
+    init + fundef
+  <span class="keyword">end</span>
+
+  <span class="keyword">val</span> header <span class="keyword">=</span> list0_fold_left <span class="keyword">(</span>trans<span class="keyword">,</span> ""<span class="keyword">,</span> fns<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ostream_in <span class="keyword">(</span>os<span class="keyword">,</span> header<span class="keyword">)</span>
+<span class="keyword">in</span>
+<span class="keyword">end</span>
+
+<span class="comment">(* ************* *************** *)</span>
+
+<span class="keyword">implement</span> trans_llvm <span class="keyword">(</span>instrs<span class="keyword">,</span> fns<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">var</span> os <span class="keyword">=</span> ostream_new <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ostream_in <span class="keyword">(</span>os<span class="keyword">,</span> header<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ostream_in <span class="keyword">(</span>os<span class="keyword">,</span> "\n\n"<span class="keyword">)</span>
+
+  <span class="keyword">val</span> main_ent <span class="keyword">=</span> funent_make <span class="keyword">(</span>mainlab<span class="keyword">,</span> 1<span class="keyword">,</span> nil<span class="keyword">,</span> instrs<span class="keyword">,</span> 
+    make_valprim <span class="keyword">(</span>VPint 0<span class="keyword">,</span> T2YPint<span class="keyword">)</span> <span class="comment">(*just a dummy return value*)</span><span class="keyword">,</span> nil<span class="keyword">)</span>
+  <span class="keyword">val</span> fns <span class="keyword">=</span> list0_append <span class="keyword">(</span>fns<span class="keyword">,</span> cons <span class="keyword">(</span>main_ent<span class="keyword">,</span> nil<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">var</span> os2 <span class="keyword">=</span> ostream_new <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> trans_llvm_funlst_def <span class="keyword">(</span>fns<span class="keyword">,</span> os2<span class="keyword">)</span>
+
+  <span class="keyword">val</span> global_stats <span class="keyword">=</span> get_global_val <span class="keyword">(</span><span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ostream_in <span class="keyword">(</span>os<span class="keyword">,</span> statements_to_string <span class="keyword">(</span>global_stats<span class="keyword">)</span><span class="keyword">)</span>
+
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ostream_in <span class="keyword">(</span>os<span class="keyword">,</span> "\n" + ostream_to_string <span class="keyword">(</span>os2<span class="keyword">)</span><span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ostream_in <span class="keyword">(</span>os<span class="keyword">,</span> "\n\n"<span class="keyword">)</span>
+ 
+   <span class="keyword">val</span> main_stats <span class="keyword">=</span> STATplain <span class="keyword">(</span>"define i32 @main(i32 %argc, i8** %argv) nounwind {"<span class="keyword">)</span> ::
+                    STATplain <span class="keyword">(</span>"entry:"<span class="keyword">)</span> :: 
+                        STATindent <span class="keyword">(</span>"%argc_addr = alloca i32"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"%argv_addr = alloca i8**"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"%retval = alloca i32"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"%0 = alloca i32"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"%\"alloca point\" = bitcast i32 0 to i32"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"store i32 %argc, i32* %argc_addr"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"store i8** %argv, i8*** %argv_addr"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"call void (...)* @init_lib() nounwind"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"%1 = call i32 @__main(%struct.env_t* null) nounwind"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"store i32 0, i32* %0, align 4"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"%2 = load i32* %0, align 4"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"store i32 %2, i32* %retval, align 4"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"br label %return"<span class="keyword">)</span> ::
+                    STATplain <span class="keyword">(</span>"return:"<span class="keyword">)</span> :: 
+                        STATindent <span class="keyword">(</span>"%retval1 = load i32* %retval"<span class="keyword">)</span> ::
+                        STATindent <span class="keyword">(</span>"ret i32 %retval1"<span class="keyword">)</span> :: 
+                    STATplain <span class="keyword">(</span>"}"<span class="keyword">)</span> :: nil
+   <span class="keyword">val</span> mainstr <span class="keyword">=</span> statements_to_string <span class="keyword">(</span>main_stats<span class="keyword">)</span>
+   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ostream_in <span class="keyword">(</span>os<span class="keyword">,</span> mainstr<span class="keyword">)</span>
+   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> ostream_in <span class="keyword">(</span>os<span class="keyword">,</span> "\n\n"<span class="keyword">)</span>
+<span class="keyword">in</span>
+  os
+<span class="keyword">end</span>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</body>
+</html>

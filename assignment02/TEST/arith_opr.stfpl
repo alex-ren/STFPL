@@ -1,0 +1,71 @@
+let
+  val id = lam (x) => x
+  val print_intln = lam (x) => let
+    val _ = print_int x
+    val _ = print "\n"
+  in () end
+
+  val print_bool = lam (x) =>
+    if x then print "true" else print "false"
+
+  val print_boolln = lam (x) => let
+    val _ = print_bool x
+    val _ = print "\n"
+  in () end
+
+  val x = id (1)
+  val y = id (2)
+  
+  val add = x + y
+  val sub = x - y
+  val mul = x * y
+  val div = x / y
+
+  val gt = x > y
+  val gte = x >= y
+  val lt = x < y
+  val lte = x <= y
+  val eq = (x = y)
+  val neq = (x <> y)
+  val vtrue = true
+  val vfalse = false
+
+  val _ = print ("1 + 2 = ")
+  val _ = print_intln (add)
+
+  val _ = print ("1 - 2 = ")
+  val _ = print_intln (sub)
+
+  val _ = print ("1 * 2 = ")
+  val _ = print_intln (mul)
+
+  val _ = print ("1 / 2 = ")
+  val _ = print_intln (div)
+
+  val _ = print ("1 > 2 = ")
+  val _ = print_boolln (gt)
+
+  val _ = print ("1 >= 2 = ")
+  val _ = print_boolln (gte)
+
+  val _ = print ("1 < 2 = ")
+  val _ = print_boolln (lt)
+
+  val _ = print ("1 <= 2 = ")
+  val _ = print_boolln (lte)
+
+  val _ = print ("(1 = 2) = ")
+  val _ = print_boolln (eq)
+
+  val _ = print ("1 <> 2 = ")
+  val _ = print_boolln (neq)
+
+  val _ = print ("true = ")
+  val _ = print_boolln (vtrue)
+
+  val _ = print ("false = ")
+  val _ = print_boolln (vfalse)
+in
+  ()
+end
+

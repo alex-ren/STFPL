@@ -453,11 +453,12 @@ implement trans_cpp_instr_call (ret, f, args, ret_typ) = let
 
   // build the function type
   val f_typ = f.valprim_typ
-  val- T2YPclo (nargs, args_typ, ret_typ1) = f_typ
+  val- T2YPclo (_, _, ret_typ1) = f_typ
   val args_typ_str = trans_cpp_valprimlst_typ (args, 1)
 
   val ret_typ_str = trans_cpp_typ (ret_typ)
-  val ret_typ_str1 = trans_cpp_typ (ret_typ1)  // this one maybe any (due to list function
+  // this one maybe any (due to list operation such as list_head)
+  val ret_typ_str1 = trans_cpp_typ (ret_typ1)
   val clo_typ_str = "(" + ret_typ_str1 + " (*)(env" + args_typ_str + "))"
 
   val ret_typ_str_convert = 
@@ -528,7 +529,7 @@ implement trans_cpp (instrs, fns) = let
        :: STATplain (funlab_get_name (mainlab) + "(0);")
        :: STATplain ("return 0;") :: nil
   
-   val main_stats = STATplain ("int main (int argc, char *argv)")
+   val main_stats = STATplain ("int main (int argc, char *argv[])")
        :: STATplain (scope_beg) :: STATcomp (body_stats)
        :: STATplain (scope_end) :: nil
    
