@@ -24,7 +24,7 @@ all: $(MODULE)
 	$(DEST_DIR)/$@
 
 funargs: 
-	./tester < TEST/funargs.stfpl 1>TEST/funargs.c
+	$(STFPL) < TEST/funargs.stfpl 1>TEST/funargs.c
 	echo should see type errors
 
 # queens:
