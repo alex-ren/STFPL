@@ -83,20 +83,20 @@ SOURCES_COMM := \
   libfunctions.dats \
   trans2.sats \
   trans2.dats \
-  trans_cpp.sats \
-  trans_cpp.dats \
   ostream.sats \
   ostream.dats \
   string_opr.sats \
   string_opr.dats \
-  trans_llvm.sats \
-  trans_llvm.dats \
 
 SOURCES_CPP := \
+  trans_cpp.sats \
+  trans_cpp.dats \
   test_cpp.dats
 
 SOURCES_LLVM := \
-  test_llvm.dats
+  trans_llvm.sats \
+  trans_llvm.dats \
+  test_llvm.dats \
 
 SOURCES := $(SOURCES_CPP) $(SOURCES_CPP) $(SOURCES_LLVM)
 
@@ -107,7 +107,7 @@ OBJECTS_LLVM := $(call atsobjname,$(SOURCES_LLVM))
 target := tester_cpp tester_llvm
 
 .PHONY: all
-all: ${target}
+all: ${target} lib/stfpl_header.bc
 
 tester_cpp: $(OBJECTS_COMM) $(OBJECTS_CPP)
 	$(ATSCC) -D_ATS_GCATS -o $@ $^ $(LIBPARCOMB) -lats_smlbas
@@ -116,6 +116,9 @@ tester_cpp: $(OBJECTS_COMM) $(OBJECTS_CPP)
 tester_llvm: $(OBJECTS_COMM) $(OBJECTS_LLVM)
 	$(ATSCC) -D_ATS_GCATS -o $@ $^ $(LIBPARCOMB) -lats_smlbas
 	cp $@ ./TRANS_LLVM
+
+lib/stfpl_header.bc: lib/stfpl_header.h lib/stfpl_header.c
+	llvm-gcc lib/stfpl_header.c -c -emit-llvm -Ilib -o $@
 
 # #################
 $(call atsobjname,%.sats): %.sats
@@ -171,6 +174,7 @@ $(html_file_dats): $(call atshtmlname,%.dats): %.dats
 
 clean::
 	$(RMF) *~
+	$(RMF) lib/stfpl_header.bc
 	$(RMF) $(call atsobjname,*.sats *.dats)
 	$(RMF) $(call atsdepname,*.sats *.dats)
 	$(RMF) *_?ats.c
@@ -204,6 +208,6 @@ xref::
 	$(ATSOPT) --posmark_xref=XREF -d ostream.dats > xref_ostream_dats.html
 	$(ATSOPT) --posmark_xref=XREF -d string_opr.dats > xref_string_opr_dats.html
 	$(ATSOPT) --posmark_xref=XREF -d test_cpp.dats > xref_test_cpp_dats.html
-	$(ATSOPT) --posmark_xref=XREF -d test_llmv.dats > xref_test_llvm_dats.html
+	$(ATSOPT) --posmark_xref=XREF -d test_llvm.dats > xref_test_llvm_dats.html
 
 
