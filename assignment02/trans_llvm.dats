@@ -472,12 +472,54 @@ in
 end
 
 fun trans_llvm_instr_cond (ret: tmpvar, typ: t2yp, vp: valprim, 
-  brthen: instrlst, brelse: instrlst): statements = nil  // let
-//   val ret_str = tmpvar_get_name (ret)
-//   val ret_typ = trans_cpp_typ (typ)
-//   val stat_dec = STATindent (ret_typ + " " + ret_str + ";")
-// 
+  brthen: instrlst, brelse: instrlst): statements = let
+  val ret_str = "%" + tmpvar_get_name (ret)
+  val ret_str1 = ret_str + "b"  // this is convention, see INSTRmove_val
+  val ret_str_cmp = ret_str + "_cmp"
 
+  val label_then = "bb_then" + get_counter ()
+  val label_else = "bb_else" + get_counter ()
+  val label_end = "bb_end" + get_counter ()
+
+  val stat_end = STATindent ("br label %" + label_end)
+
+  val ret_typ = trans_llvm_typ (typ)
+
+  val (stats_if, typ_if, nam_if) = trans_llvm_valprim (vp)
+
+  val stat_dec = STATindent (ret_str1 + " = alloca " + ret_typ)
+
+  val stat0 = STATindent (ret_str_cmp + " = icmp ne " + typ_if + " " +
+             nam_if + ", 0")
+  val stat1 = STATindent ("br i1 " + ret_str_cmp + ", label %" + 
+         label_then + ", label %" + label_else)
+
+
+  val stats_cur = list0_append (STATindent ("") ::
+                       stats_if, stat_dec :: stat0 :: stat1 :: nil)
+
+  val stat_then_label = STATplain ("\n" + label_then + ":")
+  val stats_then = trans_llvm_instrlst (brthen)
+  val stats_then = list0_append (
+            stat_then_label :: stats_then, stat_end :: nil)
+  val stats_cur = list0_append (stats_cur, stats_then)
+
+
+  val stat_else_label = STATplain ("\n" + label_else + ":")
+  val stats_else = trans_llvm_instrlst (brelse)
+  val stats_else = list0_append (
+             stat_else_label :: stats_else, stat_end :: nil)
+  val stats_cur = list0_append (stats_cur, stats_else)
+
+  val stat_end_label = STATplain ("\n" + label_end + ":")
+  val stat_final = STATindent (ret_str + " = load " + ret_typ + "* " + 
+                            ret_str1 + ", align 4\n")
+
+  val stats_cur = list0_append (stats_cur, 
+                         stat_end_label :: stat_final :: nil)
+in
+  stats_cur
+end
   
 fun trans_llvm_instr_opr (ret: tmpvar, typ: t2yp, opr: opr, 
   args: valprimlst): statements  = let
@@ -606,9 +648,12 @@ implement trans_llvm_instr (instr) =
   | INSTRcond (ret, typ, v, brthen, brelse) =>
     trans_llvm_instr_cond (ret, typ, v, brthen, brelse)
   | INSTRmove_val (tmpv, vp) => let
-    val nam: string = "%" + tmpvar_get_name (tmpv)
+    // convention see trans_llvm_instr_cond
+    val nam: string = "%" + tmpvar_get_name (tmpv) + "b"
+
     val (stats, vptyp, vpnam) = trans_llvm_valprim (vp)
-    val stats1 = STATindent (nam + " = " + vptyp + " " + vpnam ) :: nil
+    val stats1 = STATindent ("store " + vptyp + " " + vpnam + ", " +
+                      vptyp + "*" + nam + ", align 4") :: nil
   in
     list0_append (stats, stats1)
   end

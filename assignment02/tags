@@ -19,11 +19,13 @@ oftype	trans1.dats	/^implement oftype (Gamma, e0) = let$/;"	kind: implementation
 oftype_valdec	trans1.dats	419;"	kind:macro 
 
 symenv_insert	symbol.sats	/^symenv_insert (env: symenv_t a, sym: symbol_t, x: a): symenv_t a$/;" kind declaration 
-theConstTypFind	trans1.dats	/^extern fun theConstTypFind (opr: opr): t1yp$/;"	kind: declaration 
-theConstTypFind	trans1.dats	/^theConstTypFind (opr) = let$/;"	kind: implementation 
 trans1_typ	trans1.sats	/^fun trans1_typ (_: $Absyn.t0yp): t1yp$/;"	kind: declaration 
 trans1_typ	trans1.dats	/^trans1_typ (t) = aux (t) where {$/;"	kind: implementation 
 trans_clo2_e1xp	trans_closure.dats	/^fun trans_clo2_e1xp (exp: e1xp, Gamma: ctx, env: v1arlst): e1xp/;"	kind: implementation 
+trans_llvm_instr	trans_llvm.dats	/^extern fun trans_llvm_instr (instr: instr): statements/;"	kind: declaration 
+trans_llvm_instr	trans_llvm.dats	/^implement trans_llvm_instr (instr) =/;"	kind: implementation 
+trans_llvm_instrlst	trans_llvm.dats	/^extern fun trans_llvm_instrlst (body: instrlst): statements/;"	kind: declaration 
+trans_llvm_instrlst	trans_llvm.dats	/^implement trans_llvm_instrlst (body) = let/;"	kind: implement 
 typcheck	trans1.dats	/^extern fun typcheck (Gamma: ctx, e0: e0xp, t1: t1yp): (e1xp, tyerr_pool)$/;"	kind: declaration 
 typcheck	trans1.dats	/^implement typcheck (Gamma, e0, t1) = let$/;"	kind: implementation 
 

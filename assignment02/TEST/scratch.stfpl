@@ -1,5 +1,5 @@
 let
-  val q = 3
+  val q = if 1 <> 2 then 3 else 4
   val _ = print_int q
   val _ = print "\n"
 in
