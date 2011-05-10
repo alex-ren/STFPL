@@ -25,6 +25,10 @@ staload _(*anon*) = "prelude/DATS/list0.dats"
 #define cons list0_cons
 #define nil list0_nil
 
+val machine_bits = 64
+
+val i32_64 = (if machine_bits = 32 then "int" else "long"): string
+
 val env_str = "env"
 val env_tmpvar = tmpvar_new (env_str)
 val env_arg = make_valprim (VPtmp (env_tmpvar), T2YPenv)
@@ -88,7 +92,7 @@ end  // end of [statements_to_string]
 
 fun trans_cpp_typ (t2yp: t2yp): string =
   case+ t2yp of
-  | T2YPint ()  => "int"
+  | T2YPint ()  => i32_64
   | T2YPbool () => "bool"
   | T2YPstr ()  => "string"
   | T2YPenv ()  => "env"
@@ -451,18 +455,27 @@ implement trans_cpp_instr_call (ret, f, args, ret_typ) = let
   // name of the closure
   val f_nam = trans_cpp_valprim (f)
 
-  // build the function type
-  val f_typ = f.valprim_typ
-  val- T2YPclo (_, _, ret_typ1) = f_typ
+  // build the function type  // no need anymore
+  // / val f_typ = f.valprim_typ
+  // / val- T2YPclo (_, _, ret_typ1) = f_typ
+
   val args_typ_str = trans_cpp_valprimlst_typ (args, 1)
-
   val ret_typ_str = trans_cpp_typ (ret_typ)
-  // this one maybe any (due to list operation such as list_head)
-  val ret_typ_str1 = trans_cpp_typ (ret_typ1)
-  val clo_typ_str = "(" + ret_typ_str1 + " (*)(env" + args_typ_str + "))"
 
-  val ret_typ_str_convert = 
-    if ret_typ_str = ret_typ_str1 then "" else "(" + ret_typ_str + ")"
+  // We have two ways to figure out the type of the function
+  // From f_typ or args and ret_typ
+  // They maybe lead to different types.
+  // e.g.
+  // list_cons: real type (derived from f_typ) is 
+  // (list ( * )(env, any, list))
+  // list_cons: printed type (derived from args and ret_typ) is 
+  // (list ( * )(env, int, list))
+
+  // list_head: real type (derived from f_typ) is 
+  // (any ( * )(env, list))
+  // list_head: printed type (derived from args and ret_typ) is 
+  // (int ( * )(env, list))
+  val clo_typ_str = "(" + ret_typ_str + " (*)(env" + args_typ_str + "))"
 
   val args_strlst = trans_cpp_valprimlst (args)
 
@@ -473,7 +486,7 @@ implement trans_cpp_instr_call (ret, f, args, ret_typ) = let
 
   val args_str = "(closure_get_env(" + f_nam + ")" + loop ("", args_strlst, 1) + ")"
 
-  val stats = STATplain (ret_typ_str + " " + ret_str + " = " + ret_typ_str_convert + 
+  val stats = STATplain (ret_typ_str + " " + ret_str + " = " + 
              "(*" + clo_typ_str + "closure_get_fun(" + f_nam + "))" + args_str + ";") :: nil
 in
   stats

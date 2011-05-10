@@ -16,6 +16,7 @@ staload "symbol.sats"
 
 staload "ostream.sats"
 staload "string_opr.sats"
+staload "libfunctions.sats"
 
 (* ****** ****** *)
 
@@ -32,6 +33,10 @@ staload _(*anon*) = "symbol.dats"
 #define Some0 option0_some
 #define None0 option0_none
 
+val machine_bits = 64
+
+val i32_64 = (if machine_bits = 32 then "i32" else "i64"): string
+
 datatype statement_t =
   | STATplain of string
   | STATindent of string
@@ -40,6 +45,7 @@ typedef statements_t = list0 statement_t
 
 typedef statements = statements_t
 typedef statement = statement_t
+
 
 (* ********* *********** *)
 
@@ -50,22 +56,25 @@ val env_arg = make_valprim (VPtmp (env_tmpvar), T2YPenv)
 (* ********* *********** *)
 
 (* 64 bit machine *)
-// val layout = "target datalayout = \"e-p:64:64:64-": string
-// val layout = layout +
-//              "i1:8:8-i8:8:8-i16:16:16-" +
-//              "i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-" + 
-//              "v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64\""
-// 
-// val target = "target triple = \"x86_64-unknown-linux-gnu\"": string
+val layout64 = "target datalayout = \"e-p:64:64:64-": string
+val layout64 = layout64 +
+             "i1:8:8-i8:8:8-i16:16:16-" +
+             "i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-" + 
+             "v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64\""
+
+val target64 = "target triple = \"x86_64-unknown-linux-gnu\"": string
 
 (* 32 bit machine *)
-val layout = "target datalayout = \"e-p:32:32:32-": string
-val layout = layout + 
+val layout32 = "target datalayout = \"e-p:32:32:32-": string
+val layout32 = layout32 + 
              "i1:8:8-i8:8:8-i16:16:16-" +
              "i32:32:32-i64:32:64-f32:32:32-f64:32:64-v64:64:64-" +
              "v128:128:128-a0:0:64-f80:32:32-n8:16:32\""
 
-val target = "target triple = \"i386-linux-gnu\""
+val target32 = "target triple = \"i386-linux-gnu\""
+
+val layout = if machine_bits = 32 then layout32 else layout64
+val target = if machine_bits = 32 then target32 else target64
 
 (* ********* *********** *)
 
@@ -78,11 +87,26 @@ val header_type = header_type + "\n" +
 val header_global_value = 
     "@tostring_int = external global %struct.closure_t*": string
 
+val header_global_value = header_global_value + "\n" +
+    "@list_cons = external global %struct.closure_t*" + "\n" +
+    "@list_head = external global %struct.closure_t*" + "\n" +
+    "@list_tail = external global %struct.closure_t*" + "\n" +
+    "@list_is_empty = external global %struct.closure_t*" + "\n" +
+    "@list_nil = external global %struct.closure_t*" + "\n" + 
+    "@string_add = external global %struct.closure_t*" + "\n" + 
+    "@input_int = external global %struct.closure_t*"
+
 val header_func_decl = "declare %struct.closure_t* @closure_create(...)": string
 val header_func_decl = header_func_decl + "\n" +
            "declare void @closure_put_fun(%struct.closure_t*, i8*)" + "\n" +
+           "declare void @closure_add_env(%struct.closure_t*, i8*)" + "\n" +
            "declare i8* @closure_get_fun(%struct.closure_t*)" + "\n" + 
            "declare %struct.env_t* @closure_get_env(%struct.closure_t*)"
+
+val header_func_decl = header_func_decl + "\n" +
+           "declare %struct.tuple_t* @tuple_create(...)" + "\n" +
+           "declare void @tuple_add(%struct.tuple_t*, i8*)" + "\n" +
+           "declare i8* @tuple_get(%struct.tuple_t*, i32)"
 
 val header_func_decl = header_func_decl + "\n" +
            "declare i8* @env_get(%struct.env_t*, i32)"
@@ -102,8 +126,6 @@ val header = layout + "\n" +
              header_func_decl
 
 val gv_str_pre = ".str"
-
-val type_int: string = "i32"
 
 extern fun statements_to_string (stats: statements): string
 
@@ -205,19 +227,31 @@ end
 end  // [end of local]
 
 (* ************* *************** *)
+fun is_int_typ (t2yp): bool = 
+  case+ t2yp of
+  | T2YPint ()  => true
+  | T2YPbool () => true
+  | T2YPstr ()  => false
+  | T2YPenv ()  => false
+  | T2YPlist (_) => false
+  | T2YPvar ()  => false
+  | T2YPclo (_, _, _)  => false
+  | T2YPtup (ts)  => case+ ts of
+          | cons (_, _) => false
+          | nil () => true // because printf returns i32
 
 fun trans_llvm_typ (t2yp: t2yp): string =
   case+ t2yp of
-  | T2YPint ()  => type_int
-  | T2YPbool () => "i32"
+  | T2YPint ()  => i32_64
+  | T2YPbool () => i32_64
   | T2YPstr ()  => "i8*"
   | T2YPenv ()  => "%struct.env_t*"
   | T2YPlist (_) => "%struct.list_t*"
   | T2YPvar ()  => "i8*"
-  | T2YPclo (_, _, _)  => "%struct.closure_t"
+  | T2YPclo (_, _, _)  => "%struct.closure_t*"
   | T2YPtup (ts)  => case+ ts of
           | cons (_, _) => "%struct.tuple_t*"
-          | nil () => "i32"
+          | nil () => "i32"  // because printf returns i32
 
 fun trans_llvm_valprimlst_typ (args: valprimlst, i: int): string = 
   loop (args, i) where {
@@ -301,14 +335,15 @@ fun trans_llvm_fun_args_ret_alloc (ent: funent_t): statements = let
 
   val args_stats = loop (args, nil)
 
-  val ret_vp = funent_get_ret (ent)
-  val ret_typ = trans_llvm_typ (ret_vp.valprim_typ)
-  val ret_nam = valprim_get_name (ret_vp, str_retval)
+  // val ret_vp = funent_get_ret (ent)
+  // val ret_typ = trans_llvm_typ (ret_vp.valprim_typ)
+  // val ret_nam = valprim_get_name (ret_vp, str_retval)
 
-  val ret_str = "%" + ret_nam + " = alloca " + ret_typ
-  val ret_stat = STATindent (ret_str)
+  // val ret_str = "%" + ret_nam + " = alloca " + ret_typ
+  // val ret_stat = STATindent (ret_str)
 
-  val stats = list0_reverse (ret_stat :: args_stats)
+  // val stats = list0_reverse (ret_stat :: args_stats)
+  val stats = args_stats
 in
   stats
 end
@@ -350,15 +385,35 @@ in
     val env_nam = tmpvar_get_name (env_tmpvar)
     val stat_str1 = nam1 + " = call i8* @env_get(%struct.env_t* %" + 
               env_nam + ", i32 " + tostring_int (pos) + ") nounwind"
-    val stat_str2 = nam + " = bitcast i8* " + nam1 + " to " + typ_str
+    val stat_str2 = (if is_int_typ (typ) then
+      nam + " = ptrtoint i8* " + nam1 + " to " + typ_str
+    else
+      nam + " = bitcast i8* " + nam1 + " to " + typ_str
+    ): string
     val stats = STATindent (stat_str1) :: STATindent (stat_str2) :: nil
   in
     (stats, typ_str, nam)
   end
   | VPbool (b) => if b then (nil, typ_str, "1")
                   else (nil, typ_str, "0")
-  | VPclo (tmpvar, fl, vps) => (nil, typ_str, 
-                                 "%" + tmpvar_get_name (tmpvar))
+  | VPclo (tmpvar, fl, vps) => let
+    val nam = funlab_get_name (fl)
+    val tmpnam = tmpvar_get_name (tmpvar)
+    // val () = ETRACE_MSG ("fun is " + nam + "\n", ETRACE_LEVEL_INFO)
+    // val () = ETRACE_MSG ("fun tmp is " + tmpnam + "\n", ETRACE_LEVEL_INFO)
+    val sym = symbol_make_name (nam)
+    val vp_opt = libFunVPFind (sym)
+  in
+    case+ vp_opt of
+    | Some0 _ => let  // load global closure
+      val clo_nam = "%" + nam + get_counter ()
+      val stat = STATindent (clo_nam + 
+        " = load %struct.closure_t** @" + nam + ", align 8")
+    in
+      (stat :: nil, typ_str, clo_nam)
+    end
+    | None0 () => (nil, typ_str, "%" + tmpnam)
+  end
   | VPint (i) => (nil, typ_str, tostring_int (i))
   | VPstr (str) => let
     val (_, nam) = add_global_val (str)
@@ -368,7 +423,7 @@ in
   | VPtmp (tmpvar) => (nil, typ_str, "%" + tmpvar_get_name (tmpvar))
   | VPtup (tmpvar, vps) => let
     val ret = (if list0_length (vps) = 0 then 
-          (nil, typ_str, "null")
+          (nil, typ_str, "0")
           else (nil, typ_str, "%" + tmpvar_get_name (tmpvar))
           ): (statements, string, string)
   in
@@ -408,7 +463,8 @@ fun trans_llvm_instr_call (ret: tmpvar, f: valprim,
 
   // name of the closure
   val (stats0, _, f_nam) = trans_llvm_valprim (f)
-  val f_fun_nam =  f_nam + "_f_" + get_counter ()
+  // val () = ETRACE_MSG ("trans_llvm_instr_call " + f_nam + "\n", ETRACE_LEVEL_INFO)
+  val f_fun_nam =  "%f_" + get_counter ()
   val f_fun_nam1 =  f_fun_nam + "b"
 
   // get function pointer
@@ -417,17 +473,25 @@ fun trans_llvm_instr_call (ret: tmpvar, f: valprim,
                     f_nam + ") nounwind")
   
   // build the function type
-  val f_typ = f.valprim_typ
-  val- T2YPclo (_, _, ret_typ1) = f_typ
   val args_typ_str = trans_llvm_valprimlst_typ (args, 1)
-
   val ret_typ_str = trans_llvm_typ (ret_typ)
-  // this one maybe any (due to list operation such as list_head)
-  val ret_typ_str1 = trans_llvm_typ (ret_typ1)
 
+  // We have two ways to figure out the type of the function
+  // From f_typ or args and ret_typ
+  // They maybe lead to different types.
+  // e.g.
+  // list_cons: real type (derived from f_typ) is 
+  // (list ( * )(env, any, list))
+  // list_cons: printed type (derived from args and ret_typ) is 
+  // (list ( * )(env, int, list))
+
+  // list_head: real type (derived from f_typ) is 
+  // (any ( * )(env, list))
+  // list_head: printed type (derived from args and ret_typ) is 
+  // (int ( * )(env, list))
   // convert function pointer
   val stat2 = STATindent (f_fun_nam + " = bitcast i8* " + f_fun_nam1 +
-              " to " + ret_typ_str1 + " (%struct.env_t*" + 
+              " to " + ret_typ_str + " (%struct.env_t*" + 
               args_typ_str + ")*")
 
   // get function env
@@ -453,19 +517,13 @@ fun trans_llvm_instr_call (ret: tmpvar, f: valprim,
                     ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
 
   // call the function and convert the ret if necessary
-  val stats4 = (if ret_typ_str = ret_typ_str1 then
-      STATindent (ret_str + " = call " + ret_typ_str1 + " " + f_fun_nam +
+  val stats5 = 
+      STATindent (ret_str + " = call " + ret_typ_str + " " + f_fun_nam +
                 "(%struct.env_t* " + f_env_nam + 
                 loop_args (typ_lst, nam_lst, "", 1) + ")") :: nil
-      else 
-      STATindent (ret_str1 + " = call " + ret_typ_str1 + " " + f_fun_nam +
-                "(%struct.env_t* " + f_env_nam + 
-                loop_args (typ_lst, nam_lst, "", 1) + ")") ::
-      STATindent (ret_str + " = bitcast " + ret_typ_str1 + " " +
-                 ret_str1 + " to " + ret_typ_str) :: nil
-               ): statements
    
   val stats = stat1 :: stat2 :: stat3 :: stats4
+  val stats = list0_append (stats, stats5)
   val stats = list0_append (stats0, stats)
 in
   stats
@@ -535,73 +593,84 @@ fun trans_llvm_instr_opr (ret: tmpvar, typ: t2yp, opr: opr,
     (case+ 0 of
     | _ when sym = symbol_PLUS => let
         val- s1 :: s2 :: _ = namlst
-        val stat_str = ret_nam + " = add i32 " + s1 + ", " + s2
+        val- t1 :: t2 :: _ = typlst
+        val stat_str = ret_nam + " = add " + t1 + " " + s1 + ", " + s2
       in
         (STATindent (stat_str) :: nil, true)
       end // end of [_ when ...]
     | _ when sym = symbol_MINUS => let
         val- s1 :: s2 :: _ = namlst
-        val stat_str = ret_nam + " = sub i32 " + s1 + ", " + s2
+        val- t1 :: t2 :: _ = typlst
+        val stat_str = ret_nam + " = sub " + t1 + " " + s1 + ", " + s2
       in
         (STATindent (stat_str) :: nil, true)
       end // end of [_ when ...]
     | _ when sym = symbol_TIMES => let
         val- s1 :: s2 :: _ = namlst
-        val stat_str = ret_nam + " = mul i32 " + s1 + ", " + s2
+        val- t1 :: t2 :: _ = typlst
+        val stat_str = ret_nam + " = mul " + t1 + " " + s1 + ", " + s2
       in
         (STATindent (stat_str) :: nil, true)
       end // end of [_ when ...]
     | _ when sym = symbol_SLASH => let
         val- s1 :: s2 :: _ = namlst
-        val stat_str = ret_nam + " = sdiv i32 " + s1 + ", " + s2
+        val- t1 :: t2 :: _ = typlst
+        val stat_str = ret_nam + " = sdiv " + t1 + " " + s1 + ", " + s2
       in
         (STATindent (stat_str) :: nil, true)
       end // end of [_ when ...]
     | _ when sym = symbol_UMINUS => let
         val- s :: _ = namlst
-        val stat_str = ret_nam + " = sub i32 0, " + s
+        val- t :: _ = typlst
+        val stat_str = ret_nam + " = sub " + t + " 0, " + s
       in
         (STATindent (stat_str) :: nil, true)
       end // end of [_ when ...]
     | _ when sym = symbol_GT => let
         val- s1 :: s2 :: _ = namlst
-        val stat_str1 = ret_nam1 + " = icmp sgt i32 " + s1 + ", " + s2
-        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+        val- t1 :: t2 :: _ = typlst
+        val stat_str1 = ret_nam1 + " = icmp sgt " + t1 + " " + s1 + ", " + s2
+        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to " + t1
       in
         (STATindent (stat_str1) :: STATindent (stat_str2) :: nil, true)
       end // end of [_ when ...]
     | _ when sym = symbol_GTE => let
         val- s1 :: s2 :: _ = namlst
-        val stat_str1 = ret_nam1 + " = icmp sge i32 " + s1 + ", " + s2
-        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+        val- t1 :: t2 :: _ = typlst
+        val stat_str1 = ret_nam1 + " = icmp sge " + t1 + " " + s1 + ", " + s2
+        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to " + t1
       in
         (STATindent (stat_str1) :: STATindent (stat_str2) :: nil, true)
       end // end of [_ when ...]
     | _ when sym = symbol_LT => let
         val- s1 :: s2 :: _ = namlst
-        val stat_str1 = ret_nam1 + " = icmp slt i32 " + s1 + ", " + s2
-        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+        val- t1 :: t2 :: _ = typlst
+        val stat_str1 = ret_nam1 + " = icmp slt " + t1 + " " + s1 + ", " + s2
+        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to " + t1
       in
         (STATindent (stat_str1) :: STATindent (stat_str2) :: nil, true)
       end
     | _ when sym = symbol_LTE => let
         val- s1 :: s2 :: _ = namlst
-        val stat_str1 = ret_nam1 + " = icmp sle i32 " + s1 + ", " + s2
-        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+        val- t1 :: t2 :: _ = typlst
+        val stat_str1 = ret_nam1 + " = icmp sle " + t1 + " " + s1 + ", " + s2
+        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to " + t1
       in
         (STATindent (stat_str1) :: STATindent (stat_str2) :: nil, true)
       end
     | _ when sym = symbol_EQ => let      
         val- s1 :: s2 :: _ = namlst
-        val stat_str1 = ret_nam1 + " = icmp eq i32 " + s1 + ", " + s2
-        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+        val- t1 :: t2 :: _ = typlst
+        val stat_str1 = ret_nam1 + " = icmp eq " + t1 + " " + s1 + ", " + s2
+        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to " + t1
       in
         (STATindent (stat_str1) :: STATindent (stat_str2) :: nil, true)
       end
     | _ when sym = symbol_NEQ => let
         val- s1 :: s2 :: _ = namlst
-        val stat_str1 = ret_nam1 + " = icmp ne i32 " + s1 + ", " + s2
-        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to i32"
+        val- t1 :: t2 :: _ = typlst
+        val stat_str1 = ret_nam1 + " = icmp ne " + t1 + " " + s1 + ", " + s2
+        val stat_str2 = ret_nam + " = zext i1 " + ret_nam1 + " to " + t1
       in
         (STATindent (stat_str1) :: STATindent (stat_str2) :: nil, true)
       end
@@ -616,7 +685,7 @@ fun trans_llvm_instr_opr (ret: tmpvar, typ: t2yp, opr: opr,
     | _ when sym = symbol_PRINT_INT => let
         val- i  :: _ = namlst
         val- t  :: _ = typlst
-        val (typ, id) = add_global_val ("%i")
+        val (typ, id) = add_global_val ("%ld")
         val stat_str = ret_nam + " = call i32 (i8*, ...)* @printf(" +
                 typ + " " + id + ", " + t + " " + i + ") nounwind"
       in
@@ -630,16 +699,126 @@ in
   list0_append (stats0, stats1)
 end  // end of [trans_cpp_instr_opr]
 
-fun trans_llvm_instr_tup (ret: tmpvar, vps: valprimlst): statements
-= nil  // todo
+fun trans_llvm_instr_tup (ret: tmpvar, vps: valprimlst): statements = let
+  val nam = "%" + tmpvar_get_name (ret)
+
+  // vps is guaranteed not to be nil
+  val stat = STATindent (nam + 
+               " = call %struct.tuple_t* (...)* @tuple_create() nounwind")
+
+  val (ele_stats, ele_typs, ele_ids) = trans_llvm_valprimlst (vps)
+
+  val stats = list0_append (ele_stats, stat :: nil)
+
+  fun fill_tup (elements: valprimlst, ele_typs: list0 string, 
+     ele_ids: list0 string, init: statements):<cloref1> statements =
+    case+ (elements, ele_typs, ele_ids) of
+    | (cons (element, elements1), 
+       cons (ele_typ,ele_typs1), 
+       cons (ele_id, ele_ids1)) => let
+      val tmp_nam = "%tmp" + get_counter ()
+    in
+      if ele_typ <> "i8*" then let
+        val stat1 = (if is_int_typ (element.valprim_typ) then
+             STATindent (tmp_nam + " = inttoptr " + ele_typ + " " + 
+                  ele_id + " to i8*")
+             else
+             STATindent (tmp_nam + " = bitcast " + ele_typ + " " + 
+                  ele_id + " to i8*")
+             ): statement
+        val stat2 = STATindent ("call void @tuple_add(%struct.tuple_t* " + 
+               nam + ", i8* " + tmp_nam + ")")
+        val init1 = list0_append (init, stat1 :: stat2 :: nil)
+      in
+        fill_tup (elements1, ele_typs1, ele_ids1, init1)
+      end else let
+        val stat1 = STATindent ("call void @tuple_add(%struct.tuple_t* " + 
+                nam + ", i8* " + ele_id + ")")
+        val init1 = list0_append (init, stat1 :: nil)
+      in
+        fill_tup (elements1, ele_typs1, ele_ids1, init1)
+      end
+    end
+    | (nil (), nil (), nil ()) => init
+    | (_, _, _) => ETRACE_MSG_OPR ("trans_llvm_instr_tup, not of the same length\n", 
+                    ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+    
+  val stats = fill_tup (vps, ele_typs, ele_ids, stats)
+in
+  stats
+end
 
 fun trans_llvm_instr_closure (
-  ret: tmpvar, fl: funlab_t, vps: valprimlst): statements
-= nil  // todo
+  ret: tmpvar, fl: funlab_t, vps: valprimlst): statements = let
+  val ret_str = "%" + tmpvar_get_name (ret)
+  val stat_c_clo = STATindent (ret_str + 
+    " = call %struct.closure_t* (...)* @closure_create() nounwind")
+
+  val f_ent = funent_lookup (fl)
+  val f_args = funent_get_args (f_ent)
+  val f_ret = funent_get_ret (f_ent)
+   
+  val f_nam = funlab_get_name (fl)
+
+  val args_typ_str = trans_llvm_valprimlst_typ (f_args, 1)
+  val ret_typ_str = trans_llvm_typ (f_ret.valprim_typ)
+
+  val stat_add_fun = STATindent ("call void@closure_put_fun(%struct.closure_t* " + 
+      ret_str + ", i8* bitcast (" + ret_typ_str + " (%struct.env_t*" +
+      args_typ_str + ")* @" + f_nam + " to i8*)) nounwind")
+
+  fun loop (clo_nam: string, vps: valprimlst,
+    init: statements): statements =
+    case+ vps of
+    | cons (vp, vps1) => let
+      val (arg_stats, arg_typ, arg_id) = trans_llvm_valprim (vp)
+      val init1 = list0_append (init, arg_stats)
+
+      val cast_str = (if is_int_typ (vp.valprim_typ) then "inttoptr"
+                      else "bitcast"
+                     ): string
+
+      val tmpnam = "%tmp" + get_counter ()
+      val stats = STATindent (tmpnam + " = " + cast_str + " " + 
+                    arg_typ + " " + arg_id + " to i8*") ::
+                  STATindent (
+                    "call void @closure_add_env(%struct.closure_t* " + 
+                    clo_nam + ", i8* " + tmpnam + ") nounwind") :: nil
+
+      val init2 = list0_append (init1, stats)
+    in
+      loop (clo_nam, vps1, init2)
+    end
+    | nil () => init
+
+  val stats = stat_c_clo :: stat_add_fun :: nil
+
+  val stats = loop (ret_str, vps, stats)
+in
+  stats
+end
 
 fun trans_llvm_instr_proj (ret: tmpvar, typ: t2yp, vp: valprim, 
-  pos: int): statements = nil  // todo
+  pos: int): statements = let
+  val ret_str = "%" + tmpvar_get_name (ret)
+  val ret_str1 = ret_str + "b"
+  val ret_typ = trans_llvm_typ (typ)
 
+  val (tup_stats, _, tup_id) = trans_llvm_valprim (vp)
+
+  val stat1 = STATindent (ret_str1 + " = call i8* @tuple_get(%struct.tuple_t* " + 
+    tup_id + ", i32 " + tostring_int (pos) + ")")
+
+  val stat2 = (if is_int_typ (typ) then
+          STATindent (ret_str + " = ptrtoint i8* " + ret_str1 + " to " + ret_typ)
+        else
+          STATindent (ret_str + " = bitcast i8* " + ret_str1 + " to " + ret_typ)
+        ): statement
+
+  val stats = list0_append (tup_stats, stat1 :: stat2 :: nil)
+in
+  stats
+end
 
 implement trans_llvm_instr (instr) =
   case+ instr.instr_node of
@@ -653,7 +832,7 @@ implement trans_llvm_instr (instr) =
 
     val (stats, vptyp, vpnam) = trans_llvm_valprim (vp)
     val stats1 = STATindent ("store " + vptyp + " " + vpnam + ", " +
-                      vptyp + "*" + nam + ", align 4") :: nil
+                      vptyp + "* " + nam + ", align 4") :: nil
   in
     list0_append (stats, stats1)
   end
@@ -751,7 +930,8 @@ implement trans_llvm (instrs, fns) = let
                         STATindent ("store i32 %argc, i32* %argc_addr") ::
                         STATindent ("store i8** %argv, i8*** %argv_addr") ::
                         STATindent ("call void (...)* @init_lib() nounwind") ::
-                        STATindent ("%1 = call i32 @__main(%struct.env_t* null) nounwind") ::
+                        STATindent ("%1 = call " + i32_64 + 
+                                   " @__main(%struct.env_t* null) nounwind") ::
                         STATindent ("store i32 0, i32* %0, align 4") ::
                         STATindent ("%2 = load i32* %0, align 4") ::
                         STATindent ("store i32 %2, i32* %retval, align 4") ::

@@ -8,7 +8,8 @@ To do the test, simply run
 
 
 Updates:
-  llvm generator is in progress.
+  llvm generator is done.
+  Tail call optimization hasn't been done.
   Closure is now fully supported.
   list operations are supported.
   game of 24 is finished.
@@ -17,14 +18,12 @@ Updates:
 
 
 Caution:
+  None
 
 Record (for functionality)
-  Type inference including tuple of variant length
 
-  Generating C++ file: supporting recusive function call, function as first class object
 
 Record (for developers)
-  Treat all functions as unary ones in the C++ level.
   
   ?? handle this --> not supported since c is not function definition
   val rec a = lam (x: int): int -> int => let
@@ -90,21 +89,17 @@ About Type Checking / Inference
   hasn't been inferred yet.
 
 
-  statter and stammer
+Statter and stammer
+
   It's pointless to talk about the type of of a closure since different kinds
   of closures can be used as same kind of function.
-
-
-  Be careful:
-  Different e1xp nodes of a tree can have the "same" v1ar. But when we copy
-  the tree, then different e1xp nodes contain different v1ar's though
-  those v1ar's may be structurally equivalent (but not identical).
 
 
   Treat every function as a closure.
 
 
   val f = lam (x) => (lam (y) => f y)  ?????
+  This will cause segment fault now.
 
 
   What is a valprim? What is it used for?
@@ -143,6 +138,9 @@ About Type Checking / Inference
   val f: (int, int) -> int = lam (x: (int, int)) => 3
 
   (int, int) -> int is translate to <<2>>(int, int) -> int
+
+
+  In llvm, type of empty tuple is mapped to i32, because printf returns int
 
 
 

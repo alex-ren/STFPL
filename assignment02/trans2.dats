@@ -240,10 +240,6 @@ implement funent_make (
 (*
 There is a global map for this function:
 *)
-extern fun funent_add (fl: funlab, ent: funent): void
-extern fun funent_lookup (fl: funlab): funent
-extern fun funent_getall (): list0 funent
-
 local
 val funlab_count = ref<int> (0)
 assume funlab_t = symbol_t
@@ -280,6 +276,15 @@ implement funent_add (fl, ent) = let
   val table = symenv_insert (table, fl, ent)
   val () = !fun_table := table
 in
+end
+
+implement funent_lookup (fl) = let
+  val ent_opt = symenv_lookup (!fun_table, fl)
+in
+  case+ ent_opt of
+  | Some0 ent => ent
+  | None0 () => ETRACE_MSG_OPR ("funent_lookup fun doesn't exist\n", 
+                    ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
 end
 
 implement funent_getall () = let
@@ -805,7 +810,10 @@ fun aux_exp_ret_tuple (loc: loc, e1xps: e1xplst,
   res: &instrlst, tmp_ret: tmpvar, t1yp: t1yp): valprim = let
   val t2yp = trans2_typ (t1yp)
   val vps = auxlst_exp (e1xps, res)
-  val () = instr_add_tup (loc, tmp_ret, vps, res)
+
+  val len = list0_length (e1xps)
+  val () = if len = 0 then ()   // no instruction for empty tuple
+           else instr_add_tup (loc, tmp_ret, vps, res)
 in
   make_valprim (VPtup (tmp_ret, vps), t2yp)
 end

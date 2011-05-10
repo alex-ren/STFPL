@@ -19,6 +19,7 @@ oftype	trans1.dats	/^implement oftype (Gamma, e0) = let$/;"	kind: implementation
 oftype_valdec	trans1.dats	419;"	kind:macro 
 
 symenv_insert	symbol.sats	/^symenv_insert (env: symenv_t a, sym: symbol_t, x: a): symenv_t a$/;" kind declaration 
+tmpvar_get_name	trans2.sats	/^fun tmpvar_get_name (v: tmpvar): string$/;" kind declaration 
 trans1_typ	trans1.sats	/^fun trans1_typ (_: $Absyn.t0yp): t1yp$/;"	kind: declaration 
 trans1_typ	trans1.dats	/^trans1_typ (t) = aux (t) where {$/;"	kind: implementation 
 trans_clo2_e1xp	trans_closure.dats	/^fun trans_clo2_e1xp (exp: e1xp, Gamma: ctx, env: v1arlst): e1xp/;"	kind: implementation 

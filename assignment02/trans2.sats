@@ -121,7 +121,8 @@ datatype instr_node =
   | INSTRmove_val of (tmpvar(*x*), valprim(*v*)) // x := v
   // primtive operator
   | INSTRopr of (tmpvar, t2yp(*ret typ*), $Absyn.opr, valprimlst)
-  | INSTRtup of (tmpvar, valprimlst) // create tuple
+  // no instruction for empty tuple
+  | INSTRtup of (tmpvar, valprimlst) // create tuple  
   // create closures
   | INSTRclosure of (tmpvar, funlab, valprimlst)  
   | INSTRproj of (tmpvar, t2yp, valprim, int) // projection
@@ -149,6 +150,10 @@ fun funent_get_narg (ent: funent): int
 fun funent_get_args (ent: funent): valprimlst
 fun funent_get_body (ent: funent): instrlst
 fun funent_get_ret (ent: funent): valprim
+
+fun funent_add (fl: funlab, ent: funent): void
+fun funent_lookup (fl: funlab): funent
+fun funent_getall (): list0 funent
 
 fun funlab_get_name (fl: funlab): string
 

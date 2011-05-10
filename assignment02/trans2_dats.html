@@ -265,10 +265,6 @@
 <span class="comment">(*
 There is a global map for this function:
 *)</span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6074"><span class="dyncstdec">funent_add <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6128"><span class="dyncstdec">funent_lookup <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funent</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="6174"><span class="dyncstdec">funent_getall <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 funent</span></span></a>
-
 <span class="keyword">local</span>
 <span class="keyword">val</span> funlab_count <span class="keyword">=</span> ref&lt;<span class="staexp">int</span><span class="keyword">&gt;</span> <span class="keyword">(</span>0<span class="keyword">)</span>
 <span class="keyword">assume</span> <span class="staexp">funlab_t <span class="keyword">=</span> symbol_t</span>
@@ -305,6 +301,15 @@ There is a global map for this function:
   <span class="keyword">val</span> table <span class="keyword">=</span> symenv_insert <span class="keyword">(</span>table<span class="keyword">,</span> fl<span class="keyword">,</span> ent<span class="keyword">)</span>
   <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">!</span>fun_table := table
 <span class="keyword">in</span>
+<span class="keyword">end</span>
+
+<span class="keyword">implement</span> funent_lookup <span class="keyword">(</span>fl<span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
+  <span class="keyword">val</span> ent_opt <span class="keyword">=</span> symenv_lookup <span class="keyword">(</span><span class="keyword">!</span>fun_table<span class="keyword">,</span> fl<span class="keyword">)</span>
+<span class="keyword">in</span>
+  <span class="keyword">case+</span> ent_opt <span class="keyword">of</span>
+  <span class="keyword">|</span> Some0 ent <span class="keyword">=&gt;</span> ent
+  <span class="keyword">|</span> None0 <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> ETRACE_MSG_OPR <span class="keyword">(</span>"funent_lookup fun doesn't exist\n"<span class="keyword">,</span> 
+                    ETRACE_LEVEL_ERROR<span class="keyword">,</span> abort <span class="keyword">(</span>ERRORCODE_FORBIDDEN<span class="keyword">)</span><span class="keyword">)</span>
 <span class="keyword">end</span>
 
 <span class="keyword">implement</span> funent_getall <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">let</span>
@@ -375,14 +380,14 @@ There is a global map for this function:
 <span class="keyword">end</span>
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9212"><span class="dyncstdec">aux_exp <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9338"><span class="dyncstdec">aux_exp <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
 
 <span class="comment">(* ret is supposed to be used in the evaluation *)</span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9318"><span class="dyncstdec">aux_exp_ret <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9444"><span class="dyncstdec">aux_exp_ret <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
 
 <span class="comment">(* this function only handle E1XPfixclo and E1XPlamclo and E1XPann *)</span>
 <span class="comment">(* caller guarantees that e is a function *)</span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9505"><span class="dyncstdec">aux_exp_fun <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> 
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="9631"><span class="dyncstdec">aux_exp_fun <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">,</span> fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> 
   res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> init_res<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
 
 <span class="keyword">fun</span> auxlst_exp <span class="keyword">(</span>
@@ -830,7 +835,10 @@ There is a global map for this function:
   res<span class="keyword">:</span> <span class="staexp"><span class="keyword">&amp;</span>instrlst</span><span class="keyword">,</span> tmp_ret<span class="keyword">:</span> <span class="staexp">tmpvar</span><span class="keyword">,</span> t1yp<span class="keyword">:</span> <span class="staexp">t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span> <span class="keyword">=</span> <span class="keyword">let</span>
   <span class="keyword">val</span> t2yp <span class="keyword">=</span> trans2_typ <span class="keyword">(</span>t1yp<span class="keyword">)</span>
   <span class="keyword">val</span> vps <span class="keyword">=</span> auxlst_exp <span class="keyword">(</span>e1xps<span class="keyword">,</span> res<span class="keyword">)</span>
-  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> instr_add_tup <span class="keyword">(</span>loc<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> vps<span class="keyword">,</span> res<span class="keyword">)</span>
+
+  <span class="keyword">val</span> len <span class="keyword">=</span> list0_length <span class="keyword">(</span>e1xps<span class="keyword">)</span>
+  <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> <span class="keyword">if</span> len <span class="keyword">=</span> 0 <span class="keyword">then</span> <span class="keyword">(</span><span class="keyword">)</span>   <span class="comment">// no instruction for empty tuple
+</span>           <span class="keyword">else</span> instr_add_tup <span class="keyword">(</span>loc<span class="keyword">,</span> tmp_ret<span class="keyword">,</span> vps<span class="keyword">,</span> res<span class="keyword">)</span>
 <span class="keyword">in</span>
   make_valprim <span class="keyword">(</span>VPtup <span class="keyword">(</span>tmp_ret<span class="keyword">,</span> vps<span class="keyword">)</span><span class="keyword">,</span> t2yp<span class="keyword">)</span>
 <span class="keyword">end</span>

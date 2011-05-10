@@ -48,7 +48,8 @@ extern closure list_nil;
 extern closure list_head;
 extern closure list_tail;
 extern closure list_is_empty;
-extern void list_print(list);
+
+void list_print(list);
 
 extern closure string_add;
 extern closure tostring_int;
