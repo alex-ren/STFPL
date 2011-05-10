@@ -64,36 +64,38 @@
 <span class="keyword">fun</span> <a name="746"><span class="dyncstdec">tmpvar_new_string_name <span class="keyword">(</span>str<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">tmpvar_t</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> tmpvar_new <span class="keyword">with</span> tmpvar_new_anon</span>
 <span class="neuexp"><span class="keyword">overload</span> tmpvar_new <span class="keyword">with</span> tmpvar_new_v1ar</span>
-<span class="neuexp"><span class="keyword">overload</span> tmpvar_new <span class="keyword">with</span> tmpvar_new_string</span>
 
+<span class="comment">// don't overload, make it explicit since it's special
+</span><span class="comment">// overload tmpvar_new with tmpvar_new_string
+</span>
 <span class="comment">(* ****** ****** *)</span>
 
 <span class="comment">(* desc: type for function label *)</span>
-<span class="keyword">abstype</span> <span class="staexp"><a name="984"><span class="stacstdec">funlab_t</span></a></span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="1001"><span class="stacstdec">funlab <span class="keyword">=</span> funlab_t</span></a></span>
+<span class="keyword">abstype</span> <span class="staexp"><a name="1043"><span class="stacstdec">funlab_t</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="1060"><span class="stacstdec">funlab <span class="keyword">=</span> funlab_t</span></a></span>
 
-<span class="keyword">fun</span> <a name="1024"><span class="dyncstdec">funlab_allocate <span class="keyword">(</span>nam<span class="keyword">:</span> <span class="staexp">$Symbol<span class="keyword">.</span>symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funlab_t</span></span></a>
+<span class="keyword">fun</span> <a name="1083"><span class="dyncstdec">funlab_allocate <span class="keyword">(</span>nam<span class="keyword">:</span> <span class="staexp">$Symbol<span class="keyword">.</span>symbol_t</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funlab_t</span></span></a>
 
-<span class="keyword">fun</span> <a name="1079"><span class="dyncstdec">fprint_funlab <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="1138"><span class="dyncstdec">fprint_funlab <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_funlab</span>
-<span class="keyword">fun</span> <a name="1164"><span class="dyncstdec">print_funlab <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="1223"><span class="dyncstdec">print_funlab <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> print <span class="keyword">with</span> print_funlab</span>
 
 <span class="comment">(* ****** ****** *)</span>
 
 <span class="comment">(* desc: type for function entry *)</span>
-<span class="keyword">abstype</span> <span class="staexp"><a name="1294"><span class="stacstdec">funent_t</span></a></span>
-<span class="keyword">typedef</span> <span class="staexp"><a name="1311"><span class="stacstdec">funent <span class="keyword">=</span> funent_t</span></a></span>
+<span class="keyword">abstype</span> <span class="staexp"><a name="1353"><span class="stacstdec">funent_t</span></a></span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="1370"><span class="stacstdec">funent <span class="keyword">=</span> funent_t</span></a></span>
 
-<span class="keyword">fun</span> <a name="1334"><span class="dyncstdec">fprint_funent <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="1393"><span class="dyncstdec">fprint_funent <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_funent</span>
-<span class="keyword">fun</span> <a name="1419"><span class="dyncstdec">print_funent <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="1478"><span class="dyncstdec">print_funent <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> print <span class="keyword">with</span> print_funent</span>
 
 <span class="comment">(* ****** ****** *)</span>
 
 <span class="comment">(* ****** ****** *)</span>
-<span class="keyword">datatype</span> <span class="staexp"><a name="1534"><span class="stacstdec">t2yp</span></a></span> <span class="keyword">=</span>
+<span class="keyword">datatype</span> <span class="staexp"><a name="1593"><span class="stacstdec">t2yp</span></a></span> <span class="keyword">=</span>
   <span class="keyword">|</span> T2YPint
   <span class="keyword">|</span> T2YPbool
   <span class="keyword">|</span> T2YPstr
@@ -103,13 +105,13 @@
   <span class="comment">// nargs, args (including the closure as the first parameter), ret
 </span>  <span class="keyword">|</span> T2YPclo <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>int<span class="keyword">,</span> t2yplst<span class="keyword">,</span> t2yp<span class="keyword">)</span></span>  
   <span class="keyword">|</span> T2YPtup <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>t2yplst<span class="keyword">)</span></span>
-<span class="keyword">where</span> <span class="staexp"><a name="1761"><span class="stacstdec">t2yplst <span class="keyword">=</span> list0 <span class="keyword">(</span>t2yp<span class="keyword">)</span></span></a></span>
+<span class="keyword">where</span> <span class="staexp"><a name="1820"><span class="stacstdec">t2yplst <span class="keyword">=</span> list0 <span class="keyword">(</span>t2yp<span class="keyword">)</span></span></a></span>
 
 <span class="comment">(* by Zhiqiang Ren ***** *)</span>
 <span class="comment">(* valprim is either a literal value or
  * a tag for a temporary variable
  *)</span>
-<span class="keyword">datatype</span> <span class="staexp"><a name="1900"><span class="stacstdec">valprim_node</span></a></span> <span class="keyword">=</span> <span class="comment">// primitive values
+<span class="keyword">datatype</span> <span class="staexp"><a name="1959"><span class="stacstdec">valprim_node</span></a></span> <span class="keyword">=</span> <span class="comment">// primitive values
 </span>  <span class="keyword">|</span> VPenv <span class="keyword">of</span> <span class="staexp">int</span> <span class="comment">// closure parameter: the ith parameter
 </span>  <span class="keyword">|</span> VPbool <span class="keyword">of</span> <span class="staexp">bool</span> <span class="comment">// boolean constants
 </span>  <span class="keyword">|</span> VPclo <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>tmpvar<span class="keyword">,</span> funlab<span class="keyword">,</span> valprimlst<span class="keyword">)</span></span>
@@ -118,7 +120,7 @@
 </span>  <span class="keyword">|</span> VPtmp <span class="keyword">of</span> <span class="staexp">tmpvar</span> <span class="comment">// temporaries
 </span>  <span class="keyword">|</span> VPtup <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>tmpvar<span class="keyword">,</span> valprimlst<span class="keyword">)</span></span> <span class="comment">// (name of tuples, tuples)
 </span>
-<span class="keyword">where</span> <span class="staexp"><a name="2256"><span class="stacstdec">valprim <span class="keyword">=</span> <span class="keyword">'{</span>
+<span class="keyword">where</span> <span class="staexp"><a name="2315"><span class="stacstdec">valprim <span class="keyword">=</span> <span class="keyword">'{</span>
   valprim_node <span class="keyword">=</span> valprim_node<span class="keyword">,</span>
   valprim_typ <span class="keyword">=</span> t2yp
 <span class="keyword">}</span></span></a></span>
@@ -126,20 +128,20 @@
 <span class="comment">(*
 ** please extend the datatype if you need to
 *)</span>
-<span class="keyword">and</span> <span class="staexp"><a name="2379"><span class="stacstdec">valprimlst <span class="keyword">=</span> list0 <span class="keyword">(</span>valprim<span class="keyword">)</span></span></a></span>
+<span class="keyword">and</span> <span class="staexp"><a name="2438"><span class="stacstdec">valprimlst <span class="keyword">=</span> list0 <span class="keyword">(</span>valprim<span class="keyword">)</span></span></a></span>
 <span class="comment">// end of [where]
 </span>
-<span class="keyword">fun</span> <a name="2431"><span class="dyncstdec">make_valprim <span class="keyword">(</span>node<span class="keyword">:</span> <span class="staexp">valprim_node</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+<span class="keyword">fun</span> <a name="2490"><span class="dyncstdec">make_valprim <span class="keyword">(</span>node<span class="keyword">:</span> <span class="staexp">valprim_node</span><span class="keyword">,</span> typ<span class="keyword">:</span> <span class="staexp">t2yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
 
-<span class="keyword">fun</span> <a name="2490"><span class="dyncstdec">fprint_valprim <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="2549"><span class="dyncstdec">fprint_valprim <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_valprim</span>
 
-<span class="keyword">fun</span> <a name="2579"><span class="dyncstdec">fprint_valprimlst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="2638"><span class="dyncstdec">fprint_valprimlst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_valprimlst</span>
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">datatype</span> <span class="staexp"><a name="2704"><span class="stacstdec">instr_node</span></a></span> <span class="keyword">=</span>
+<span class="keyword">datatype</span> <span class="staexp"><a name="2763"><span class="stacstdec">instr_node</span></a></span> <span class="keyword">=</span>
   <span class="keyword">|</span> INSTRcall <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>tmpvar<span class="keyword">,</span> valprim<span class="keyword">,</span> valprimlst<span class="keyword">,</span> t2yp<span class="comment">(*return type*)</span><span class="keyword">)</span></span> <span class="comment">// fun call
 </span>  <span class="comment">// conditional  // no return val, so no tmpvar
 </span>  <span class="keyword">|</span> INSTRcond <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>tmpvar<span class="keyword">,</span> t2yp<span class="keyword">,</span> valprim<span class="keyword">,</span> instrlst<span class="keyword">,</span> instrlst<span class="keyword">)</span></span> 
@@ -152,48 +154,48 @@
 </span>  <span class="keyword">|</span> INSTRclosure <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>tmpvar<span class="keyword">,</span> funlab<span class="keyword">,</span> valprimlst<span class="keyword">)</span></span>  
   <span class="keyword">|</span> INSTRproj <span class="keyword">of</span> <span class="staexp"><span class="keyword">(</span>tmpvar<span class="keyword">,</span> t2yp<span class="keyword">,</span> valprim<span class="keyword">,</span> int<span class="keyword">)</span></span> <span class="comment">// projection
 </span>
-<span class="keyword">where</span> <span class="staexp"><a name="3286"><span class="stacstdec">instr <span class="keyword">=</span> <span class="keyword">'{</span>
+<span class="keyword">where</span> <span class="staexp"><a name="3345"><span class="stacstdec">instr <span class="keyword">=</span> <span class="keyword">'{</span>
   instr_loc<span class="keyword">=</span> $Posloc<span class="keyword">.</span>location_t<span class="keyword">,</span> instr_node <span class="keyword">=</span> instr_node
 <span class="keyword">}</span></span></a></span> <span class="comment">// end of [instr]
 </span>
-<span class="keyword">and</span> <span class="staexp"><a name="3379"><span class="stacstdec">instrlst <span class="keyword">=</span> list0 <span class="keyword">(</span>instr<span class="keyword">)</span></span></a></span>
+<span class="keyword">and</span> <span class="staexp"><a name="3438"><span class="stacstdec">instrlst <span class="keyword">=</span> list0 <span class="keyword">(</span>instr<span class="keyword">)</span></span></a></span>
 
-<span class="keyword">fun</span> <a name="3409"><span class="dyncstdec">fprint_instr <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="3468"><span class="dyncstdec">fprint_instr <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> x<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_instr</span>
-<span class="keyword">fun</span> <a name="3491"><span class="dyncstdec">fprint_instrlst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="3550"><span class="dyncstdec">fprint_instrlst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> xs<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> fprint <span class="keyword">with</span> fprint_instrlst</span>
 
-<span class="keyword">fun</span> <a name="3584"><span class="dyncstdec">print_instr <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="3643"><span class="dyncstdec">print_instr <span class="keyword">(</span>x<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="neuexp"><span class="keyword">overload</span> print <span class="keyword">with</span> print_instr</span>
 
 <span class="comment">(* ****** ****** *)</span>
 
-<span class="keyword">fun</span> <a name="3671"><span class="dyncstdec">trans2_exp <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>instrlst<span class="keyword">,</span> list0 funent_t<span class="keyword">)</span></span></span></a>
+<span class="keyword">fun</span> <a name="3730"><span class="dyncstdec">trans2_exp <span class="keyword">(</span>e<span class="keyword">:</span> <span class="staexp">e1xp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>instrlst<span class="keyword">,</span> list0 funent_t<span class="keyword">)</span></span></span></a>
 
-<span class="keyword">fun</span> <a name="3725"><span class="dyncstdec">funent_get_lab <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funlab</span></span></a>
-<span class="keyword">fun</span> <a name="3766"><span class="dyncstdec">funent_get_narg <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span></span></a>
-<span class="keyword">fun</span> <a name="3805"><span class="dyncstdec">funent_get_args <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprimlst</span></span></a>
-<span class="keyword">fun</span> <a name="3851"><span class="dyncstdec">funent_get_body <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">instrlst</span></span></a>
-<span class="keyword">fun</span> <a name="3895"><span class="dyncstdec">funent_get_ret <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
+<span class="keyword">fun</span> <a name="3784"><span class="dyncstdec">funent_get_lab <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funlab</span></span></a>
+<span class="keyword">fun</span> <a name="3825"><span class="dyncstdec">funent_get_narg <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">int</span></span></a>
+<span class="keyword">fun</span> <a name="3864"><span class="dyncstdec">funent_get_args <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprimlst</span></span></a>
+<span class="keyword">fun</span> <a name="3910"><span class="dyncstdec">funent_get_body <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">instrlst</span></span></a>
+<span class="keyword">fun</span> <a name="3954"><span class="dyncstdec">funent_get_ret <span class="keyword">(</span>ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">valprim</span></span></a>
 
-<span class="keyword">fun</span> <a name="3938"><span class="dyncstdec">funent_add <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
-<span class="keyword">fun</span> <a name="3985"><span class="dyncstdec">funent_lookup <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funent</span></span></a>
-<span class="keyword">fun</span> <a name="4024"><span class="dyncstdec">funent_getall <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 funent</span></span></a>
+<span class="keyword">fun</span> <a name="3997"><span class="dyncstdec">funent_add <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> ent<span class="keyword">:</span> <span class="staexp">funent</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="4044"><span class="dyncstdec">funent_lookup <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funent</span></span></a>
+<span class="keyword">fun</span> <a name="4083"><span class="dyncstdec">funent_getall <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">list0 funent</span></span></a>
 
-<span class="keyword">fun</span> <a name="4060"><span class="dyncstdec">funlab_get_name <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+<span class="keyword">fun</span> <a name="4119"><span class="dyncstdec">funlab_get_name <span class="keyword">(</span>fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
 
-<span class="keyword">val</span> <a name="4102"><span class="dyncstdec">mainlab<span class="keyword">:</span> <span class="staexp">funlab</span></span></a>
+<span class="keyword">val</span> <a name="4161"><span class="dyncstdec">mainlab<span class="keyword">:</span> <span class="staexp">funlab</span></span></a>
 
-<span class="keyword">fun</span> <a name="4123"><span class="dyncstdec">funent_make <span class="keyword">(</span>
+<span class="keyword">fun</span> <a name="4182"><span class="dyncstdec">funent_make <span class="keyword">(</span>
   fl<span class="keyword">:</span> <span class="staexp">funlab</span><span class="keyword">,</span> nargs<span class="keyword">:</span> <span class="staexp">int</span><span class="keyword">,</span> args<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">,</span> 
   body<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">,</span> ret<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">,</span> env<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">funent</span></span></a>
 
-<span class="keyword">fun</span> <a name="4244"><span class="dyncstdec">trans2_typ <span class="keyword">(</span>t1yp<span class="keyword">:</span> <span class="staexp">$Trans1<span class="keyword">.</span>t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">t2yp</span></span></a>
+<span class="keyword">fun</span> <a name="4303"><span class="dyncstdec">trans2_typ <span class="keyword">(</span>t1yp<span class="keyword">:</span> <span class="staexp">$Trans1<span class="keyword">.</span>t1yp</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">t2yp</span></span></a>
 
-<span class="keyword">fun</span> <a name="4287"><span class="dyncstdec">fprint_valprim <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
-<span class="keyword">fun</span> <a name="4340"><span class="dyncstdec">fprint_valprimlst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
-<span class="keyword">fun</span> <a name="4399"><span class="dyncstdec">fprint_instr <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> ins<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
-<span class="keyword">fun</span> <a name="4449"><span class="dyncstdec">fprint_instrlst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> inslst<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="4346"><span class="dyncstdec">fprint_valprim <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprim</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="4399"><span class="dyncstdec">fprint_valprimlst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> vp<span class="keyword">:</span> <span class="staexp">valprimlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="4458"><span class="dyncstdec">fprint_instr <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> ins<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
+<span class="keyword">fun</span> <a name="4508"><span class="dyncstdec">fprint_instrlst <span class="keyword">(</span>out<span class="keyword">:</span> <span class="staexp">FILEref</span><span class="keyword">,</span> inslst<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">void</span></span></a>
 <span class="comment">(* ****** ****** *)</span>
 
 <span class="comment">(* end of [trans2.sats] *)</span>

@@ -33,7 +33,7 @@ staload _(*anon*) = "symbol.dats"
 #define Some0 option0_some
 #define None0 option0_none
 
-val machine_bits = 64
+val machine_bits = 32
 
 val i32_64 = (if machine_bits = 32 then "i32" else "i64"): string
 
@@ -50,7 +50,7 @@ typedef statement = statement_t
 (* ********* *********** *)
 
 val env_str = "env": string
-val env_tmpvar = tmpvar_new (env_str)
+val env_tmpvar = tmpvar_new_string_name (env_str)
 val env_arg = make_valprim (VPtmp (env_tmpvar), T2YPenv)
 
 (* ********* *********** *)

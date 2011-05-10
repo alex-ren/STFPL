@@ -39,7 +39,9 @@ fun tmpvar_new_string (str: string): tmpvar_t
 fun tmpvar_new_string_name (str: string): tmpvar_t
 overload tmpvar_new with tmpvar_new_anon
 overload tmpvar_new with tmpvar_new_v1ar
-overload tmpvar_new with tmpvar_new_string
+
+// don't overload, make it explicit since it's special
+// overload tmpvar_new with tmpvar_new_string
 
 (* ****** ****** *)
 

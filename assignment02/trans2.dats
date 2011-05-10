@@ -441,10 +441,9 @@ fun aux_exp_fix_lab
   (loc: loc, f: v1ar, v_args: v1arlst, e_body: e1xp, 
    fl: funlab, cloargs: v1arlst, res: &instrlst, init_res: instrlst): valprim = let
 
-  // add new instruction to res
   val cloargs_valprims = v1arlst_2_valprimlst (cloargs)
   val fl_nam = funlab_get_name (fl)
-  val f_tmpvar = tmpvar_new (fl_nam)
+  val f_tmpvar = tmpvar_new_string_name (fl_nam)
   val () = instr_add_closure (loc, f_tmpvar, fl, cloargs_valprims, res)
 
   // set parameters
@@ -494,7 +493,7 @@ fun aux_exp_lam_lab (
 
   val cloargs_valprims = v1arlst_2_valprimlst (cloargs)
   val fl_nam = funlab_get_name (fl)
-  val f_tmpvar = tmpvar_new (fl_nam)
+  val f_tmpvar = tmpvar_new_string_name (fl_nam)
   val () = instr_add_closure (loc, f_tmpvar, fl, cloargs_valprims, res)
 
   // set parameters
@@ -652,7 +651,7 @@ fun aux_exp_v1aldeclst_rec_r1 (v1aldecs: v1aldeclst,
         
         val fl = funlab_make (v)
         val fl_nam = funlab_get_name (fl)
-        val f_tmpvar = tmpvar_new (fl_nam)
+        val f_tmpvar = tmpvar_new_string_name (fl_nam)
         val () = instr_add_closure (v1aldec.v1aldec_loc, f_tmpvar, fl,
               cloargs_valprims, init_res)
 
@@ -782,6 +781,35 @@ in
   make_valprim (VPtmp (tmp_ret), t2yp)
 end
 
+fun aux_exp_ret_tuple (loc: loc, e1xps: e1xplst,
+  res: &instrlst, tmp_ret: tmpvar, t1yp: t1yp, isarg: bool): valprim = let
+  val t2yp = trans2_typ (t1yp)
+  val vps = auxlst_exp (e1xps, res)
+
+  val len = list0_length (e1xps)
+  val () = if len = 0 then ()   // no instruction for empty tuple
+           else if isarg then ()  // no need to make a tuple
+                else instr_add_tup (loc, tmp_ret, vps, res)
+in
+  make_valprim (VPtup (tmp_ret, vps), t2yp)
+end
+
+// hack for using tuple for passing parameters
+// don't want to actually create a tuple
+fun aux_exp_funargs (e: e1xp, res: &instrlst): valprim = let
+  val loc = e.e1xp_loc
+  val typ = e.e1xp_typ
+in
+  case e.e1xp_node of
+  | E1XPann (e, _) => aux_exp_funargs (e, res)
+  | E1XPtup e1xps => let
+      val ret = tmpvar_new ()
+  in
+    aux_exp_ret_tuple (loc, e1xps, res, ret, typ, true)
+  end
+  | _ => aux_exp (e, res)
+end
+
 fun aux_exp_ret_app (loc: loc, e_fun: e1xp, e_arg: e1xp,
   res: &instrlst, tmp_ret: tmpvar, t1yp: t1yp): valprim = let
   // return type
@@ -792,9 +820,9 @@ fun aux_exp_ret_app (loc: loc, e_fun: e1xp, e_arg: e1xp,
   // todo I am lazy now
   val- T2YPclo (nargs, _, _) = clo_typ
 
-  val vp_arg = aux_exp (e_arg, res)
+  val vp_arg = aux_exp_funargs (e_arg, res)
 
-  val vp_args = (if nargs = 2 (*env has been counted in*) 
+  val vp_args = (if nargs = 2 (*env has been counted in, 2 means only 1 arg*) 
          then cons (vp_arg, nil) else 
            case+ vp_arg.valprim_node of
            | VPtup (_, vp_args) => vp_args
@@ -804,18 +832,6 @@ fun aux_exp_ret_app (loc: loc, e_fun: e1xp, e_arg: e1xp,
   val () = instr_add_call (loc, tmp_ret, vp_clo, vp_args, t2yp, res)
 in
   make_valprim (VPtmp (tmp_ret), t2yp)
-end
-
-fun aux_exp_ret_tuple (loc: loc, e1xps: e1xplst,
-  res: &instrlst, tmp_ret: tmpvar, t1yp: t1yp): valprim = let
-  val t2yp = trans2_typ (t1yp)
-  val vps = auxlst_exp (e1xps, res)
-
-  val len = list0_length (e1xps)
-  val () = if len = 0 then ()   // no instruction for empty tuple
-           else instr_add_tup (loc, tmp_ret, vps, res)
-in
-  make_valprim (VPtup (tmp_ret, vps), t2yp)
 end
 
 implement
@@ -845,7 +861,7 @@ in
     aux_exp_ret_proj (loc, e1xp, pos, res, ret, typ)
   end
   | E1XPstr _ => aux_exp (e, res)
-  | E1XPtup e1xps => aux_exp_ret_tuple (loc, e1xps, res, ret, typ)
+  | E1XPtup e1xps => aux_exp_ret_tuple (loc, e1xps, res, ret, typ, false)
   | E1XPvar _ => aux_exp (e, res)
 end
 

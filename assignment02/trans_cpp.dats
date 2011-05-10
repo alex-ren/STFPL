@@ -25,12 +25,12 @@ staload _(*anon*) = "prelude/DATS/list0.dats"
 #define cons list0_cons
 #define nil list0_nil
 
-val machine_bits = 64
+val machine_bits = 32
 
 val i32_64 = (if machine_bits = 32 then "int" else "long"): string
 
 val env_str = "env"
-val env_tmpvar = tmpvar_new (env_str)
+val env_tmpvar = tmpvar_new_string_name (env_str)
 val env_arg = make_valprim (VPtmp (env_tmpvar), T2YPenv)
 
 (* header for the generated cpp files *)

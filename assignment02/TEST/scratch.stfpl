@@ -1,6 +1,11 @@
 let
-  val x = (1, "s", 3)
-  val _ = print x.1
+  val fn = lam (x, y, z) => let
+    val _ = print x
+    val _ = print y
+  in
+    print z
+  end
+  val _ = fn ("1\n", "2\n", "3\n")
 in
   3
 end
