@@ -58,7 +58,7 @@
 <span class="keyword">#define</span> <span class="neuexp">Some0 option0_some</span>
 <span class="keyword">#define</span> <span class="neuexp">None0 option0_none</span>
 
-<span class="keyword">val</span> machine_bits <span class="keyword">=</span> 32
+<span class="keyword">val</span> machine_bits <span class="keyword">=</span> 64
 
 <span class="keyword">val</span> i32_64 <span class="keyword">=</span> <span class="keyword">(</span><span class="keyword">if</span> machine_bits <span class="keyword">=</span> 32 <span class="keyword">then</span> "i32" <span class="keyword">else</span> "i64"<span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span>
 
@@ -75,7 +75,7 @@
 <span class="comment">(* ********* *********** *)</span>
 
 <span class="keyword">val</span> env_str <span class="keyword">=</span> "env"<span class="keyword">:</span> <span class="staexp">string</span>
-<span class="keyword">val</span> env_tmpvar <span class="keyword">=</span> tmpvar_new_string_name <span class="keyword">(</span>env_str<span class="keyword">)</span>
+<span class="keyword">val</span> env_tmpvar <span class="keyword">=</span> tmpvar_new <span class="keyword">(</span>env_str<span class="keyword">)</span>
 <span class="keyword">val</span> env_arg <span class="keyword">=</span> make_valprim <span class="keyword">(</span>VPtmp <span class="keyword">(</span>env_tmpvar<span class="keyword">)</span><span class="keyword">,</span> T2YPenv<span class="keyword">)</span>
 
 <span class="comment">(* ********* *********** *)</span>
@@ -152,7 +152,7 @@
 
 <span class="keyword">val</span> gv_str_pre <span class="keyword">=</span> ".str"
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4003"><span class="dyncstdec">statements_to_string <span class="keyword">(</span>stats<span class="keyword">:</span> <span class="staexp">statements</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="3991"><span class="dyncstdec">statements_to_string <span class="keyword">(</span>stats<span class="keyword">:</span> <span class="staexp">statements</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
 
 <span class="keyword">val</span> indent_pad <span class="keyword">=</span> "  "<span class="keyword">:</span> <span class="staexp">string</span>
 <span class="keyword">val</span> scope_beg <span class="keyword">=</span> "{"<span class="keyword">:</span> <span class="staexp">string</span>
@@ -163,7 +163,7 @@
 <span class="keyword">val</span> str_retval <span class="keyword">=</span> "retval"<span class="keyword">:</span> <span class="staexp">string</span>
 <span class="keyword">val</span> str_ret <span class="keyword">=</span> "ret"<span class="keyword">:</span> <span class="staexp">string</span>
 
-<span class="keyword">typedef</span> <span class="staexp"><a name="4315"><span class="stacstdec">global_val <span class="keyword">=</span> <span class="keyword">'{</span>gv_stat <span class="keyword">=</span> statement<span class="keyword">,</span>
+<span class="keyword">typedef</span> <span class="staexp"><a name="4303"><span class="stacstdec">global_val <span class="keyword">=</span> <span class="keyword">'{</span>gv_stat <span class="keyword">=</span> statement<span class="keyword">,</span>
                       gv_typ <span class="keyword">=</span> string<span class="keyword">,</span>
                       gv_id <span class="keyword">=</span> string<span class="keyword">}</span></span></a></span>
 
@@ -189,10 +189,10 @@
   <span class="keyword">|</span> nil <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=&gt;</span> ""
 <span class="keyword">end</span>  <span class="comment">// end of [statements_to_string]
 </span>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4895"><span class="dyncstdec">add_global_val <span class="keyword">(</span>str<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>string <span class="comment">(*type*)</span><span class="keyword">,</span> string <span class="comment">(* identifier *)</span><span class="keyword">)</span></span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4979"><span class="dyncstdec">get_global_val <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4883"><span class="dyncstdec">add_global_val <span class="keyword">(</span>str<span class="keyword">:</span> <span class="staexp">string</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp"><span class="keyword">(</span>string <span class="comment">(*type*)</span><span class="keyword">,</span> string <span class="comment">(* identifier *)</span><span class="keyword">)</span></span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="4967"><span class="dyncstdec">get_global_val <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="5021"><span class="dyncstdec">get_counter <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="5009"><span class="dyncstdec">get_counter <span class="keyword">(</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">string</span></span></a>
 
 <span class="keyword">local</span>
 
@@ -388,8 +388,8 @@
   stat
 <span class="keyword">end</span>
 
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="10658"><span class="dyncstdec">trans_llvm_instrlst <span class="keyword">(</span>body<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
-<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="10718"><span class="dyncstdec">trans_llvm_instr <span class="keyword">(</span>instr<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="10646"><span class="dyncstdec">trans_llvm_instrlst <span class="keyword">(</span>body<span class="keyword">:</span> <span class="staexp">instrlst</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
+<span class="keyword">extern</span> <span class="keyword">fun</span> <a name="10706"><span class="dyncstdec">trans_llvm_instr <span class="keyword">(</span>instr<span class="keyword">:</span> <span class="staexp">instr</span><span class="keyword">)</span><span class="keyword">:</span> <span class="staexp">statements</span></span></a>
 
 <span class="comment">(* 
 ret:
@@ -847,7 +847,7 @@ ret:
 
 <span class="keyword">implement</span> trans_llvm_instr <span class="keyword">(</span>instr<span class="keyword">)</span> <span class="keyword">=</span>
   <span class="keyword">case+</span> instr<span class="keyword">.</span>instr_node <span class="keyword">of</span>
-  <span class="keyword">|</span> INSTRcall <span class="keyword">(</span>ret<span class="keyword">,</span> f<span class="keyword">,</span> args<span class="keyword">,</span> ret_typ<span class="keyword">)</span> <span class="keyword">=&gt;</span>
+  <span class="keyword">|</span> INSTRcall <span class="keyword">(</span>ret<span class="keyword">,</span> f<span class="keyword">,</span> args<span class="keyword">,</span> ret_typ<span class="keyword">,</span> _<span class="keyword">)</span> <span class="keyword">=&gt;</span>
     trans_llvm_instr_call <span class="keyword">(</span>ret<span class="keyword">,</span> f<span class="keyword">,</span> args<span class="keyword">,</span> ret_typ<span class="keyword">)</span>
   <span class="keyword">|</span> INSTRcond <span class="keyword">(</span>ret<span class="keyword">,</span> typ<span class="keyword">,</span> v<span class="keyword">,</span> brthen<span class="keyword">,</span> brelse<span class="keyword">)</span> <span class="keyword">=&gt;</span>
     trans_llvm_instr_cond <span class="keyword">(</span>ret<span class="keyword">,</span> typ<span class="keyword">,</span> v<span class="keyword">,</span> brthen<span class="keyword">,</span> brelse<span class="keyword">)</span>
@@ -971,6 +971,7 @@ ret:
 <span class="keyword">in</span>
   os
 <span class="keyword">end</span>
+
 
 
 

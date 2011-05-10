@@ -36,12 +36,10 @@ symintr tmpvar_new
 fun tmpvar_new_anon (): tmpvar_t
 fun tmpvar_new_v1ar (v: $Trans1.v1ar): tmpvar_t
 fun tmpvar_new_string (str: string): tmpvar_t
-fun tmpvar_new_string_name (str: string): tmpvar_t
+fun tmpvar_new_string_name (str: string): tmpvar_t  // no counter no. added
 overload tmpvar_new with tmpvar_new_anon
 overload tmpvar_new with tmpvar_new_v1ar
-
-// don't overload, make it explicit since it's special
-// overload tmpvar_new with tmpvar_new_string
+overload tmpvar_new with tmpvar_new_string
 
 (* ****** ****** *)
 
@@ -49,7 +47,10 @@ overload tmpvar_new with tmpvar_new_v1ar
 abstype funlab_t
 typedef funlab = funlab_t
 
+// for use of creating library function
 fun funlab_allocate (nam: $Symbol.symbol_t): funlab_t
+fun funlab_equal (lab1: funlab, lab2: funlab): bool
+overload = with funlab_equal
 
 fun fprint_funlab (out: FILEref, x: funlab): void
 overload fprint with fprint_funlab
@@ -117,7 +118,8 @@ overload fprint with fprint_valprimlst
 (* ****** ****** *)
 
 datatype instr_node =
-  | INSTRcall of (tmpvar, valprim, valprimlst, t2yp(*return type*)) // fun call
+  | INSTRcall of (tmpvar, valprim, valprimlst, 
+                  t2yp(*return type*), bool(*is tail call*)) // fun call
   // conditional  // no return val, so no tmpvar
   | INSTRcond of (tmpvar, t2yp, valprim, instrlst, instrlst) 
   | INSTRmove_val of (tmpvar(*x*), valprim(*v*)) // x := v
@@ -171,6 +173,7 @@ fun fprint_valprim (out: FILEref, vp: valprim): void
 fun fprint_valprimlst (out: FILEref, vp: valprimlst): void
 fun fprint_instr (out: FILEref, ins: instr): void
 fun fprint_instrlst (out: FILEref, inslst: instrlst): void
+fun fprint_funlst (out: FILEref, fns: list0 funent_t): void
 (* ****** ****** *)
 
 (* end of [trans2.sats] *)

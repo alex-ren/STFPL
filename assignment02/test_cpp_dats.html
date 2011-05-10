@@ -111,11 +111,13 @@ main <span class="keyword">(</span><span class="keyword">)</span> <span class="k
     <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> 
           "\n\ntransform to IR ==================================\n\n"<span class="keyword">)</span>
     <span class="keyword">val</span> <span class="keyword">(</span>irs<span class="keyword">,</span> fns<span class="keyword">)</span> <span class="keyword">=</span> trans2_exp <span class="keyword">(</span>prog1<span class="keyword">)</span>
-    <span class="comment">// val () = fprint (stderr_ref, 
-</span>    <span class="comment">//  "\n\nmain function ==================================\n\n")
-</span>    <span class="comment">// val () = fprint_instrlst (stderr_ref, irs)
-</span>    <span class="comment">// val () = fprint (stderr_ref, "\n")
-</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> 
+     "\n\nmain function ==================================\n\n"<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_instrlst <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> irs<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> "\n"<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> "\n"<span class="keyword">)</span>
+    <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint_funlst <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> fns<span class="keyword">)</span>
+
     <span class="keyword">val</span> os <span class="keyword">=</span> trans_cpp <span class="keyword">(</span>irs<span class="keyword">,</span> fns<span class="keyword">)</span>
     <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> print_ostream <span class="keyword">(</span>os<span class="keyword">)</span>
     <span class="keyword">val</span> <span class="keyword">(</span><span class="keyword">)</span> <span class="keyword">=</span> fprint <span class="keyword">(</span>stderr_ref<span class="keyword">,</span> "\n"<span class="keyword">)</span>
