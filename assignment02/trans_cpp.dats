@@ -25,7 +25,7 @@ staload _(*anon*) = "prelude/DATS/list0.dats"
 #define cons list0_cons
 #define nil list0_nil
 
-val machine_bits = 64
+val machine_bits = 32
 
 val i32_64 = (if machine_bits = 32 then "int" else "long"): string
 

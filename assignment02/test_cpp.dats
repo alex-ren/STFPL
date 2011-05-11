@@ -86,12 +86,12 @@ main () = () where {
     val () = fprint (stderr_ref, 
           "\n\ntransform to IR ==================================\n\n")
     val (irs, fns) = trans2_exp (prog1)
-    val () = fprint (stderr_ref, 
-     "\n\nmain function ==================================\n\n")
-    val () = fprint_instrlst (stderr_ref, irs)
-    val () = fprint (stderr_ref, "\n")
-    val () = fprint (stderr_ref, "\n")
-    val () = fprint_funlst (stderr_ref, fns)
+    // val () = fprint (stderr_ref, 
+    //  "\n\nmain function ==================================\n\n")
+    // val () = fprint_instrlst (stderr_ref, irs)
+    // val () = fprint (stderr_ref, "\n")
+    // val () = fprint (stderr_ref, "\n")
+    // val () = fprint_funlst (stderr_ref, fns)
 
     val os = trans_cpp (irs, fns)
     val () = print_ostream (os)

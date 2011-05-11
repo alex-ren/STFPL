@@ -4,7 +4,9 @@ let
       if x > 5 then f (x - 2, init + x) else f (x - 1, init + x)
     else
       init
-  val sum = fn (1000000, 0)
+  val sum = fn (100, 0)
+  val _ = print ("should see 2554\n")
+  val _ = print ("should see ")
   val _ = print_int sum
   val _ = print "\n"
 in

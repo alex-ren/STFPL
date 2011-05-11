@@ -27,6 +27,7 @@ trans_llvm_instr	trans_llvm.dats	/^extern fun trans_llvm_instr (instr: instr): s
 trans_llvm_instr	trans_llvm.dats	/^implement trans_llvm_instr (instr) =/;"	kind: implementation 
 trans_llvm_instrlst	trans_llvm.dats	/^extern fun trans_llvm_instrlst (body: instrlst): statements/;"	kind: declaration 
 trans_llvm_instrlst	trans_llvm.dats	/^implement trans_llvm_instrlst (body) = let/;"	kind: implement 
+trans_llvm_valprim	trans_llvm.dats	/^fun trans_llvm_valprim (vp: valprim):/;"	kind: implement 
 typcheck	trans1.dats	/^extern fun typcheck (Gamma: ctx, e0: e0xp, t1: t1yp): (e1xp, tyerr_pool)$/;"	kind: declaration 
 typcheck	trans1.dats	/^implement typcheck (Gamma, e0, t1) = let$/;"	kind: implementation 
 

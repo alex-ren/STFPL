@@ -8,7 +8,7 @@ STFPL_INC=-I"lib"
 
 MODULE=queens simple ackermann bsearch_fun coin \
 evenodd fact_fix fact twice f91 fib list_opr \
-mytuple game24 arith_opr scratch
+mytuple game24 arith_opr tailcall_opt scratch 
 
 STFPL=./tester_llvm
 
@@ -22,10 +22,10 @@ all: $(MODULE)
 %:
 	$(STFPL) < TEST/$@.stfpl 1>$(DEST_DIR)/$@.ll
 	llvm-as $(DEST_DIR)/$@.ll -o $(DEST_DIR)/$@.bc
-	llvm-link $(DEST_DIR)/$@.bc $(STFPL_LIB) -o $(DEST_DIR)/$@.llvm
-	lli $(DEST_DIR)/$@.llvm
-#	llvm-ld $(DEST_DIR)/$@.bc $(STFPL_LIB) -o $(DEST_DIR)/$@
-#	$(DEST_DIR)/$@
+#	llvm-link $(DEST_DIR)/$@.bc $(STFPL_LIB) -o $(DEST_DIR)/$@.llvm
+#	lli $(DEST_DIR)/$@.llvm
+	llvm-ld $(DEST_DIR)/$@.bc $(STFPL_LIB) -o $(DEST_DIR)/$@
+	$(DEST_DIR)/$@
 
 # queens:
 # 	./tester < TEST/queens.stfpl 1>TEST/queens.c

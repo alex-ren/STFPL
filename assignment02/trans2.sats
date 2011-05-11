@@ -160,6 +160,7 @@ fun funent_lookup (fl: funlab): funent
 fun funent_getall (): list0 funent
 
 fun funlab_get_name (fl: funlab): string
+fun funlab_get_valprim (vp: valprim): funlab
 
 val mainlab: funlab
 

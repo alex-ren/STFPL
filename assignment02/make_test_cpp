@@ -8,7 +8,7 @@ STFPL_INC=-I"lib"
 
 MODULE=queens simple ackermann bsearch_fun coin \
 evenodd fact_fix fact twice f91 fib funargs list_opr \
-mytuple game24 arith_opr scratch
+mytuple game24 arith_opr tailcall_opt scratch 
 
 STFPL=./tester_cpp
 CC=gcc

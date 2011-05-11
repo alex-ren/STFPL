@@ -268,6 +268,12 @@ in
 
 implement funlab_get_name (fl) = symbol_get_name (fl)
 
+implement funlab_get_valprim (vp) =
+  case+ vp.valprim_node of
+  | VPclo (_, fl, _) => fl
+  | _ => ETRACE_MSG_OPR ("funlab_get_valprim vp isn't closure\n", 
+             ETRACE_LEVEL_ERROR, abort (ERRORCODE_FORBIDDEN))
+
 implement funlab_make_name (f) = let
   val nam = symbol_get_name (f.v1ar_nam)
   val i = !funlab_count
