@@ -2,14 +2,29 @@ To build the program, please run
 >> make all
 
 
+To run the test, please install llvm first. The current version is for
+64-bit machine. Certain switch in trans_llvm.dats needs to be changed to
+fit 32-bit machine.
+
+llvm is installed on queeg already. Please add the path "xxx" to your 
+environment PATH.
+
 To do the test, simply run
 >> make -f make_test_cpp all
 >> make -f make_test_llvm all
 
+If don't want to see extra debug info, please run
+>> make -f make_test_cpp all 2>/dev/null
+>> make -f make_test_llvm all 2>/dev/null
+
+All the test files are in the directory TEST. They can be tested individually.
+e.g.
+>> make -f make_test_cpp queens
+>> make -f make_test_llvm queens
 
 Updates:
   llvm generator is done.
-  Tail call optimization hasn't been done.
+  Tail call optimization is now supported.
   Closure is now fully supported.
   list operations are supported.
   game of 24 is finished.
@@ -19,6 +34,8 @@ Updates:
 
 Caution:
   None
+
+For grader, please skip the rest of the file.
 
 Record (for functionality)
 
