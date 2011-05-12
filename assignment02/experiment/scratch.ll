@@ -11,11 +11,18 @@ entry:
   %argv_addr = alloca i8**                        ; <i8***> [#uses=1]
   %retval = alloca i32                            ; <i32*> [#uses=2]
 
+  %addr_count = alloca i32
+  store i32 0, i32* %addr_count
+
   br label %start
 
 start:
-  %len = call i32 @myid (i32 1000000)
-  %addr1 = alloca i32, i32 350  ;%len  ; replace with %len to see the generated code
+  %count = load i32* %addr_count
+  %count1 = add i32 %count, 1
+  store i32 %count1, i32* %addr_count
+
+  %len = call i32 @myid (i32 10000000)
+  %addr1 = alloca i32, i32 1000000  ;%len  ; replace with %len to see the generated code
   store i32 1, i32* %addr1
   %b1 = load i32* %addr1, align 4
   %z1 = call i32 @myprint (i32 %b1)
@@ -25,6 +32,9 @@ start:
   store i32 2, i32* %addr2
   %b2 = load i32* %addr2, align 4
   %z2 = call i32 @myprint (i32 %b2)
+
+
+  %z3 = call i32 @myprint (i32 %count)
 
 
   br label %start

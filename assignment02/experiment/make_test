@@ -23,5 +23,8 @@ clean:
 	rm -rf libfun.ll
 	rm -rf libfun.bc
 
+.PHONY: run
+run:
+	./scratch
 	
 
