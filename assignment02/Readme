@@ -3,15 +3,21 @@ To build the program, please run
 
 
 To run the test, please install llvm first. The current version is for
-64-bit machine. Certain switch in trans_llvm.dats needs to be changed to
-fit 32-bit machine.
+64-bit machine. Certain switch in trans_llvm.dats and trans_cpp.dats
+needs to be changed to fit 32-bit machine.
 
-llvm is installed on queeg already. Please add the path "xxx" to your 
-environment PATH.
+llvm is installed on queeg already. Please add the following paths
+  1) /scratch/programs/llvm-gcc-4.2-2.8/bin/
+  2) /scratch/programs/llvm-2.8/bin/
+to your environment PATH.
 
 To do the test, simply run
 >> make -f make_test_cpp all
 >> make -f make_test_llvm all
+
+The C version for scratch has segment fault. It is correct because 
+the C code hasn't been tail call optimized. The corresponding LLVM
+version for scratch works fine.
 
 If don't want to see extra debug info, please run
 >> make -f make_test_cpp all 2>/dev/null
@@ -19,12 +25,12 @@ If don't want to see extra debug info, please run
 
 All the test files are in the directory TEST. They can be tested individually.
 e.g.
->> make -f make_test_cpp queens
->> make -f make_test_llvm queens
+>> make -f make_test_cpp queens 2>/dev/null
+>> make -f make_test_llvm queens 2>/dev/null
 
 Updates:
   llvm generator is done.
-  Tail call optimization is now supported.
+  Tail call optimization is now supported in LLVM generator (not in C generator).
   Closure is now fully supported.
   list operations are supported.
   game of 24 is finished.
