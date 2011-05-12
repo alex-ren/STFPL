@@ -1,0 +1,27 @@
+
+.PHONY: noopt
+noopt:
+	llvm-as scratch.ll -o scratch.bc
+	llc scratch.bc -o scratch.s
+	gcc libfun.c scratch.s -o scratch
+	
+
+.PHONY: opt
+opt:
+	llvm-gcc -S -emit-llvm libfun.c -o libfun.ll
+	llvm-as libfun.ll -o libfun.bc
+	llvm-as scratch.ll -o scratch.bc
+	llvm-ld -native libfun.bc scratch.bc -o scratch
+	llc scratch.bc -o scratch.s
+
+
+.PHONY: clean
+clean:
+	rm -rf scratch.bc
+	rm -rf scratch.s
+	rm -rf scratch
+	rm -rf libfun.ll
+	rm -rf libfun.bc
+
+	
+
